@@ -1,0 +1,28 @@
+{
+  "name": "pex-gui",
+  "version": "0.0.1",
+  "description": "GUI widgets for the pex library",
+  "homepage": "https://github.com/vorg/pex-gui",
+  "keywords": [
+    "graphics",
+    "gui",
+    "webgl"
+  ],
+  "author": {
+    "name": "Marcin Ignac",
+    "email": "marcin.ignac@gmail.com",
+    "url": "http://marcinignac.com"
+  },
+  "main": "index.js",
+  "devDependencies": {
+  },
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vorg/pex-gui.git"
+  },
+  "bugs": "https://github.com/vorg/pex-gui/issues",
+  "homepage": "https://github.com/vorg/pex-gui.git",
+  "license": "MIT"
+}
