@@ -15,6 +15,10 @@
   },
   "main": "index.js",
   "devDependencies": {
+    "pex-sys": "0.0.1",
+    "pex-glu": "0.0.1",
+    "pex-geom": "0.0.1",
+    "pex-color": "0.0.1"
   },
   "dependencies": {
   },
