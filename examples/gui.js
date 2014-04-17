@@ -42,6 +42,7 @@ Window.create({
   rotationSpeed: 1,
   rotationAngle: 0,
   init: function() {
+    this.gui = new gui.GUI(this);
     this.camera = new PerspectiveCamera(60, this.width / this.height);
     this.arcball = new Arcball(this, this.camera);
 
@@ -56,9 +57,6 @@ Window.create({
 
     var gl = glu.Context.currentContext;
     this.mesh = new glu.Mesh(new geom.gen.Cube(), this.materials[1]);
-
-
-    this.gui = new gui.GUI(this);
 
     this.gui.addLabel('GUI Test');
     this.gui.addLabel('S - save settings');
