@@ -23,7 +23,8 @@ var Textured = materials.Textured;
 var FlatToonShading = materials.FlatToonShading;
 var MatCap = materials.MatCap;
 
-var DPI = 1;
+var DPI = 2;
+var TOUCH_SCALE = 1;
 
 Window.create({
   settings: {
@@ -42,7 +43,7 @@ Window.create({
   rotationSpeed: 1,
   rotationAngle: 0,
   init: function() {
-    this.gui = new gui.GUI(this);
+    this.gui = new gui.GUI(this, 0, 0, TOUCH_SCALE);
     this.camera = new PerspectiveCamera(60, this.width / this.height);
     this.arcball = new Arcball(this, this.camera);
 
