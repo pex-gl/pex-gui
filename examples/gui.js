@@ -34,7 +34,7 @@ Window.create({
     fullscreen: sys.Platform.isBrowser,
     highdpi: DPI
   },
-  color: Color.create(0, 0, 0, 1),
+  color: Color.create(1, 0.5, 0.5, 1),
   materials: [],
   materialIndex: 1,
   distance: 2,
@@ -68,9 +68,7 @@ Window.create({
     this.gui.addParam('Scale x', this.mesh.scale, 'x', {min:0, max:1});
     this.gui.addParam('Scale y', this.mesh.scale, 'y', {min:0, max:1});
     this.gui.addParam('Scale z', this.mesh.scale, 'z', {min:0, max:1});
-    this.gui.addParam('Color x', this.color, 'r', {min:0, max:1});
-    this.gui.addParam('Color y', this.color, 'g', {min:0, max:1});
-    this.gui.addParam('Color z', this.color, 'b', {min:0, max:1});
+    this.gui.addParam('Color', this, 'color');
 
     this.gui.addLabel('ROTATION');
     this.gui.addParam('Rotate', this, 'rotate');
@@ -104,6 +102,7 @@ Window.create({
     var gl = glu.Context.currentContext;
 
     this.arcball.distance = this.distance;
+    this.arcball.updateCamera();
 
     if (this.rotate) {
       this.rotationAngle += Time.delta * this.rotationSpeed * 10;
