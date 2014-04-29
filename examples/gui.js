@@ -54,7 +54,7 @@ Window.create({
     this.materials.push(new materials.ShowNormals());
     //this.materials.push(new materials.Diffuse());
     this.materials.push(new materials.Textured({ texture: this.texture }));
-    this.materials.push(new materials.Textured({texture:this.texture}));
+    this.materials.push(new materials.Textured({ texture: this.texture }));
 
     var gl = glu.Context.currentContext;
     this.mesh = new glu.Mesh(new geom.gen.Cube(), this.materials[1]);
