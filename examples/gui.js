@@ -34,7 +34,7 @@ Window.create({
     fullscreen: sys.Platform.isBrowser,
     highdpi: DPI
   },
-  color: Color.create(1, 1, 0.5, 1),
+  color: Color.create(0.1, 0.25, 0.5, 1),
   materials: [],
   materialIndex: 1,
   distance: 2,
