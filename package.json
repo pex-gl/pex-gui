@@ -1,6 +1,6 @@
 {
   "name": "pex-gui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "GUI widgets for the pex library",
   "homepage": "https://github.com/vorg/pex-gui.git",
   "keywords": [
