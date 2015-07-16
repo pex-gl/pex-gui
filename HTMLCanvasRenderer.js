@@ -1,14 +1,9 @@
-var glu = require('pex-glu');
-var geom = require('pex-geom');
-var Context = glu.Context;
-var Texture2D = glu.Texture2D;
-var Rect = geom.Rect;
-
-function HTMLCanvasRenderer(width, height, highdpi) {
-  this.gl = Context.currentContext;
-  this.highdpi = highdpi || 1;
+function HTMLCanvasRenderer(ctx, width, height) {
+  this._ctx = Context.currentContext;
+  this.highdpi = 1;
   this.canvas = document.createElement('canvas');
-  this.tex = Texture2D.create(width, height);
+  //TODO: move this up
+  this.tex = ctx.createTexture2D(null, width, height);
   this.canvas.width = width;
   this.canvas.height = height;
   this.ctx = this.canvas.getContext('2d');
@@ -254,14 +249,8 @@ HTMLCanvasRenderer.prototype.getImageColor = function(image, x, y) {
 
 HTMLCanvasRenderer.prototype.updateTexture = function () {
   var gl = this.gl;
-  this.tex.bind();
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.bindTexture(gl.TEXTURE_2D, null);
+
+  this.tex.update(this.canvas, this.canvas.width, this.canvas.height, { flip: true})
 };
 
 module.exports = HTMLCanvasRenderer;
