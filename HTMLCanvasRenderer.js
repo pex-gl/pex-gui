@@ -1,5 +1,7 @@
+var Rect = require('pex-geom/Rect');
+
 function HTMLCanvasRenderer(ctx, width, height) {
-  this._ctx = Context.currentContext;
+  this._ctx = ctx;
   this.highdpi = 1;
   this.canvas = document.createElement('canvas');
   //TODO: move this up
@@ -96,7 +98,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       ctx.fillRect(dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
       ctx.fillStyle = 'rgba(255, 255, 0, 1)';
       ctx.fillRect(dx + 3, dy + 18, (w - 3 - 3) * e.getNormalizedValue(), eh - 5 - 18);
-      e.activeArea.set(dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
+      Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
     }
@@ -110,7 +112,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       }
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
-      e.activeArea.set(dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
+      Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
     }
      else if (e.type == 'vec3') {
       var numSliders = 3;
@@ -122,7 +124,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       }
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
-      e.activeArea.set(dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
+      Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
     }
     else if (e.type == 'color') {
       var numSliders = e.options.alpha ? 4 : 3;
@@ -140,12 +142,12 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       }
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
-      e.activeArea.set(dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
+      Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
     }
     else if (e.type == 'button') {
       ctx.fillStyle = e.active ? 'rgba(255, 255, 0, 1)' : 'rgba(150, 150, 150, 1)';
       ctx.fillRect(dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3);
-      e.activeArea.set(dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3);
+      Rect.set4(e.activeArea, dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3);
       ctx.fillStyle = e.active ? 'rgba(100, 100, 100, 1)' : 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title, dx + 5, dy + 15);
       if (e.options.color) {
@@ -158,7 +160,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       var on = e.contextObject[e.attributeName];
       ctx.fillStyle = on ? 'rgba(255, 255, 0, 1)' : 'rgba(150, 150, 150, 1)';
       ctx.fillRect(dx + 3, dy + 3, eh - 5 - 3, eh - 5 - 3);
-      e.activeArea.set(dx + 3, dy + 3, eh - 5 - 3, eh - 5 - 3);
+      Rect.set4(e.activeArea, dx + 3, dy + 3, eh - 5 - 3, eh - 5 - 3);
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title, dx + eh, dy + 12);
     }
@@ -174,7 +176,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
         ctx.fillStyle = 'rgba(255, 255, 255, 1)';
         ctx.fillText(item.name, dx + 5 + itemHeight - 5, 18 + j * itemHeight + dy + 13);
       }
-      e.activeArea.set(dx + 3, 18 + dy + 3, itemHeight - 5, e.items.length * itemHeight - 5);
+      Rect.set4(e.activeArea, dx + 3, 18 + dy + 3, itemHeight - 5, e.items.length * itemHeight - 5);
     }
     else if (e.type == 'texturelist') {
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
@@ -195,14 +197,14 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
         if (!e.items[j].activeArea) {
           e.items[j].activeArea = new Rect();
         }
-        e.items[j].activeArea.set(dx + 3 + col * cellSize + shrink, dy + 18 + row * cellSize + shrink, cellSize - 1 - 2 * shrink, cellSize - 1 - 2 * shrink);
+        Rect.set4(e.items[j].activeArea, dx + 3 + col * cellSize + shrink, dy + 18 + row * cellSize + shrink, cellSize - 1 - 2 * shrink, cellSize - 1 - 2 * shrink);
       }
-      e.activeArea.set(dx + 3, 18 + dy + 3, w - 3 - 3, cellSize * numRows - 5);
+      Rect.set4(e.activeArea, dx + 3, 18 + dy + 3, w - 3 - 3, cellSize * numRows - 5);
     }
     else if (e.type == 'texture2D') {
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title, dx + 5, dy + 15);
-      e.activeArea.set(dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
+      Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
     }
     else if (e.type == 'header') {
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
@@ -211,7 +213,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       ctx.fillText(items[i].title, dx + 5, dy + 16);
     }
     else if (e.type == 'text') {
-      e.activeArea.set(dx + 3, dy + 20, w - 6, eh - 20 - 5);
+      Rect.set4(e.activeArea, dx + 3, dy + 20, w - 6, eh - 20 - 5);
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title, dx + 3, dy + 13);
       ctx.fillStyle = 'rgba(50, 50, 50, 1)';
@@ -250,7 +252,7 @@ HTMLCanvasRenderer.prototype.getImageColor = function(image, x, y) {
 HTMLCanvasRenderer.prototype.updateTexture = function () {
   var gl = this.gl;
 
-  this.tex.update(this.canvas, this.canvas.width, this.canvas.height, { flip: true})
+  this.tex.update(this.canvas, this.canvas.width, this.canvas.height, { flip: false})
 };
 
 module.exports = HTMLCanvasRenderer;
