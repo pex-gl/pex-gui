@@ -7,10 +7,20 @@ var Rect = require('pex-geom/Rect');
 var VERT = '\
 attribute vec4 aPosition; \
 attribute vec2 aTexCoord0; \
+uniform vec2 uWindowSize; \
+uniform vec4 uRect; \
 varying vec2 vTexCoord0; \
 void main() { \
     vTexCoord0 = aTexCoord0; \
-    gl_Position = aPosition; \
+    vec2 pos = aPosition.xy * 0.5 + 0.5; \
+    pos.y = 1.0 - pos.y; \
+    pos.x = uRect.x + pos.x * (uRect.z - uRect.x); \
+    pos.y = uRect.y + pos.y * (uRect.w - uRect.y); \
+    pos.x /= uWindowSize.x; \
+    pos.y /= uWindowSize.y; \
+    pos.y = 1.0 - pos.y; \
+    pos = (pos - 0.5) * 2.0; \
+    gl_Position = vec4(pos, 0.0, 1.0); \
 }';
 
 var FRAG = '\
@@ -28,6 +38,9 @@ function GUI(ctx, windowWidth, windowHeight) {
     this._ctx = ctx;
     this._windowWidth = windowWidth;
     this._windowHeight = windowHeight;
+    this._windowSize = [windowWidth, windowHeight];
+    this._textureRect = [0, 0, windowWidth, windowHeight];
+    this._textureTmpRect = [0, 0, 0, 0];
     this.x = 0;
     this.y = 0;
     this.highdpi = 1;
@@ -101,7 +114,7 @@ GUI.prototype.onMouseDown = function (e) {
       else if (this.activeControl.type == 'texturelist') {
         var clickedItem = null;
         this.activeControl.items.forEach(function(item) {
-          if (item.activeArea.contains(this.mousePos)) {
+          if (Rect.containsPoint(item.activeArea, this.mousePos)) {
             clickedItem = item;
           }
         }.bind(this))
@@ -417,7 +430,7 @@ GUI.prototype.addRadioList = function (title, contextObject, attributeName, item
     return ctrl;
 };
 
-GUI.prototype.addTextureList = function (title, contextObject, attributeName, items, itemsPerRow, onchange) {
+GUI.prototype.addTexture2DList = function (title, contextObject, attributeName, items, itemsPerRow, onchange) {
     var ctrl = new GUIControl({
         type: 'texturelist',
         title: title,
@@ -465,34 +478,38 @@ GUI.prototype.draw = function () {
     ctx.setBlend(true);
     ctx.setBlendFunc(ctx.SRC_ALPHA, ctx.ONE_MINUS_SRC_ALPHA);
     ctx.bindProgram(this.rectProgram);
+    this.rectProgram.setUniform('uTexture', 0);
+    this.rectProgram.setUniform('uWindowSize', this._windowSize);
+    this.rectProgram.setUniform('uRect', this._textureRect);
     ctx.bindMesh(this.rectMesh);
     ctx.bindTexture(this.renderer.getTexture())
     ctx.drawMesh();
-    //TODO: this.drawTextures();
+    this.drawTextures();
     ctx.popState(ctx.DEPTH_BIT | ctx.BLEND_BIT);
 };
 
 GUI.prototype.drawTextures = function () {
+    var ctx = this._ctx;
   for (var i = 0; i < this.items.length; i++) {
     var item = this.items[i];
     var scale = this.scale * this.highdpi;
     if (item.type == 'texture2D') {
-      var bounds = [item.activeArea[0][0] * scale, item.activeArea[0][1] * scale, item.activeArea.width * scale, item.activeArea.height * scale];
-      this.screenImage.setBounds(bounds);
-      this.screenImage.setImage(item.texture);
-      this.screenImage.draw();
+      var bounds = [item.activeArea[0][0] * scale, item.activeArea[0][1] * scale, item.activeArea[1][0] * scale, item.activeArea[1][1] * scale];
+      ctx.bindTexture(item.texture);
+      this.rectProgram.setUniform('uRect', bounds);
+      ctx.drawMesh();
     }
     if (item.type == 'texturelist') {
       item.items.forEach(function(textureItem) {
-        var bounds = [textureItem.activeArea[0][0] * scale, textureItem.activeArea[0][1] * scale, textureItem.activeArea.width * scale, textureItem.activeArea.height * scale];
-        this.screenImage.setBounds(bounds);
-        this.screenImage.setImage(textureItem.texture);
-        this.screenImage.draw();
+        var bounds = [textureItem.activeArea[0][0] * scale, textureItem.activeArea[0][1] * scale, textureItem.activeArea[1][0] * scale, textureItem.activeArea[1][1] * scale];
+        this.rectProgram.setUniform('uRect', bounds);
+        ctx.bindTexture(textureItem.texture);
+        ctx.drawMesh();
       }.bind(this));
     }
   }
-  this.screenImage.setBounds(this.screenBounds);
-  this.screenImage.setImage(this.renderer.getTexture());
+  //this.screenImage.setBounds(this.screenBounds);
+  //this.screenImage.setImage(this.renderer.getTexture());
 };
 
 GUI.prototype.serialize = function () {

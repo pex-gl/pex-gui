@@ -111,11 +111,11 @@ SkiaRenderer.prototype.draw = function(items, scale) {
 
     if (e.type == 'slider') eh = 20 * scale + 14;
     if (e.type == 'toggle') eh = 20 * scale;
-    if (e.type == 'multislider') eh = 18 + e.getValue().length * 20 * scale;
+    if (e.type == 'multislider') eh = 20 + e.getValue().length * 14 * scale;
     if (e.type == 'color') eh = 20 + (e.options.alpha ? 4 : 3) * 14 * scale;
     if (e.type == 'color' && e.options.paletteImage) eh += (w * e.options.paletteImage.height/e.options.paletteImage.width + 2) * scale;
     if (e.type == 'button') eh = 24 * scale;
-    if (e.type == 'texture2D') eh = 24 + e.texture.height * w / e.texture.width;
+    if (e.type == 'texture2D') eh = 24 + e.texture.getWidth() * w / e.texture.getHeight();
     if (e.type == 'radiolist') eh = 18 + e.items.length * 20 * scale;
     if (e.type == 'texturelist') {
       cellSize = Math.floor((w - 2*margin) / e.itemsPerRow);
@@ -138,8 +138,8 @@ SkiaRenderer.prototype.draw = function(items, scale) {
     }
     else if (e.type == 'multislider') {
       for (var j = 0; j < e.getValue().length; j++) {
-        canvas.drawRect(this.controlBgPaint, dx + 3, dy + 18 + j * 20 * scale, dx + w - 3, dy + 18 + (j + 1) * 20 * scale - 6);
-        canvas.drawRect(this.controlHighlightPaint, dx + 3, dy + 18 + j * 20 * scale, dx + 3 + (w - 6) * e.getNormalizedValue(j), dy + 18 + (j + 1) * 20 * scale - 6);
+        canvas.drawRect(this.controlBgPaint, dx + 3, dy + 18 + j * 14 * scale, dx + w - 3, dy + 18 + (j + 1) * 14 * scale - 3);
+        canvas.drawRect(this.controlHighlightPaint, dx + 3, dy + 18 + j * 14 * scale, dx + 3 + (w - 6) * e.getNormalizedValue(j), dy + 18 + (j + 1) * 14 * scale - 3);
       }
       canvas.drawText(this.fontPaint, items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
       Rect.set4(e.activeArea, dx + 4, dy + 18, w - 3 - 3, eh - 5 - 18);
@@ -205,9 +205,9 @@ SkiaRenderer.prototype.draw = function(items, scale) {
           shrink = 2;
         }
         if (!e.items[j].activeArea) {
-          e.items[j].activeArea = new Rect();
+          e.items[j].activeArea = [[0,0],[0,0]];
         }
-        e.items[j].activeArea.set(dx + 3 + col * cellSize + shrink, dy + 18 + row * cellSize + shrink, cellSize - 1 - 2 * shrink, cellSize - 1 - 2 * shrink);
+        Rect.set4(e.items[j].activeArea, dx + 3 + col * cellSize + shrink, dy + 18 + row * cellSize + shrink, cellSize - 1 - 2 * shrink, cellSize - 1 - 2 * shrink);
       }
       Rect.set4(e.activeArea, dx + 3, 18 + dy + 3, w - 3 - 3, cellSize * numRows - 5);
     }
