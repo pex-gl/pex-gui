@@ -75,22 +75,27 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
     }
 
     if (e.options && e.options.palette && !e.options.paletteImage) {
-      function makePaletteImage(e) {
-        var img = new Image();
-        img.src = e.options.palette;
-        img.onload = function() {
-          var canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = w * img.height / img.width;
-          var ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          e.options.paletteImage = canvas;
-          e.options.paletteImage.ctx = ctx;
-          e.options.paletteImage.data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-          e.dirty = true;
+        function makePaletteImage(e) {
+            var canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = w * img.height / img.width;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            e.options.paletteImage = canvas;
+            e.options.paletteImage.ctx = ctx;
+            e.options.paletteImage.data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            e.dirty = true;
         }
-      }
-      makePaletteImage(e);
+        if (e.options.palette.width) {
+            makePaletteImage(e.options.palette);
+        }
+        else {
+            var img = new Image();
+            img.src = e.options.palette;
+            img.onload = function() {
+                makePaletteImage(img);
+            }
+        }
     }
 
     if (e.type == 'slider') {
@@ -246,7 +251,7 @@ HTMLCanvasRenderer.prototype.getImageColor = function(image, x, y) {
   var r = image.data[(x + y * image.width)*4 + 0]/255;
   var g = image.data[(x + y * image.width)*4 + 1]/255;
   var b = image.data[(x + y * image.width)*4 + 2]/255;
-  return { r: r, g: g, b: b };
+  return [r, g, b];
 }
 
 HTMLCanvasRenderer.prototype.updateTexture = function () {

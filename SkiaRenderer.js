@@ -101,7 +101,12 @@ SkiaRenderer.prototype.draw = function(items, scale) {
     var eh = 20;
 
     if (e.options && e.options.palette && !e.options.paletteImage) {
-      e.options.paletteImage = plask.SkCanvas.createFromImage(e.options.palette);
+        if (e.options.palette.width) {
+            e.options.paletteImage = e.options.palette;
+        }
+        else {
+            e.options.paletteImage = plask.SkCanvas.createFromImage(e.options.palette);
+        }
     }
 
     if (e.type == 'slider') eh = 20 * scale + 14;
@@ -290,7 +295,7 @@ SkiaRenderer.prototype.getImageColor = function(image, x, y) {
   var r = image[(x + y * image.width)*4 + 2]/255;
   var g = image[(x + y * image.width)*4 + 1]/255;
   var b = image[(x + y * image.width)*4 + 0]/255;
-  return { r: r, g: g, b: b };
+  return [r, g, b]
 }
 
 SkiaRenderer.prototype.getTexture = function() {

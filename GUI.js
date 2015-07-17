@@ -132,9 +132,10 @@ GUI.prototype.onMouseDown = function (e) {
             var y = Math.floor(ih * v);
             var color = this.renderer.getImageColor(this.activeControl.options.paletteImage, x, y);
             this.activeControl.dirty = true;
-            this.activeControl.contextObject[this.activeControl.attributeName].r = color.r;
-            this.activeControl.contextObject[this.activeControl.attributeName].g = color.g;
-            this.activeControl.contextObject[this.activeControl.attributeName].b = color.b;
+
+            this.activeControl.contextObject[this.activeControl.attributeName][0] = color[0];
+            this.activeControl.contextObject[this.activeControl.attributeName][1] = color[1];
+            this.activeControl.contextObject[this.activeControl.attributeName][2] = color[2];
             if (this.activeControl.onchange) {
               this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName]);
             }
@@ -235,9 +236,9 @@ GUI.prototype.onMouseDrag = function (e) {
             var y = Math.floor(ih * v);
             var color = this.renderer.getImageColor(this.activeControl.options.paletteImage, x, y);
             this.activeControl.dirty = true;
-            this.activeControl.contextObject[this.activeControl.attributeName].r = color.r;
-            this.activeControl.contextObject[this.activeControl.attributeName].g = color.g;
-            this.activeControl.contextObject[this.activeControl.attributeName].b = color.b;
+            this.activeControl.contextObject[this.activeControl.attributeName][0] = color[0];
+            this.activeControl.contextObject[this.activeControl.attributeName][1] = color[1];
+            this.activeControl.contextObject[this.activeControl.attributeName][2] = color[2];
             if (this.activeControl.onchange) {
               this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName]);
             }
