@@ -95,15 +95,6 @@ GUIControl.prototype.setSerializedValue = function(value) {
   else if (this.type == 'multislider') {
     this.contextObject[this.attributeName] = value;
   }
-  else if (this.type == 'vec2') {
-    this.contextObject[this.attributeName].x = value.x;
-    this.contextObject[this.attributeName].y = value.y;
-  }
-  else if (this.type == 'vec3') {
-    this.contextObject[this.attributeName].x = value.x;
-    this.contextObject[this.attributeName].y = value.y;
-    this.contextObject[this.attributeName].z = value.z;
-  }
   else if (this.type == 'color') {
     this.contextObject[this.attributeName].r = value.r;
     this.contextObject[this.attributeName].g = value.g;
@@ -124,12 +115,6 @@ GUIControl.prototype.getValue = function() {
     return this.contextObject[this.attributeName];
   }
   else if (this.type == 'multislider') {
-    return this.contextObject[this.attributeName];
-  }
-  else if (this.type == 'vec2') {
-    return this.contextObject[this.attributeName];
-  }
-  else if (this.type == 'vec3') {
     return this.contextObject[this.attributeName];
   }
   else if (this.type == 'color') {
@@ -154,12 +139,6 @@ GUIControl.prototype.getStrValue = function() {
       dotPos++;
     }
     return str.substr(0, dotPos + 2);
-  }
-  else if (this.type == 'vec2') {
-    return 'XY';
-  }
-  else if (this.type == 'vec3') {
-    return 'XYZ';
   }
   else if (this.type == 'color') {
     return 'HSLA';

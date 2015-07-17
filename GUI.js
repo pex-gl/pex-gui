@@ -185,40 +185,6 @@ GUI.prototype.onMouseDrag = function (e) {
       }
       this.activeControl.dirty = true;
     }
-    else if (this.activeControl.type == 'vec2') {
-      var numSliders = 2;
-      var val = (e.x / this.highdpi - aa[0][0]) / aaWidth;
-      val = Math.max(0, Math.min(val, 1));
-      var idx = Math.floor(numSliders * (e.y / this.highdpi - aa[0][1]) / aaHeight);
-      if (!isNaN(this.activeControl.clickedSlider)) {
-        idx = this.activeControl.clickedSlider;
-      }
-      else {
-        this.activeControl.clickedSlider = idx;
-      }
-      this.activeControl.setNormalizedValue(val, idx);
-      if (this.activeControl.onchange) {
-        this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName]);
-      }
-      this.activeControl.dirty = true;
-    }
-    else if (this.activeControl.type == 'vec3') {
-      var numSliders = 3;
-      var val = (e.x / this.highdpi - aa[0][0]) / aaWidth;
-      val = Math.max(0, Math.min(val, 1));
-      var idx = Math.floor(numSliders * (e.y / this.highdpi - aa[0][1]) / aaHeight);
-      if (!isNaN(this.activeControl.clickedSlider)) {
-        idx = this.activeControl.clickedSlider;
-      }
-      else {
-        this.activeControl.clickedSlider = idx;
-      }
-      this.activeControl.setNormalizedValue(val, idx);
-      if (this.activeControl.onchange) {
-        this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName]);
-      }
-      this.activeControl.dirty = true;
-    }
     else if (this.activeControl.type == 'color') {
       var numSliders = this.activeControl.options.alpha ? 4 : 3;
       var slidersHeight = aaHeight;
@@ -409,34 +375,6 @@ GUI.prototype.addParam = function (title, contextObject, attributeName, options,
     else if (typeof contextObject[attributeName] == 'string') {
         var ctrl = new GUIControl({
             type: 'text',
-            title: title,
-            contextObject: contextObject,
-            attributeName: attributeName,
-            activeArea: [[0, 0], [0, 0]],
-            options: options,
-            onchange: onchange,
-            dirty: true
-        });
-        this.items.push(ctrl);
-        return ctrl;
-    }
-    else if (contextObject[attributeName] instanceof Spline1D) {
-        var ctrl = new GUIControl({
-            type: 'spline1D',
-            title: title,
-            contextObject: contextObject,
-            attributeName: attributeName,
-            activeArea: [[0, 0], [0, 0]],
-            options: options,
-            onchange: onchange,
-            dirty: true
-        });
-        this.items.push(ctrl);
-        return ctrl;
-    }
-    else if (contextObject[attributeName] instanceof Spline2D) {
-        var ctrl = new GUIControl({
-            type: 'spline2D',
             title: title,
             contextObject: contextObject,
             attributeName: attributeName,

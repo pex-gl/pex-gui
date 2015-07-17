@@ -53,8 +53,6 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
     if (e.type == 'slider') eh = 20 * scale + 14;
     if (e.type == 'toggle') eh = 20 * scale;
     if (e.type == 'multislider') eh = 18 + e.getValue().length * 20 * scale;
-    if (e.type == 'vec2') eh = 20 + 2 * 14 * scale;
-    if (e.type == 'vec3') eh = 20 + 3 * 14 * scale;
     if (e.type == 'color') eh = 20 + (e.options.alpha ? 4 : 3) * 14 * scale;
     if (e.type == 'color' && e.options.paletteImage) eh += (w * e.options.paletteImage.height/e.options.paletteImage.width + 2) * scale;
     if (e.type == 'button') eh = 24 * scale;
@@ -65,7 +63,6 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       numRows = Math.ceil(e.items.length / e.itemsPerRow);
       eh = 18 + 3 + numRows * cellSize;
     }
-    if (e.type == 'spline1D' || e.type == 'spline2D') eh = 24 + w;
     if (e.type == 'header') eh = 26 * scale;
     if (e.type == 'text') eh = 45 * scale;
 
@@ -106,30 +103,6 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
-    }
-    else if (e.type == 'vec2') {
-      var numSliders = 2;
-      for (var j = 0; j < numSliders; j++) {
-        ctx.fillStyle = 'rgba(150, 150, 150, 1)';
-        ctx.fillRect(dx + 3, dy + 18 + j * 14 * scale, w - 6, 14 * scale - 3);
-        ctx.fillStyle = 'rgba(255, 255, 0, 1)';
-        ctx.fillRect(dx + 3, dy + 18 + j * 14 * scale, (w - 6) * e.getNormalizedValue(j), 14 * scale - 3);
-      }
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-      ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
-      Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
-    }
-     else if (e.type == 'vec3') {
-      var numSliders = 3;
-      for (var j = 0; j < numSliders; j++) {
-        ctx.fillStyle = 'rgba(150, 150, 150, 1)';
-        ctx.fillRect(dx + 3, dy + 18 + j * 14 * scale, w - 6, 14 * scale - 3);
-        ctx.fillStyle = 'rgba(255, 255, 0, 1)';
-        ctx.fillRect(dx + 3, dy + 18 + j * 14 * scale, (w - 6) * e.getNormalizedValue(j), 14 * scale - 3);
-      }
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
-      ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
-      Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
     }
     else if (e.type == 'color') {
       var numSliders = e.options.alpha ? 4 : 3;

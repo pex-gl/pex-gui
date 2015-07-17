@@ -112,8 +112,6 @@ SkiaRenderer.prototype.draw = function(items, scale) {
     if (e.type == 'slider') eh = 20 * scale + 14;
     if (e.type == 'toggle') eh = 20 * scale;
     if (e.type == 'multislider') eh = 18 + e.getValue().length * 20 * scale;
-    if (e.type == 'vec2') eh = 20 + 2 * 14 * scale;
-    if (e.type == 'vec3') eh = 20 + 3 * 14 * scale;
     if (e.type == 'color') eh = 20 + (e.options.alpha ? 4 : 3) * 14 * scale;
     if (e.type == 'color' && e.options.paletteImage) eh += (w * e.options.paletteImage.height/e.options.paletteImage.width + 2) * scale;
     if (e.type == 'button') eh = 24 * scale;
@@ -124,7 +122,6 @@ SkiaRenderer.prototype.draw = function(items, scale) {
       numRows = Math.ceil(e.items.length / e.itemsPerRow);
       eh = 18 + 3 + numRows * cellSize;
     }
-    if (e.type == 'spline1D' || e.type == 'spline2D') eh = 24 + w;
     if (e.type == 'header') eh = 26 * scale;
     if (e.type == 'text') eh = 45 * scale;
 
@@ -217,53 +214,6 @@ SkiaRenderer.prototype.draw = function(items, scale) {
     else if (e.type == 'texture2D') {
       canvas.drawText(this.fontPaint, e.title, dx + 3, dy + 13);
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
-    }
-    else if (e.type == 'spline1D') {
-      canvas.drawText(this.fontPaint, e.title, dx + 3, dy + 13);
-      var itemHeight = w;
-      var itemColor = this.controlBgPaint;
-      canvas.drawRect(itemColor, dx + 3, 18 + dy + 3, dx + itemHeight - 5, itemHeight + dy + 18);
-      var path = new plask.SkPath();
-      path.moveTo(dx + 3, itemHeight + dy + 18)
-      for(var j=0; j<=20; j++) {
-        var p = e.contextObject[e.attributeName].getPointAt(j/20);
-        var x = j/20 * (w - dx);
-        var y = p * itemHeight * 0.99;
-        path.lineTo(dx + 3 + x,  itemHeight + dy + 18 - y);
-      }
-      this.controlHighlightPaint.setStroke();
-      canvas.drawPath(this.controlHighlightPaint, path);
-      this.controlHighlightPaint.setFill();
-
-      if (typeof(e.contextObject.animParam.highlight) != 'undefined') {
-        this.controlFeaturePaint.setStroke();
-        canvas.drawLine(this.controlFeaturePaint, dx + 3 + w * e.contextObject.animParam.highlight, 18 + dy + 3, dx + 3 + w * e.contextObject.animParam.highlight, itemHeight + dy + 18);
-        this.controlFeaturePaint.setFill();
-      }
-      Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, w - 5 - 18);
-    }
-    else if (e.type == 'spline2D') {
-      canvas.drawText(this.fontPaint, e.title, dx + 3, dy + 13);
-      var itemHeight = w;
-      var itemColor = this.controlBgPaint;
-      canvas.drawRect(itemColor, dx + 3, 18 + dy + 3, dx + itemHeight - 5, itemHeight + dy + 18);
-      var path = new plask.SkPath();
-      path.moveTo(dx + 3, itemHeight + dy + 18)
-      for(var j=0; j<=40; j++) {
-        var p = e.contextObject[e.attributeName].getPointAt(j/40);
-        var x = p.x * (w - dx);
-        var y = p.y * itemHeight * 0.99;
-        path.lineTo(dx + 3 + x,  itemHeight + dy + 18 - y);
-      }
-      this.controlHighlightPaint.setStroke();
-      canvas.drawPath(this.controlHighlightPaint, path);
-      this.controlHighlightPaint.setFill();
-
-      if (typeof(e.contextObject.animParam.highlight) != 'undefined') {
-        this.controlFeaturePaint.setStroke();
-        canvas.drawLine(this.controlFeaturePaint, dx + 3 + w * e.contextObject.animParam.highlight, 18 + dy + 3, dx + 3 + w * e.contextObject.animParam.highlight, itemHeight + dy + 18);
-        this.controlFeaturePaint.setFill();
-      }
     }
     else if (e.type == 'header') {
       canvas.drawRect(this.headerBgPaint, dx + 3, dy + 3, dx + w - 3, dy + eh - 5);
