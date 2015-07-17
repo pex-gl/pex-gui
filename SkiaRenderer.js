@@ -142,24 +142,6 @@ SkiaRenderer.prototype.draw = function(items, scale) {
       canvas.drawText(this.fontPaint, items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
       Rect.set4(e.activeArea, dx + 4, dy + 18, w - 3 - 3, eh - 5 - 18);
     }
-    else if (e.type == 'vec2') {
-      var numSliders = 2;
-      for (var j = 0; j < numSliders; j++) {
-        canvas.drawRect(this.controlBgPaint, dx + 3, dy + 18 + j * 14 * scale, dx + w - 3, dy + 18 + (j + 1) * 14 * scale - 3);
-        canvas.drawRect(this.controlHighlightPaint, dx + 3, dy + 18 + j * 14 * scale, dx + 3 + (w - 6) * e.getNormalizedValue(j), dy + 18 + (j + 1) * 14 * scale - 3);
-      }
-      canvas.drawText(this.fontPaint, items[i].title + ' : ' + e.getStrValue(), dx + 3, dy + 13);
-      Rect.set4(e.activeArea, dx + 4, dy + 18, w - 3 - 3, eh - 5 - 18);
-    }
-    else if (e.type == 'vec3') {
-      var numSliders = 3;
-      for (var j = 0; j < numSliders; j++) {
-        canvas.drawRect(this.controlBgPaint, dx + 3, dy + 18 + j * 14 * scale, dx + w - 3, dy + 18 + (j + 1) * 14 * scale - 3);
-        canvas.drawRect(this.controlHighlightPaint, dx + 3, dy + 18 + j * 14 * scale, dx + 3 + (w - 6) * e.getNormalizedValue(j), dy + 18 + (j + 1) * 14 * scale - 3);
-      }
-      canvas.drawText(this.fontPaint, items[i].title + ' : ' + e.getStrValue(), dx + 3, dy + 13);
-      Rect.set4(e.activeArea, dx + 4, dy + 18, w - 3 - 3, eh - 5 - 18);
-    }
     else if (e.type == 'color') {
       var numSliders = e.options.alpha ? 4 : 3;
       for (var j = 0; j < numSliders; j++) {
@@ -167,7 +149,7 @@ SkiaRenderer.prototype.draw = function(items, scale) {
         canvas.drawRect(this.controlHighlightPaint, dx + 3, dy + 18 + j * 14 * scale, dx + 3 + (w - 6) * e.getNormalizedValue(j), dy + 18 + (j + 1) * 14 * scale - 3);
       }
       var c = e.getValue();
-      this.colorPaint.setColor(255*c.r, 255*c.g, 255*c.b, 255);
+      this.colorPaint.setColor(255*c[0], 255*c[1], 255*c[2], 255);
       canvas.drawRect(this.colorPaint, dx + w - 12 - 3, dy + 3, dx + w - 3, dy + 3 + 12);
       if (e.options.paletteImage) {
         canvas.drawCanvas(this.imagePaint, e.options.paletteImage, dx + 3, dy + 18 + 14 * numSliders, dx + w - 3, dy + 18 + 14 * numSliders + w * e.options.paletteImage.height/e.options.paletteImage.width);
@@ -182,7 +164,7 @@ SkiaRenderer.prototype.draw = function(items, scale) {
       Rect.set4(e.activeArea, dx + 3, dy + 3, w - 3 - 3, eh - 5);
       if (e.options.color) {
         var c = e.options.color;
-        this.controlFeaturePaint.setColor(255 * c.x, 255 * c.y, 255 * c.z, 255);
+        this.controlFeaturePaint.setColor(255 * c[0], 255 * c[1], 255 * c[2], 255);
         canvas.drawRect(this.controlFeaturePaint, dx + w - 8, dy + 3, dx + w - 3, dy + eh - 5);
       }
       canvas.drawText(btnFont, items[i].title, dx + 5, dy + 15);

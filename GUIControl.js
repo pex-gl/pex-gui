@@ -1,3 +1,6 @@
+var rgb2hsl = require('float-rgb2hsl');
+var hsl2rgb = require('float-hsl2rgb');
+
 function GUIControl(o) {
   for (var i in o) {
     this[i] = o[i];
@@ -20,23 +23,12 @@ GUIControl.prototype.getNormalizedValue = function(idx) {
     if (this.type == 'multislider') {
       val = (val[idx] - options.min) / (options.max - options.min);
     }
-    else if (this.type == 'vec2') {
-      if (idx == 0) val = val.x;
-      if (idx == 1) val = val.y;
-      val = (val - options.min) / (options.max - options.min);
-    }
-    else if (this.type == 'vec3') {
-      if (idx == 0) val = val.x;
-      if (idx == 1) val = val.y;
-      if (idx == 2) val = val.z;
-      val = (val - options.min) / (options.max - options.min);
-    }
     else if (this.type == 'color') {
-      var hsla = val.getHSL();
-      if (idx == 0) val = hsla.h;
-      if (idx == 1) val = hsla.s;
-      if (idx == 2) val = hsla.l;
-      if (idx == 3) val = hsla.a;
+      var hsl = rgb2hsl(val);
+      if (idx == 0) val = hsl[0];
+      if (idx == 1) val = hsl[1];
+      if (idx == 2) val = hsl[2];
+      if (idx == 3) val = val[4];
     }
     else {
       val = (val - options.min) / (options.max - options.min);
@@ -60,29 +52,20 @@ GUIControl.prototype.setNormalizedValue = function(val, idx) {
       a[idx] = options.min + val * (options.max - options.min);
       val = a;
     }
-    else if (this.type == 'vec2') {
-      var c = this.contextObject[this.attributeName];
-      var val = options.min + val * (options.max - options.min);
-      if (idx == 0) c.x = val;
-      if (idx == 1) c.y = val;
-      val = c;
-    }
-    else if (this.type == 'vec3') {
-      var val = options.min + val * (options.max - options.min);
-      var c = this.contextObject[this.attributeName];
-      if (idx == 0) c.x = val;
-      if (idx == 1) c.y = val;
-      if (idx == 2) c.z = val;
-      val = c;
-    }
     else if (this.type == 'color') {
       var c = this.contextObject[this.attributeName];
-      var hsla = c.getHSL();
-      if (idx == 0) hsla.h = val;
-      if (idx == 1) hsla.s = val;
-      if (idx == 2) hsla.l = val;
-      if (idx == 3) hsla.a = val;
-      c.setHSL(hsla.h, hsla.s, hsla.l, hsla.a);
+      var hsl = rgb2hsl(c);
+      if (idx == 0) hsl[0] = val;
+      if (idx == 1) hsl[1] = val;
+      if (idx == 2) hsl[2] = val;
+      if (idx == 3) c[4] = val;
+
+      if (idx != 3) {
+          var rgb = hsl2rgb(hsl);
+          c[0] = rgb[0];
+          c[1] = rgb[1];
+          c[2] = rgb[2];
+      }
       val = c;
     }
     else {

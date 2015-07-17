@@ -24,26 +24,6 @@ if (isBrowser) {
     FRAG = 'precision highp float;\n' + FRAG;
 }
 
-
-/*
-var Context = glu.Context;
-var ScreenImage = glu.ScreenImage;
-var Vec2 = geom.Vec2;
-var Vec3 = geom.Vec3;
-var Rect = geom.Rect;
-var Spline1D = geom.Spline1D;
-var Spline2D = geom.Spline2D;
-var IO = sys.IO;
-var Color = color.Color;
-
-var VK_BACKSPACE = Platform.isPlask ? 51 : 8;
-*/
-
-//`window` - parent window
-//`x` - gui x position
-//`y` - gui y position
-//`scale` - slider scale, usefull for touch
-//do not mistake that for highdpi as his is handled automatically based on window.settings.highdpi
 function GUI(ctx, windowWidth, windowHeight) {
     this._ctx = ctx;
     this._windowWidth = windowWidth;
@@ -69,8 +49,7 @@ function GUI(ctx, windowWidth, windowHeight) {
     }
 
     this.screenBounds = [0, 0, windowWidth, windowHeight];
-    //TODO:
-    //this.screenImage = this.gl ? new ScreenImage(this.renderer.getTexture(), this.x, this.y, window.width, window.height, window.width, window.height) : null;
+
     this.items = [];
     this.enabled = true;
 }
@@ -398,37 +377,23 @@ GUI.prototype.addParam = function (title, contextObject, attributeName, options,
         this.items.push(ctrl);
         return ctrl;
     }
+    else if ((contextObject[attributeName] instanceof Array) && (options && options.type == 'color')) {
+        var ctrl = new GUIControl({
+            type: 'color',
+            title: title,
+            contextObject: contextObject,
+            attributeName: attributeName,
+            activeArea: [[0, 0], [0, 0]],
+            options: options,
+            onchange: onchange,
+            dirty: true
+        });
+        this.items.push(ctrl);
+        return ctrl;
+    }
     else if (contextObject[attributeName] instanceof Array) {
         var ctrl = new GUIControl({
             type: 'multislider',
-            title: title,
-            contextObject: contextObject,
-            attributeName: attributeName,
-            activeArea: [[0, 0], [0, 0]],
-            options: options,
-            onchange: onchange,
-            dirty: true
-        });
-        this.items.push(ctrl);
-        return ctrl;
-    }
-    else if (contextObject[attributeName] instanceof Vec2) {
-        var ctrl = new GUIControl({
-            type: 'vec2',
-            title: title,
-            contextObject: contextObject,
-            attributeName: attributeName,
-            activeArea: [[0, 0], [0, 0]],
-            options: options,
-            onchange: onchange,
-            dirty: true
-        });
-        this.items.push(ctrl);
-        return ctrl;
-    }
-    else if (contextObject[attributeName] instanceof Vec3) {
-        var ctrl = new GUIControl({
-            type: 'vec3',
             title: title,
             contextObject: contextObject,
             attributeName: attributeName,
@@ -454,21 +419,7 @@ GUI.prototype.addParam = function (title, contextObject, attributeName, options,
         this.items.push(ctrl);
         return ctrl;
     }
-    else if (contextObject[attributeName] instanceof Color) {
-        var ctrl = new GUIControl({
-            type: 'color',
-            title: title,
-            contextObject: contextObject,
-            attributeName: attributeName,
-            activeArea: [[0, 0], [0, 0]],
-            options: options,
-            onchange: onchange,
-            dirty: true
-        });
-        this.items.push(ctrl);
-        return ctrl;
-    }
- else if (contextObject[attributeName] instanceof Spline1D) {
+    else if (contextObject[attributeName] instanceof Spline1D) {
         var ctrl = new GUIControl({
             type: 'spline1D',
             title: title,
@@ -578,7 +529,6 @@ GUI.prototype.draw = function () {
     ctx.bindMesh(this.rectMesh);
     ctx.bindTexture(this.renderer.getTexture())
     ctx.drawMesh();
-    //TODO: this.screenImage.draw();
     //TODO: this.drawTextures();
     ctx.popState(ctx.DEPTH_BIT | ctx.BLEND_BIT);
 };
