@@ -1,4 +1,9 @@
 var Rect = require('pex-geom/Rect');
+var rgb2hex = require('rgb-hex');
+
+function floatRgb2Hex(rgb) {
+    return rgb2hex(Math.floor(rgb[0] * 255), Math.floor(rgb[1] * 255), Math.floor(rgb[2] * 255));
+}
 
 function HTMLCanvasRenderer(ctx, width, height) {
   this._ctx = ctx;
@@ -52,11 +57,11 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
     var eh = 20 * scale;
     if (e.type == 'slider') eh = 20 * scale + 14;
     if (e.type == 'toggle') eh = 20 * scale;
-    if (e.type == 'multislider') eh = 18 + e.getValue().length * 20 * scale;
+    if (e.type == 'multislider') eh = 20 + e.getValue().length * 14 * scale;
     if (e.type == 'color') eh = 20 + (e.options.alpha ? 4 : 3) * 14 * scale;
     if (e.type == 'color' && e.options.paletteImage) eh += (w * e.options.paletteImage.height/e.options.paletteImage.width + 2) * scale;
     if (e.type == 'button') eh = 24 * scale;
-    if (e.type == 'texture2D') eh = 24 + e.texture.height * w / e.texture.width;
+    if (e.type == 'texture2D') eh = 24 + e.texture[0] * w / e.texture[1];
     if (e.type == 'radiolist') eh = 18 + e.items.length * 20 * scale;
     if (e.type == 'texturelist') {
       cellSize = Math.floor((w - 2*margin) / e.itemsPerRow);
@@ -72,7 +77,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
     }
 
     if (e.options && e.options.palette && !e.options.paletteImage) {
-        function makePaletteImage(e) {
+        function makePaletteImage(img) {
             var canvas = document.createElement('canvas');
             canvas.width = w;
             canvas.height = w * img.height / img.width;
@@ -104,6 +109,17 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
     }
+    else if (e.type == 'multislider') {
+      for (var j = 0; j < e.getValue().length; j++) {
+        ctx.fillStyle = 'rgba(150, 150, 150, 1)';
+        ctx.fillRect(dx + 3, dy + 18 + j * 14 * scale, w - 6, 14 * scale - 3);
+        ctx.fillStyle = 'rgba(255, 255, 0, 1)';
+        ctx.fillRect(dx + 3, dy + 18 + j * 14 * scale, (w - 6) * e.getNormalizedValue(j), 14 * scale - 3);
+      }
+      Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
+      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+      ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13);
+    }
     else if (e.type == 'color') {
       var numSliders = e.options.alpha ? 4 : 3;
       for (var j = 0; j < numSliders; j++) {
@@ -112,10 +128,9 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
         ctx.fillStyle = 'rgba(255, 255, 0, 1)';
         ctx.fillRect(dx + 3, dy + 18 + j * 14 * scale, (w - 6) * e.getNormalizedValue(j), 14 * scale - 3);
       }
-      ctx.fillStyle = e.contextObject[e.attributeName].getHex();
+      ctx.fillStyle = '#' + floatRgb2Hex(e.contextObject[e.attributeName]);
       ctx.fillRect(dx + w - 12 - 3, dy + 3, 12, 12);
       if (e.options.paletteImage) {
-        console.log('e.options.paletteImage')
         ctx.drawImage(e.options.paletteImage, dx + 3, dy + 18 + 14 * numSliders, w - 6, w * e.options.paletteImage.height/e.options.paletteImage.width);
       }
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
@@ -130,7 +145,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       ctx.fillText(items[i].title, dx + 5, dy + 15);
       if (e.options.color) {
         var c = e.options.color;
-        ctx.fillStyle = 'rgba(' + c.x * 255 + ', ' + c.y * 255 + ', ' + c.z * 255 + ', 1)';
+        ctx.fillStyle = 'rgba(' + c[0] * 255 + ', ' + c[1] * 255 + ', ' + c[2] * 255 + ', 1)';
         ctx.fillRect(dx + w - 8, dy + 3, 5, eh - 5 - 3);
       }
     }
@@ -173,7 +188,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
           shrink = 2;
         }
         if (!e.items[j].activeArea) {
-          e.items[j].activeArea = new Rect();
+          e.items[j].activeArea = [[0,0], [0,0]];
         }
         Rect.set4(e.items[j].activeArea, dx + 3 + col * cellSize + shrink, dy + 18 + row * cellSize + shrink, cellSize - 1 - 2 * shrink, cellSize - 1 - 2 * shrink);
       }
@@ -195,12 +210,12 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title, dx + 3, dy + 13);
       ctx.fillStyle = 'rgba(50, 50, 50, 1)';
-      ctx.fillRect(dx + 3, dy + 20, e.activeArea.width, e.activeArea.height);
+      ctx.fillRect(dx + 3, dy + 20, e.activeArea[1][0], e.activeArea[1][1]);
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(e.contextObject[e.attributeName], dx + 3 + 3, dy + 15 + 20);
       if (e.focus) {
         ctx.strokeStyle = 'rgba(255, 255, 0, 1)';
-        ctx.strokeRect(e.activeArea.x-0.5, e.activeArea.y-0.5, e.activeArea.width, e.activeArea.height);
+        ctx.strokeRect(e.activeArea[0][0]-0.5, e.activeArea[0][1]-0.5, e.activeArea[1][0], e.activeArea[1][1]);
       }
     }
     else if (e.type == 'separator') {
