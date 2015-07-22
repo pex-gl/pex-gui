@@ -3,6 +3,7 @@ var GUIControl = require('./GUIControl');
 var SkiaRenderer = require('./SkiaRenderer');
 var HTMLCanvasRenderer = require('./HTMLCanvasRenderer');
 var Rect = require('pex-geom/Rect');
+var KeyboardEvent = require('pex-sys/KeyboardEvent');
 
 var VERT = '\
 attribute vec4 aPosition; \
@@ -159,7 +160,7 @@ GUI.prototype.onMouseDown = function (e) {
       else if (this.activeControl.type == 'text') {
         this.activeControl.focus = true;
       }
-      e.handled = true;
+      e.stopPropagation()
       this.onMouseDrag(e);
       break;
     }
@@ -221,7 +222,7 @@ GUI.prototype.onMouseDrag = function (e) {
             if (this.activeControl.onchange) {
               this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName]);
             }
-            e.handled = true;
+            e.stopPropagation()
             return;
           }
       }
@@ -241,7 +242,7 @@ GUI.prototype.onMouseDrag = function (e) {
       }
       this.activeControl.dirty = true;
     }
-    e.handled = true;
+    e.stopPropagation()
   }
 };
 
@@ -257,10 +258,31 @@ GUI.prototype.onMouseUp = function (e) {
 };
 
 GUI.prototype.onKeyDown = function (e) {
-  if (e.handled) return;
   var focusedItem = this.items.filter(function(item) { return item.type == 'text' && item.focus})[0];
-  if (focusedItem) {
-    e.handled = true;
+  if (!focusedItem) {
+      return;
+  }
+
+  switch(e.keyCode) {
+    case KeyboardEvent.VK_BACKSPACE:
+      var str = focusedItem.contextObject[focusedItem.attributeName];
+      focusedItem.contextObject[focusedItem.attributeName] = str.substr(0, Math.max(0, str.length-1));
+      focusedItem.dirty = true;
+      if (focusedItem.onchange) {
+        focusedItem.onchange(focusedItem.contextObject[focusedItem.attributeName]);
+      }
+      e.stopPropagation()
+      break;
+
+  }
+}
+
+GUI.prototype.onKeyPress = function (e) {
+    var focusedItem = this.items.filter(function(item) { return item.type == 'text' && item.focus})[0];
+    if (!focusedItem) {
+        return;
+    }
+
     var c = e.str.charCodeAt(0);
     if (c >= 32 && c <= 126) {
       focusedItem.contextObject[focusedItem.attributeName] += e.str;
@@ -268,21 +290,8 @@ GUI.prototype.onKeyDown = function (e) {
       if (focusedItem.onchange) {
         focusedItem.onchange(focusedItem.contextObject[focusedItem.attributeName]);
       }
+      e.stopPropagation()
     }
-    else {
-      switch(e.keyCode) {
-        case VK_BACKSPACE:
-          var str = focusedItem.contextObject[focusedItem.attributeName];
-          focusedItem.contextObject[focusedItem.attributeName] = str.substr(0, Math.max(0, str.length-1));
-          focusedItem.dirty = true;
-          if (focusedItem.onchange) {
-            focusedItem.onchange(focusedItem.contextObject[focusedItem.attributeName]);
-          }
-          break;
-      }
-    }
-    e.handled = true;
-  }
 }
 
 GUI.prototype.addHeader = function (title) {

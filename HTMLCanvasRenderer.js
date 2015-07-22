@@ -210,12 +210,12 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title, dx + 3, dy + 13);
       ctx.fillStyle = 'rgba(50, 50, 50, 1)';
-      ctx.fillRect(dx + 3, dy + 20, e.activeArea[1][0], e.activeArea[1][1]);
+      ctx.fillRect(dx + 3, dy + 20, e.activeArea[1][0] - e.activeArea[0][0], e.activeArea[1][1] - e.activeArea[0][1]);
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(e.contextObject[e.attributeName], dx + 3 + 3, dy + 15 + 20);
       if (e.focus) {
         ctx.strokeStyle = 'rgba(255, 255, 0, 1)';
-        ctx.strokeRect(e.activeArea[0][0]-0.5, e.activeArea[0][1]-0.5, e.activeArea[1][0], e.activeArea[1][1]);
+        ctx.strokeRect(e.activeArea[0][0]-0.5, e.activeArea[0][1]-0.5, e.activeArea[1][0] - e.activeArea[0][0], e.activeArea[1][1] - e.activeArea[0][1]);
       }
     }
     else if (e.type == 'separator') {

@@ -225,7 +225,7 @@ SkiaRenderer.prototype.draw = function(items, scale) {
       canvas.drawText(this.fontPaint, e.contextObject[e.attributeName], dx + 3 + 3, dy + 15 + 20);
       Rect.set4(e.activeArea, dx + 3, dy + 20, w - 6, eh - 20 - 5);
       if (e.focus) {
-        canvas.drawRect(this.textBorderPaint, e.activeArea.x, e.activeArea.y, e.activeArea.x + e.activeArea.width, e.activeArea.y + e.activeArea.height);
+        canvas.drawRect(this.textBorderPaint, e.activeArea[0][0], e.activeArea[0][1], e.activeArea[1][0], e.activeArea[1][1]);
       }
     }
     else if (e.type == 'separator') {
