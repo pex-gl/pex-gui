@@ -92,7 +92,7 @@ GUI.prototype.onMouseDown = function (e) {
       this.activeControl.active = true;
       this.activeControl.dirty = true;
       if (this.activeControl.type == 'button') {
-        this.activeControl.contextObject[this.activeControl.methodName]();
+        if (this.activeControl.onclick) this.activeControl.onclick();
       }
       else if (this.activeControl.type == 'toggle') {
         this.activeControl.contextObject[this.activeControl.attributeName] = !this.activeControl.contextObject[this.activeControl.attributeName];
@@ -410,15 +410,14 @@ GUI.prototype.addParam = function (title, contextObject, attributeName, options,
     }
 };
 
-GUI.prototype.addButton = function (title, contextObject, methodName, options) {
+GUI.prototype.addButton = function (title, onclick) {
     var ctrl = new GUIControl({
         type: 'button',
         title: title,
-        contextObject: contextObject,
-        methodName: methodName,
+        onclick: onclick,
         activeArea: [[0, 0], [0, 0]],
         dirty: true,
-        options: options || {}
+        options: {}
     });
     this.items.push(ctrl);
     return ctrl;
