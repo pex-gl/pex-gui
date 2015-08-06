@@ -25,6 +25,7 @@
   "dependencies": {
     "float-hsl2rgb": "^1.0.2",
     "float-rgb2hsl": "^1.0.1",
+    "is-browser": "^2.0.1",
     "rgb-hex": "^1.0.0"
   },
   "repository": {
