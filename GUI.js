@@ -24,15 +24,30 @@ void main() { \
     gl_Position = vec4(pos, 0.0, 1.0); \
 }';
 
-var FRAG = '\
+var TEXTURE_2D_FRAG = '\
 varying vec2 vTexCoord0; \
 uniform sampler2D uTexture; \
 void main() { \
     gl_FragColor = texture2D(uTexture, vTexCoord0); \
 }';
 
+var TEXTURE_CUBE_FRAG = '\
+const float PI = 3.1415926; \
+varying vec2 vTexCoord0; \
+uniform samplerCube uTexture; \
+void main() { \
+    float theta = vTexCoord0.x * 2.0 * PI + PI/2.0; \
+    float phi = vTexCoord0.y * PI; \
+    float x = cos(theta) * sin(phi); \
+    float y = sin(theta) * sin(phi); \
+    float z = cos(phi); \
+    vec3 N = normalize(vec3(x, z, y)); \
+    gl_FragColor = textureCube(uTexture, N); \
+}';
+
 if (isBrowser) {
-    FRAG = 'precision highp float;\n' + FRAG;
+    TEXTURE_2D_FRAG = 'precision highp float;\n' + TEXTURE_2D_FRAG;
+    TEXTURE_CUBE_FRAG = 'precision highp float;\n' + TEXTURE_CUBE_FRAG;
 }
 
 function GUI(ctx, windowWidth, windowHeight) {
@@ -48,7 +63,8 @@ function GUI(ctx, windowWidth, windowHeight) {
     this.mousePos = [0, 0];
     this.scale = 1;
 
-    this.rectProgram = ctx.createProgram(VERT, FRAG);
+    this.texture2DProgram = ctx.createProgram(VERT, TEXTURE_2D_FRAG);
+    this.textureCubeProgram = ctx.createProgram(VERT, TEXTURE_CUBE_FRAG);
     this.rectMesh = ctx.createMesh([
         { data: [[-1,-1], [1,-1], [1, 1], [-1, 1]], location: ctx.ATTRIB_POSITION },
         { data: [[ 0, 1], [1, 1], [1, 0], [ 0, 0]], location: ctx.ATTRIB_TEX_COORD_0 }
@@ -466,6 +482,18 @@ GUI.prototype.addTexture2D = function (title, texture) {
     return ctrl;
 };
 
+GUI.prototype.addTextureCube = function(title, texture) {
+    var ctrl = new GUIControl({
+        type: 'textureCube',
+        title: title,
+        texture: texture,
+        activeArea: [[0, 0], [0, 0]],
+        dirty: true
+    });
+    this.items.push(ctrl);
+    return ctrl;
+};
+
 GUI.prototype.dispose = function () {
 };
 
@@ -485,13 +513,19 @@ GUI.prototype.draw = function () {
     ctx.setDepthTest(false);
     ctx.setBlend(true);
     ctx.setBlendFunc(ctx.SRC_ALPHA, ctx.ONE_MINUS_SRC_ALPHA);
-    ctx.bindProgram(this.rectProgram);
-    this.rectProgram.setUniform('uTexture', 0);
-    this.rectProgram.setUniform('uWindowSize', this._windowSize);
-    this.rectProgram.setUniform('uRect', this._textureRect);
+    ctx.bindProgram(this.texture2DProgram);
+    this.texture2DProgram.setUniform('uTexture', 0);
+    this.texture2DProgram.setUniform('uWindowSize', this._windowSize);
+    this.texture2DProgram.setUniform('uRect', this._textureRect);
     ctx.bindMesh(this.rectMesh);
     ctx.bindTexture(this.renderer.getTexture())
     ctx.drawMesh();
+
+    ctx.bindProgram(this.textureCubeProgram);
+    this.textureCubeProgram.setUniform('uTexture', 0);
+    this.textureCubeProgram.setUniform('uWindowSize', this._windowSize);
+
+
     this.drawTextures();
     ctx.popState(ctx.DEPTH_BIT | ctx.BLEND_BIT);
 };
@@ -504,16 +538,25 @@ GUI.prototype.drawTextures = function () {
     if (item.type == 'texture2D') {
       var bounds = [item.activeArea[0][0] * scale, item.activeArea[0][1] * scale, item.activeArea[1][0] * scale, item.activeArea[1][1] * scale];
       ctx.bindTexture(item.texture);
-      this.rectProgram.setUniform('uRect', bounds);
+      ctx.bindProgram(this.texture2DProgram);
+      this.texture2DProgram.setUniform('uRect', bounds);
       ctx.drawMesh();
     }
     if (item.type == 'texturelist') {
+        ctx.bindProgram(this.texture2DProgram);
       item.items.forEach(function(textureItem) {
         var bounds = [textureItem.activeArea[0][0] * scale, textureItem.activeArea[0][1] * scale, textureItem.activeArea[1][0] * scale, textureItem.activeArea[1][1] * scale];
-        this.rectProgram.setUniform('uRect', bounds);
+        this.texture2DProgram.setUniform('uRect', bounds);
         ctx.bindTexture(textureItem.texture);
         ctx.drawMesh();
       }.bind(this));
+    }
+    if (item.type == 'textureCube') {
+        ctx.bindProgram(this.textureCubeProgram);
+      var bounds = [item.activeArea[0][0] * scale, item.activeArea[0][1] * scale, item.activeArea[1][0] * scale, item.activeArea[1][1] * scale];
+      ctx.bindTexture(item.texture);
+      this.textureCubeProgram.setUniform('uRect', bounds);
+      ctx.drawMesh();
     }
   }
   //this.screenImage.setBounds(this.screenBounds);

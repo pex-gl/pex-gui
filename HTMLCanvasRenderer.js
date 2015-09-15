@@ -62,6 +62,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
     if (e.type == 'color' && e.options.paletteImage) eh += (w * e.options.paletteImage.height/e.options.paletteImage.width + 2) * scale;
     if (e.type == 'button') eh = 24 * scale;
     if (e.type == 'texture2D') eh = 24 + e.texture.getWidth() * w / e.texture.getHeight();
+    if (e.type == 'textureCube') eh = w / 2;
     if (e.type == 'radiolist') eh = 18 + e.items.length * 20 * scale;
     if (e.type == 'texturelist') {
       cellSize = Math.floor((w - 2*margin) / e.itemsPerRow);
@@ -195,6 +196,11 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       Rect.set4(e.activeArea, dx + 3, 18 + dy + 3, w - 3 - 3, cellSize * numRows - 5);
     }
     else if (e.type == 'texture2D') {
+      ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+      ctx.fillText(items[i].title, dx + 5, dy + 15);
+      Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
+    }
+    else if (e.type == 'textureCube') {
       ctx.fillStyle = 'rgba(255, 255, 255, 1)';
       ctx.fillText(items[i].title, dx + 5, dy + 15);
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18);
