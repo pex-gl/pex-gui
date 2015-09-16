@@ -35,13 +35,14 @@ var TEXTURE_CUBE_FRAG = '\
 const float PI = 3.1415926; \
 varying vec2 vTexCoord0; \
 uniform samplerCube uTexture; \
+const float flipEnvMap = -1.0; \
 void main() { \
-    float theta = vTexCoord0.x * 2.0 * PI + PI/2.0; \
+    float theta = vTexCoord0.x * 2.0 * PI - PI/2.0; \
     float phi = vTexCoord0.y * PI; \
     float x = cos(theta) * sin(phi); \
-    float y = sin(theta) * sin(phi); \
-    float z = cos(phi); \
-    vec3 N = normalize(vec3(x, z, y)); \
+    float y = cos(phi); \
+    float z = sin(theta) * sin(phi); \
+    vec3 N = normalize(vec3(flipEnvMap * x, y, z)); \
     gl_FragColor = textureCube(uTexture, N); \
 }';
 
@@ -531,19 +532,19 @@ GUI.prototype.draw = function () {
 };
 
 GUI.prototype.drawTextures = function () {
-    var ctx = this._ctx;
+  var ctx = this._ctx;
   for (var i = 0; i < this.items.length; i++) {
     var item = this.items[i];
     var scale = this.scale * this.highdpi;
     if (item.type == 'texture2D') {
       var bounds = [item.activeArea[0][0] * scale, item.activeArea[0][1] * scale, item.activeArea[1][0] * scale, item.activeArea[1][1] * scale];
-      ctx.bindTexture(item.texture);
       ctx.bindProgram(this.texture2DProgram);
+      ctx.bindTexture(item.texture);
       this.texture2DProgram.setUniform('uRect', bounds);
       ctx.drawMesh();
     }
     if (item.type == 'texturelist') {
-        ctx.bindProgram(this.texture2DProgram);
+    tx.bindProgram(this.texture2DProgram);
       item.items.forEach(function(textureItem) {
         var bounds = [textureItem.activeArea[0][0] * scale, textureItem.activeArea[0][1] * scale, textureItem.activeArea[1][0] * scale, textureItem.activeArea[1][1] * scale];
         this.texture2DProgram.setUniform('uRect', bounds);
