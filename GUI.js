@@ -35,6 +35,7 @@ var TEXTURE_CUBE_FRAG = '\
 const float PI = 3.1415926; \
 varying vec2 vTexCoord0; \
 uniform samplerCube uTexture; \
+uniform float uHDR; \
 const float flipEnvMap = -1.0; \
 void main() { \
     float theta = vTexCoord0.x * 2.0 * PI - PI/2.0; \
@@ -44,6 +45,9 @@ void main() { \
     float z = sin(theta) * sin(phi); \
     vec3 N = normalize(vec3(flipEnvMap * x, y, z)); \
     gl_FragColor = textureCube(uTexture, N); \
+    if (uHDR == 1.0) { \
+        gl_FragColor.rgb = 1.0 / (gl_FragColor.rgb + 1.0); \
+    }\
 }';
 
 if (isBrowser) {
@@ -483,11 +487,12 @@ GUI.prototype.addTexture2D = function (title, texture) {
     return ctrl;
 };
 
-GUI.prototype.addTextureCube = function(title, texture) {
+GUI.prototype.addTextureCube = function(title, texture, options) {
     var ctrl = new GUIControl({
         type: 'textureCube',
         title: title,
         texture: texture,
+        options: options,
         activeArea: [[0, 0], [0, 0]],
         dirty: true
     });
@@ -556,7 +561,9 @@ GUI.prototype.drawTextures = function () {
         ctx.bindProgram(this.textureCubeProgram);
       var bounds = [item.activeArea[0][0] * scale, item.activeArea[0][1] * scale, item.activeArea[1][0] * scale, item.activeArea[1][1] * scale];
       ctx.bindTexture(item.texture);
+      var hdr = item.options && item.options.hdr;
       this.textureCubeProgram.setUniform('uRect', bounds);
+      this.textureCubeProgram.setUniform('uHDR', hdr ? 1 : 0);
       ctx.drawMesh();
     }
   }
