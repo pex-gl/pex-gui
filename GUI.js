@@ -27,8 +27,13 @@ void main() { \
 var TEXTURE_2D_FRAG = '\
 varying vec2 vTexCoord0; \
 uniform sampler2D uTexture; \
+uniform float uHDR; \
 void main() { \
     gl_FragColor = texture2D(uTexture, vTexCoord0); \
+    if (uHDR == 1.0) { \
+        gl_FragColor.rgb = gl_FragColor.rgb / (gl_FragColor.rgb + 1.0); \
+        gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(1.0/2.2)); \
+    }\
 }';
 
 var TEXTURE_CUBE_FRAG = '\
@@ -46,7 +51,8 @@ void main() { \
     vec3 N = normalize(vec3(flipEnvMap * x, y, z)); \
     gl_FragColor = textureCube(uTexture, N); \
     if (uHDR == 1.0) { \
-        gl_FragColor.rgb = 1.0 / (gl_FragColor.rgb + 1.0); \
+        gl_FragColor.rgb = gl_FragColor.rgb / (gl_FragColor.rgb + 1.0); \
+        gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(1.0/2.2)); \
     }\
 }';
 
@@ -475,11 +481,12 @@ GUI.prototype.addTexture2DList = function (title, contextObject, attributeName, 
     return ctrl;
 };
 
-GUI.prototype.addTexture2D = function (title, texture) {
+GUI.prototype.addTexture2D = function (title, texture, options) {
     var ctrl = new GUIControl({
         type: 'texture2D',
         title: title,
         texture: texture,
+        options: options,
         activeArea: [[0, 0], [0, 0]],
         dirty: true
     });
@@ -553,6 +560,7 @@ GUI.prototype.drawTextures = function () {
       item.items.forEach(function(textureItem) {
         var bounds = [textureItem.activeArea[0][0] * scale, textureItem.activeArea[0][1] * scale, textureItem.activeArea[1][0] * scale, textureItem.activeArea[1][1] * scale];
         this.texture2DProgram.setUniform('uRect', bounds);
+        this.texture2DProgram.setUniform('uHDR', item.options && item.options.hdr ? 1 : 0);
         ctx.bindTexture(textureItem.texture);
         ctx.drawMesh();
       }.bind(this));
@@ -561,9 +569,8 @@ GUI.prototype.drawTextures = function () {
         ctx.bindProgram(this.textureCubeProgram);
       var bounds = [item.activeArea[0][0] * scale, item.activeArea[0][1] * scale, item.activeArea[1][0] * scale, item.activeArea[1][1] * scale];
       ctx.bindTexture(item.texture);
-      var hdr = item.options && item.options.hdr;
       this.textureCubeProgram.setUniform('uRect', bounds);
-      this.textureCubeProgram.setUniform('uHDR', hdr ? 1 : 0);
+      this.textureCubeProgram.setUniform('uHDR', item.options && item.options.hdr ? 1 : 0);
       ctx.drawMesh();
     }
   }
