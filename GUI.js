@@ -14,12 +14,10 @@ varying vec2 vTexCoord0; \
 void main() { \
     vTexCoord0 = aTexCoord0; \
     vec2 pos = aPosition.xy * 0.5 + 0.5; \
-    pos.y = 1.0 - pos.y; \
     pos.x = uRect.x + pos.x * (uRect.z - uRect.x); \
     pos.y = uRect.y + pos.y * (uRect.w - uRect.y); \
     pos.x /= uWindowSize.x; \
     pos.y /= uWindowSize.y; \
-    pos.y = 1.0 - pos.y; \
     pos = (pos - 0.5) * 2.0; \
     gl_Position = vec4(pos, 0.0, 1.0); \
 }';
@@ -28,28 +26,29 @@ var TEXTURE_2D_FRAG = '\
 varying vec2 vTexCoord0; \
 uniform sampler2D uTexture; \
 uniform float uHDR; \
-uniform float uFlipY; \
 void main() { \
-    gl_FragColor = texture2D(uTexture, vec2(vTexCoord0.x, mix(vTexCoord0.y, 1.0 - vTexCoord0.y, uFlipY))); \
+    gl_FragColor = texture2D(uTexture, vec2(vTexCoord0.x, vTexCoord0.y)); \
     if (uHDR == 1.0) { \
         gl_FragColor.rgb = gl_FragColor.rgb / (gl_FragColor.rgb + 1.0); \
         gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(1.0/2.2)); \
     }\
 }';
 
+//we want normal (not fliped) cubemaps maps to be represented same way as
+//latlong panoramas so we flip by -1.0 by default
 var TEXTURE_CUBE_FRAG = '\
 const float PI = 3.1415926; \
 varying vec2 vTexCoord0; \
 uniform samplerCube uTexture; \
 uniform float uHDR; \
-uniform float uFlipEnvMap; \
+uniform float uFlipZ; \
 void main() { \
     float theta = vTexCoord0.x * 2.0 * PI - PI/2.0; \
     float phi = vTexCoord0.y * PI; \
     float x = cos(theta) * sin(phi); \
-    float y = cos(phi); \
+    float y = -cos(phi); \
     float z = sin(theta) * sin(phi); \
-    vec3 N = normalize(vec3(uFlipEnvMap * x, y, z)); \
+    vec3 N = normalize(vec3(x, y, -1.0 * uFlipZ * z)); \
     gl_FragColor = textureCube(uTexture, N); \
     if (uHDR == 1.0) { \
         gl_FragColor.rgb = gl_FragColor.rgb / (gl_FragColor.rgb + 1.0); \
@@ -79,7 +78,7 @@ function GUI(ctx, windowWidth, windowHeight) {
     this.textureCubeProgram = ctx.createProgram(VERT, TEXTURE_CUBE_FRAG);
     this.rectMesh = ctx.createMesh([
         { data: [[-1,-1], [1,-1], [1, 1], [-1, 1]], location: ctx.ATTRIB_POSITION },
-        { data: [[ 0, 1], [1, 1], [1, 0], [ 0, 0]], location: ctx.ATTRIB_TEX_COORD_0 }
+        { data: [[ 0, 0], [1, 0], [1, 1], [ 0, 1]], location: ctx.ATTRIB_TEX_COORD_0 }
     ],  { data: [[0, 1, 2], [0, 2, 3]] }
     );
 
@@ -502,7 +501,8 @@ GUI.prototype.addTextureCube = function(title, texture, options) {
         texture: texture,
         options: options,
         activeArea: [[0, 0], [0, 0]],
-        dirty: true
+        dirty: true,
+        flipZ: 1
     });
     this.items.push(ctrl);
     return ctrl;
@@ -531,7 +531,6 @@ GUI.prototype.draw = function () {
     this.texture2DProgram.setUniform('uTexture', 0);
     this.texture2DProgram.setUniform('uWindowSize', this._windowSize);
     this.texture2DProgram.setUniform('uRect', this._textureRect);
-    this.texture2DProgram.setUniform('uFlipY', 0);
     ctx.bindMesh(this.rectMesh);
     ctx.bindTexture(this.renderer.getTexture())
     ctx.drawMesh();
@@ -551,17 +550,18 @@ GUI.prototype.drawTextures = function () {
     var item = this.items[i];
     var scale = this.scale * this.highdpi;
     if (item.type == 'texture2D') {
-      var bounds = [item.activeArea[0][0] * scale, item.activeArea[0][1] * scale, item.activeArea[1][0] * scale, item.activeArea[1][1] * scale];
+      //we are trying to match flipped gui texture which 0,0 starts at the top with window coords that have 0,0 at the bottom
+      var bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale];
       ctx.bindProgram(this.texture2DProgram);
       ctx.bindTexture(item.texture);
       this.texture2DProgram.setUniform('uRect', bounds);
-      this.texture2DProgram.setUniform('uFlipY', (item.options && item.options.flipY) ? item.options.flipY : 0);
       ctx.drawMesh();
     }
     if (item.type == 'texturelist') {
-    tx.bindProgram(this.texture2DProgram);
+    ctx.bindProgram(this.texture2DProgram);
       item.items.forEach(function(textureItem) {
-        var bounds = [textureItem.activeArea[0][0] * scale, textureItem.activeArea[0][1] * scale, textureItem.activeArea[1][0] * scale, textureItem.activeArea[1][1] * scale];
+        //var bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale];
+        var bounds = [textureItem.activeArea[0][0] * scale, this._windowHeight - textureItem.activeArea[1][1] * scale, textureItem.activeArea[1][0] * scale, this._windowHeight - textureItem.activeArea[0][1] * scale];
         this.texture2DProgram.setUniform('uRect', bounds);
         this.texture2DProgram.setUniform('uHDR', item.options && item.options.hdr ? 1 : 0);
         ctx.bindTexture(textureItem.texture);
@@ -569,12 +569,13 @@ GUI.prototype.drawTextures = function () {
       }.bind(this));
     }
     if (item.type == 'textureCube') {
-        ctx.bindProgram(this.textureCubeProgram);
-      var bounds = [item.activeArea[0][0] * scale, item.activeArea[0][1] * scale, item.activeArea[1][0] * scale, item.activeArea[1][1] * scale];
+      ctx.bindProgram(this.textureCubeProgram);
+      //we are trying to match flipped gui texture which 0,0 starts at the top with window coords that have 0,0 at the bottom
+      var bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale];
       ctx.bindTexture(item.texture);
       this.textureCubeProgram.setUniform('uRect', bounds);
       this.textureCubeProgram.setUniform('uHDR', item.options && item.options.hdr ? 1 : 0);
-      this.textureCubeProgram.setUniform('uFlipEnvMap', item.options && item.options.flipEnvMap ? item.options.flipEnvMap : -1);
+      this.textureCubeProgram.setUniform('uFlipZ', item.options && item.options.flipZ ? item.options.flipZ : 1);
       ctx.drawMesh();
     }
   }
