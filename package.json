@@ -2,7 +2,7 @@
   "name": "pex-gui",
   "version": "1.0.0-alpha.1",
   "description": "GUI widgets for the pex library",
-  "homepage": "https://github.com/vorg/pex-gui.git",
+  "homepage": "https://github.com/pex-gl/pex-gui.git",
   "keywords": [
     "graphics",
     "gui",
@@ -22,8 +22,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vorg/pex-gui.git"
+    "url": "https://github.com/pex-gl/pex-gui.git"
   },
-  "bugs": "https://github.com/vorg/pex-gui/issues",
+  "bugs": "https://github.com/pex-gl/pex-gui/issues",
   "license": "MIT"
 }
