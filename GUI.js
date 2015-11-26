@@ -41,14 +41,13 @@ const float PI = 3.1415926; \
 varying vec2 vTexCoord0; \
 uniform samplerCube uTexture; \
 uniform float uHDR; \
-uniform float uFlipZ; \
 void main() { \
     float theta = vTexCoord0.x * 2.0 * PI - PI/2.0; \
     float phi = vTexCoord0.y * PI; \
     float x = cos(theta) * sin(phi); \
     float y = -cos(phi); \
     float z = sin(theta) * sin(phi); \
-    vec3 N = normalize(vec3(x, y, -1.0 * uFlipZ * z)); \
+    vec3 N = normalize(vec3(-1.0 * x, y, z)); \
     gl_FragColor = textureCube(uTexture, N); \
     if (uHDR == 1.0) { \
         gl_FragColor.rgb = gl_FragColor.rgb / (gl_FragColor.rgb + 1.0); \
@@ -575,7 +574,6 @@ GUI.prototype.drawTextures = function () {
       ctx.bindTexture(item.texture);
       this.textureCubeProgram.setUniform('uRect', bounds);
       this.textureCubeProgram.setUniform('uHDR', item.options && item.options.hdr ? 1 : 0);
-      this.textureCubeProgram.setUniform('uFlipZ', item.options && item.options.flipZ ? item.options.flipZ : 1);
       ctx.drawMesh();
     }
   }
