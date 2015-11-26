@@ -5,6 +5,12 @@ function floatRgb2Hex(rgb) {
     return rgb2hex(Math.floor(rgb[0] * 255), Math.floor(rgb[1] * 255), Math.floor(rgb[2] * 255));
 }
 
+/**
+ * [HTMLCanvasRenderer description]
+ * @param {[type]} ctx    [description]
+ * @param {[type]} width  [description]
+ * @param {[type]} height [description]
+ */
 function HTMLCanvasRenderer(ctx, width, height) {
   this._ctx = ctx;
   this.highdpi = 1;
@@ -17,6 +23,11 @@ function HTMLCanvasRenderer(ctx, width, height) {
   this.dirty = true;
 }
 
+/**
+ * [isAnyItemDirty description]
+ * @param  {[type]}  items [description]
+ * @return {Boolean}       [description]
+ */
 HTMLCanvasRenderer.prototype.isAnyItemDirty = function (items) {
   var dirty = false;
   items.forEach(function (item) {
@@ -28,6 +39,12 @@ HTMLCanvasRenderer.prototype.isAnyItemDirty = function (items) {
   return dirty;
 };
 
+/**
+ * [draw description]
+ * @param  {[type]} items [description]
+ * @param  {[type]} scale [description]
+ * @return {[type]}       [description]
+ */
 HTMLCanvasRenderer.prototype.draw = function (items, scale) {
   if (!this.isAnyItemDirty(items)) {
     return;
@@ -237,10 +254,21 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
   this.updateTexture();
 };
 
+/**
+ * [getTexture description]
+ * @return {[type]} [description]
+ */
 HTMLCanvasRenderer.prototype.getTexture = function () {
   return this.tex;
 };
 
+/**
+ * [function description]
+ * @param  {[type]} image [description]
+ * @param  {[type]} x     [description]
+ * @param  {[type]} y     [description]
+ * @return {[type]}       [description]
+ */
 HTMLCanvasRenderer.prototype.getImageColor = function(image, x, y) {
   var r = image.data[(x + y * image.width)*4 + 0]/255;
   var g = image.data[(x + y * image.width)*4 + 1]/255;
@@ -248,6 +276,10 @@ HTMLCanvasRenderer.prototype.getImageColor = function(image, x, y) {
   return [r, g, b];
 }
 
+/**
+ * [updateTexture description]
+ * @return {[type]} [description]
+ */
 HTMLCanvasRenderer.prototype.updateTexture = function () {
   var gl = this.gl;
 
