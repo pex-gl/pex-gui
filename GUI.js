@@ -60,6 +60,12 @@ if (isBrowser) {
     TEXTURE_CUBE_FRAG = 'precision highp float;\n' + TEXTURE_CUBE_FRAG;
 }
 
+/**
+ * [GUI description]
+ * @param {[type]} ctx          [description]
+ * @param {[type]} windowWidth  [description]
+ * @param {[type]} windowHeight [description]
+ */
 function GUI(ctx, windowWidth, windowHeight) {
     this._ctx = ctx;
     this._windowWidth = windowWidth;
@@ -94,6 +100,11 @@ function GUI(ctx, windowWidth, windowHeight) {
     this.enabled = true;
 }
 
+/**
+ * [onMouseDown description]
+ * @param  {[type]} e [description]
+ * @return {[type]}   [description]
+ */
 GUI.prototype.onMouseDown = function (e) {
   if (!this.enabled) return;
 
@@ -193,6 +204,11 @@ GUI.prototype.onMouseDown = function (e) {
   }
 };
 
+/**
+ * [onMouseDrag description]
+ * @param  {[type]} e [description]
+ * @return {[type]}   [description]
+ */
 GUI.prototype.onMouseDrag = function (e) {
   if (!this.enabled) return;
 
@@ -272,6 +288,11 @@ GUI.prototype.onMouseDrag = function (e) {
   }
 };
 
+/**
+ * [onMouseUp description]
+ * @param  {[type]} e [description]
+ * @return {[type]}   [description]
+ */
 GUI.prototype.onMouseUp = function (e) {
   if (!this.enabled) return;
 
@@ -283,6 +304,11 @@ GUI.prototype.onMouseUp = function (e) {
   }
 };
 
+/**
+ * [onKeyDown description]
+ * @param  {[type]} e [description]
+ * @return {[type]}   [description]
+ */
 GUI.prototype.onKeyDown = function (e) {
   var focusedItem = this.items.filter(function(item) { return item.type == 'text' && item.focus})[0];
   if (!focusedItem) {
@@ -303,6 +329,11 @@ GUI.prototype.onKeyDown = function (e) {
   }
 }
 
+/**
+ * [onKeyPress description]
+ * @param  {[type]} e [description]
+ * @return {[type]}   [description]
+ */
 GUI.prototype.onKeyPress = function (e) {
     var focusedItem = this.items.filter(function(item) { return item.type == 'text' && item.focus})[0];
     if (!focusedItem) {
@@ -320,6 +351,10 @@ GUI.prototype.onKeyPress = function (e) {
     }
 }
 
+/**
+ * [addHeader description]
+ * @param {[type]} title [description]
+ */
 GUI.prototype.addHeader = function (title) {
   var ctrl = new GUIControl({
     type: 'header',
@@ -335,6 +370,10 @@ GUI.prototype.addHeader = function (title) {
   return ctrl;
 };
 
+/**
+ * [addSeparator description]
+ * @param {[type]} title [description]
+ */
 GUI.prototype.addSeparator = function (title) {
   var ctrl = new GUIControl({
     type: 'separator',
@@ -345,6 +384,10 @@ GUI.prototype.addSeparator = function (title) {
   return ctrl;
 };
 
+/**
+ * [addLabel description]
+ * @param {[type]} title [description]
+ */
 GUI.prototype.addLabel = function (title) {
   var ctrl = new GUIControl({
     type: 'label',
@@ -360,6 +403,14 @@ GUI.prototype.addLabel = function (title) {
   return ctrl;
 };
 
+/**
+ * [addParam description]
+ * @param {[type]} title         [description]
+ * @param {[type]} contextObject [description]
+ * @param {[type]} attributeName [description]
+ * @param {[type]} options       [description]
+ * @param {[type]} onchange      [description]
+ */
 GUI.prototype.addParam = function (title, contextObject, attributeName, options, onchange) {
     options = options || {};
     if (typeof(options.min) == 'undefined') options.min = 0;
@@ -436,6 +487,11 @@ GUI.prototype.addParam = function (title, contextObject, attributeName, options,
     }
 };
 
+/**
+ * [addButton description]
+ * @param {[type]} title   [description]
+ * @param {[type]} onclick [description]
+ */
 GUI.prototype.addButton = function (title, onclick) {
     var ctrl = new GUIControl({
         type: 'button',
@@ -449,6 +505,14 @@ GUI.prototype.addButton = function (title, onclick) {
     return ctrl;
 };
 
+/**
+ * [addRadioList description]
+ * @param {[type]} title         [description]
+ * @param {[type]} contextObject [description]
+ * @param {[type]} attributeName [description]
+ * @param {[type]} items         [description]
+ * @param {[type]} onchange      [description]
+ */
 GUI.prototype.addRadioList = function (title, contextObject, attributeName, items, onchange) {
     var ctrl = new GUIControl({
         type: 'radiolist',
@@ -464,6 +528,15 @@ GUI.prototype.addRadioList = function (title, contextObject, attributeName, item
     return ctrl;
 };
 
+/**
+ * [addTexture2DList description]
+ * @param {[type]} title         [description]
+ * @param {[type]} contextObject [description]
+ * @param {[type]} attributeName [description]
+ * @param {[type]} items         [description]
+ * @param {[type]} itemsPerRow   [description]
+ * @param {[type]} onchange      [description]
+ */
 GUI.prototype.addTexture2DList = function (title, contextObject, attributeName, items, itemsPerRow, onchange) {
     var ctrl = new GUIControl({
         type: 'texturelist',
@@ -480,6 +553,12 @@ GUI.prototype.addTexture2DList = function (title, contextObject, attributeName, 
     return ctrl;
 };
 
+/**
+ * [addTexture2D description]
+ * @param {[type]} title   [description]
+ * @param {[type]} texture [description]
+ * @param {[type]} options [description]
+ */
 GUI.prototype.addTexture2D = function (title, texture, options) {
     var ctrl = new GUIControl({
         type: 'texture2D',
@@ -507,9 +586,17 @@ GUI.prototype.addTextureCube = function(title, texture, options) {
     return ctrl;
 };
 
+/**
+ * [dispose description]
+ * @return {[type]} [description]
+ */
 GUI.prototype.dispose = function () {
 };
 
+/**
+ * [draw description]
+ * @return {[type]} [description]
+ */
 GUI.prototype.draw = function () {
     if (!this.enabled) {
         return;
@@ -543,6 +630,10 @@ GUI.prototype.draw = function () {
     ctx.popState(ctx.DEPTH_BIT | ctx.BLEND_BIT);
 };
 
+/**
+ * [drawTextures description]
+ * @return {[type]} [description]
+ */
 GUI.prototype.drawTextures = function () {
   var ctx = this._ctx;
   for (var i = 0; i < this.items.length; i++) {
@@ -581,6 +672,10 @@ GUI.prototype.drawTextures = function () {
   //this.screenImage.setImage(this.renderer.getTexture());
 };
 
+/**
+ * [serialize description]
+ * @return {[type]} [description]
+ */
 GUI.prototype.serialize = function () {
   var data = {};
   this.items.forEach(function (item, i) {
@@ -589,6 +684,11 @@ GUI.prototype.serialize = function () {
   return data;
 };
 
+/**
+ * [deserialize description]
+ * @param  {[type]} data [description]
+ * @return {[type]}      [description]
+ */
 GUI.prototype.deserialize = function (data) {
   this.items.forEach(function (item, i) {
     if (data[item.title] !== undefined) {
@@ -598,11 +698,22 @@ GUI.prototype.deserialize = function (data) {
   });
 };
 
+/**
+ * [save description]
+ * @param  {[type]} path [description]
+ * @return {[type]}      [description]
+ */
 GUI.prototype.save = function (path) {
   var data = this.serialize();
   IO.saveTextFile(path, JSON.stringify(data));
 };
 
+/**
+ * [load description]
+ * @param  {[type]}   path     [description]
+ * @param  {Function} callback [description]
+ * @return {[type]}            [description]
+ */
 GUI.prototype.load = function (path, callback) {
   var self = this;
   IO.loadTextFile(path, function (dataStr) {
@@ -614,14 +725,27 @@ GUI.prototype.load = function (path, callback) {
   });
 };
 
+/**
+ * [function description]
+ * @param  {[type]} state [description]
+ * @return {[type]}       [description]
+ */
 GUI.prototype.setEnabled = function(state) {
   this.enabled = state;
 }
 
+/**
+ * [function description]
+ * @return {[type]} [description]
+ */
 GUI.prototype.isEnabled = function() {
   return this.enabled;
 }
 
+/**
+ * [function description]
+ * @return {[type]} [description]
+ */
 GUI.prototype.toggleEnabled = function() {
   return this.enabled = !this.enabled;
 }
