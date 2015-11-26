@@ -4,6 +4,12 @@ var SkCanvas  = plask.SkCanvas;
 var SkPaint   = plask.SkPaint;
 var Rect = require('pex-geom/Rect');
 
+/**
+ * [SkiaRenderer description]
+ * @param {[type]} ctx    [description]
+ * @param {[type]} width  [description]
+ * @param {[type]} height [description]
+ */
 function SkiaRenderer(ctx, width, height) {
     console.log('SkiaRenderer+', width, height)
     this._ctx = ctx;
@@ -65,6 +71,11 @@ function SkiaRenderer(ctx, width, height) {
     this.colorPaint.setColor(255, 255, 255, 255);
 }
 
+/**
+ * [function description]
+ * @param  {[type]} items [description]
+ * @return {[type]}       [description]
+ */
 SkiaRenderer.prototype.isAnyItemDirty = function(items) {
   var dirty = false;
   items.forEach(function(item) {
@@ -76,6 +87,12 @@ SkiaRenderer.prototype.isAnyItemDirty = function(items) {
   return dirty;
 };
 
+/**
+ * [function description]
+ * @param  {[type]} items [description]
+ * @param  {[type]} scale [description]
+ * @return {[type]}       [description]
+ */
 SkiaRenderer.prototype.draw = function(items, scale) {
   if (!this.isAnyItemDirty(items)) {
     return;
@@ -245,6 +262,13 @@ SkiaRenderer.prototype.draw = function(items, scale) {
   this.updateTexture();
 };
 
+/**
+ * [function description]
+ * @param  {[type]} image [description]
+ * @param  {[type]} x     [description]
+ * @param  {[type]} y     [description]
+ * @return {[type]}       [description]
+ */
 SkiaRenderer.prototype.getImageColor = function(image, x, y) {
   //Skia stores canvas data as BGR
   var r = image[(x + y * image.width)*4 + 2]/255;
@@ -253,18 +277,34 @@ SkiaRenderer.prototype.getImageColor = function(image, x, y) {
   return [r, g, b]
 }
 
+/**
+ * [function description]
+ * @return {[type]} [description]
+ */
 SkiaRenderer.prototype.getTexture = function() {
   return this.tex;
 };
 
+/**
+ * [function description]
+ * @return {[type]} [description]
+ */
 SkiaRenderer.prototype.getCanvas = function() {
   return this.canvas;
 };
 
+/**
+ * [function description]
+ * @return {[type]} [description]
+ */
 SkiaRenderer.prototype.getCanvasPaint = function() {
   return this.canvasPaint;
 };
 
+/**
+ * [function description]
+ * @return {[type]} [description]
+ */
 SkiaRenderer.prototype.updateTexture = function() {
   if (!this.tex) return;
   this.tex.update(this.canvas, this.canvas.width, this.canvas.height);
