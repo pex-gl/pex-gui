@@ -66,16 +66,19 @@ if (isBrowser) {
  * @param {[type]} windowWidth  [description]
  * @param {[type]} windowHeight [description]
  */
-function GUI(ctx, windowWidth, windowHeight) {
+function GUI(ctx, windowWidth, windowHeight, pixelRatio) {
+    console.log('GUI+', windowWidth, windowHeight, pixelRatio);
+    pixelRatio = pixelRatio || 1;
     this._ctx = ctx;
-    this._windowWidth = windowWidth;
-    this._windowHeight = windowHeight;
-    this._windowSize = [windowWidth, windowHeight];
-    this._textureRect = [0, 0, windowWidth, windowHeight];
+    this._pixelRatio = pixelRatio;
+    this._windowWidth = windowWidth * pixelRatio;
+    this._windowHeight = windowHeight * pixelRatio;
+    this._windowSize = [this._windowWidth, this._windowHeight];
+    this._textureRect = [0, 0, windowWidth * pixelRatio, windowHeight * pixelRatio];
     this._textureTmpRect = [0, 0, 0, 0];
     this.x = 0;
     this.y = 0;
-    this.highdpi = 1;
+    this.pixelRatio = pixelRatio;
     this.mousePos = [0, 0];
     this.scale = 1;
 
@@ -88,10 +91,10 @@ function GUI(ctx, windowWidth, windowHeight) {
     );
 
     if (isBrowser) {
-        this.renderer = new HTMLCanvasRenderer(ctx,windowWidth, windowHeight);
+        this.renderer = new HTMLCanvasRenderer(ctx,windowWidth, windowHeight, pixelRatio);
     }
     else {
-        this.renderer = new SkiaRenderer(ctx, windowWidth, windowHeight);
+        this.renderer = new SkiaRenderer(ctx, windowWidth, windowHeight, pixelRatio);
     }
 
     this.screenBounds = [0, 0, windowWidth, windowHeight];
@@ -118,8 +121,8 @@ GUI.prototype.onMouseDown = function (e) {
   })
 
   this.activeControl = null;
-  this.mousePos[0] = e.x / this.highdpi - this.x;
-  this.mousePos[1] = e.y / this.highdpi - this.y;
+  this.mousePos[0] = e.x / this.pixelRatio - this.x;
+  this.mousePos[1] = e.y / this.pixelRatio - this.y;
   for (var i = 0; i < this.items.length; i++) {
     if (Rect.containsPoint(this.items[i].activeArea, this.mousePos)) {
       this.activeControl = this.items[i];
@@ -171,13 +174,13 @@ GUI.prototype.onMouseDown = function (e) {
         if (this.activeControl.options.palette) {
           var iw = this.activeControl.options.paletteImage.width;
           var ih = this.activeControl.options.paletteImage.height;
-          var y = e.y / this.highdpi - aa[0][1];
+          var y = e.y / this.pixelRatio - aa[0][1];
           slidersHeight = aaHeight - aaWidth * ih / iw;
           var imageDisplayHeight = aaWidth * ih / iw;
           var imageStartY = aaHeight - imageDisplayHeight;
 
           if (y > imageStartY) {
-            var u = (e.x /this.highdpi - aa[0][0]) / aaWidth;
+            var u = (e.x /this.pixelRatio - aa[0][0]) / aaWidth;
             var v = (y - imageStartY) / imageDisplayHeight;
             var x = Math.floor(iw * u);
             var y = Math.floor(ih * v);
@@ -217,7 +220,7 @@ GUI.prototype.onMouseDrag = function (e) {
     var aaWidth  = aa[1][0] - aa[0][0];
     var aaHeight = aa[1][1] - aa[0][1];
     if (this.activeControl.type == 'slider') {
-      var val = (e.x / this.highdpi - aa[0][0]) / aaWidth;
+      var val = (e.x / this.pixelRatio - aa[0][0]) / aaWidth;
       val = Math.max(0, Math.min(val, 1));
       this.activeControl.setNormalizedValue(val);
       if (this.activeControl.onchange) {
@@ -226,9 +229,9 @@ GUI.prototype.onMouseDrag = function (e) {
       this.activeControl.dirty = true;
     }
     else if (this.activeControl.type == 'multislider') {
-      var val = (e.x / this.highdpi - aa[0][0]) / aaWidth;
+      var val = (e.x / this.pixelRatio - aa[0][0]) / aaWidth;
       val = Math.max(0, Math.min(val, 1));
-      var idx = Math.floor(this.activeControl.getValue().length * (e.y / this.highdpi - aa[0][1]) / aaHeight);
+      var idx = Math.floor(this.activeControl.getValue().length * (e.y / this.pixelRatio - aa[0][1]) / aaHeight);
       if (!isNaN(this.activeControl.clickedSlider)) {
         idx = this.activeControl.clickedSlider;
       }
@@ -247,12 +250,12 @@ GUI.prototype.onMouseDrag = function (e) {
       if (this.activeControl.options.palette) {
         var iw = this.activeControl.options.paletteImage.width;
         var ih = this.activeControl.options.paletteImage.height;
-        var y = e.y / this.highdpi - aa[0][1];
+        var y = e.y / this.pixelRatio - aa[0][1];
         slidersHeight = aaHeight - aaWidth * ih / iw;
         var imageDisplayHeight = aaWidth * ih / iw;
         var imageStartY = aaHeight - imageDisplayHeight;
         if (y > imageStartY && isNaN(this.activeControl.clickedSlider)) {
-            var u = (e.x /this.highdpi - aa[0][0]) / aaWidth;
+            var u = (e.x /this.pixelRatio - aa[0][0]) / aaWidth;
             var v = (y - imageStartY) / imageDisplayHeight;
             var x = Math.floor(iw * u);
             var y = Math.floor(ih * v);
@@ -269,9 +272,9 @@ GUI.prototype.onMouseDrag = function (e) {
           }
       }
 
-      var val = (e.x / this.highdpi - aa[0][0]) / aaWidth;
+      var val = (e.x / this.pixelRatio - aa[0][0]) / aaWidth;
       val = Math.max(0, Math.min(val, 1));
-      var idx = Math.floor(numSliders * (e.y / this.highdpi - aa[0][1]) / slidersHeight);
+      var idx = Math.floor(numSliders * (e.y / this.pixelRatio - aa[0][1]) / slidersHeight);
       if (!isNaN(this.activeControl.clickedSlider)) {
         idx = this.activeControl.clickedSlider;
       }
@@ -638,7 +641,7 @@ GUI.prototype.drawTextures = function () {
   var ctx = this._ctx;
   for (var i = 0; i < this.items.length; i++) {
     var item = this.items[i];
-    var scale = this.scale * this.highdpi;
+    var scale = this.scale * this.pixelRatio;
     if (item.type == 'texture2D') {
       //we are trying to match flipped gui texture which 0,0 starts at the top with window coords that have 0,0 at the bottom
       var bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale];

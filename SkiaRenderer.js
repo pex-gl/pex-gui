@@ -10,11 +10,10 @@ var Rect = require('pex-geom/Rect');
  * @param {[type]} width  [description]
  * @param {[type]} height [description]
  */
-function SkiaRenderer(ctx, width, height) {
-    console.log('SkiaRenderer+', width, height)
+function SkiaRenderer(ctx, width, height, pixelRatio) {
     this._ctx = ctx;
     this.tex = ctx.createTexture2D(null, width, height);
-    this.highdpi = 1;
+    this.pixelRatio = pixelRatio;
     this.canvas = new SkCanvas.create(width, height);
     this.canvasPaint = new SkPaint();
     this.fontPaint = new SkPaint();
@@ -99,7 +98,7 @@ SkiaRenderer.prototype.draw = function(items, scale) {
   }
   var canvas = this.canvas;
   canvas.save();
-  canvas.scale(this.highdpi, this.highdpi);
+  canvas.scale(this.pixelRatio, this.pixelRatio);
   canvas.drawColor(0, 0, 0, 0, plask.SkPaint.kClearMode);
   //transparent
   var dy = 10;
@@ -112,8 +111,8 @@ SkiaRenderer.prototype.draw = function(items, scale) {
   for (var i = 0; i < items.length; i++) {
     var e = items[i];
     if (e.px && e.px) {
-      dx = e.px / this.highdpi;
-      dy = e.py / this.highdpi;
+      dx = e.px / this.pixelRatio;
+      dy = e.py / this.pixelRatio;
     }
     var eh = 20;
 
@@ -270,10 +269,11 @@ SkiaRenderer.prototype.draw = function(items, scale) {
  * @return {[type]}       [description]
  */
 SkiaRenderer.prototype.getImageColor = function(image, x, y) {
+  var pixels = image.pixels || image;
   //Skia stores canvas data as BGR
-  var r = image[(x + y * image.width)*4 + 2]/255;
-  var g = image[(x + y * image.width)*4 + 1]/255;
-  var b = image[(x + y * image.width)*4 + 0]/255;
+  var r = pixels[(x + y * image.width)*4 + 2]/255;
+  var g = pixels[(x + y * image.width)*4 + 1]/255;
+  var b = pixels[(x + y * image.width)*4 + 0]/255;
   return [r, g, b]
 }
 

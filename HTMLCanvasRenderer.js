@@ -11,9 +11,10 @@ function floatRgb2Hex(rgb) {
  * @param {[type]} width  [description]
  * @param {[type]} height [description]
  */
-function HTMLCanvasRenderer(ctx, width, height) {
+function HTMLCanvasRenderer(ctx, width, height, pixelRatio) {
+    console.log('HTMLCanvasRenderer pixelRatio', width, height, pixelRatio)
   this._ctx = ctx;
-  this.highdpi = 1;
+  this.pixelRatio = pixelRatio || 1;
   this.canvas = document.createElement('canvas');
   //TODO: move this up
   this.tex = ctx.createTexture2D(null, width, height);
@@ -52,7 +53,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
 
   var ctx = this.ctx;
   ctx.save();
-  ctx.scale(this.highdpi, this.highdpi);
+  ctx.scale(this.pixelRatio, this.pixelRatio);
   ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   ctx.font = '10px Monaco';
   var dy = 10;
@@ -67,8 +68,8 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
     var e = items[i];
 
     if (e.px && e.px) {
-      dx = e.px / this.highdpi;
-      dy = e.py / this.highdpi;
+      dx = e.px / this.pixelRatio;
+      dy = e.py / this.pixelRatio;
     }
 
     var eh = 20 * scale;
