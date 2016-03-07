@@ -24,21 +24,6 @@ function HTMLCanvasRenderer(ctx, width, height, pixelRatio) {
   this.dirty = true;
 }
 
-/**
- * [isAnyItemDirty description]
- * @param  {[type]}  items [description]
- * @return {Boolean}       [description]
- */
-HTMLCanvasRenderer.prototype.isAnyItemDirty = function (items) {
-  var dirty = false;
-  items.forEach(function (item) {
-    if (item.dirty) {
-      item.dirty = false;
-      dirty = true;
-    }
-  });
-  return dirty;
-};
 
 /**
  * [draw description]
@@ -47,10 +32,6 @@ HTMLCanvasRenderer.prototype.isAnyItemDirty = function (items) {
  * @return {[type]}       [description]
  */
 HTMLCanvasRenderer.prototype.draw = function (items, scale) {
-  if (!this.isAnyItemDirty(items)) {
-    return;
-  }
-
   var ctx = this.ctx;
   ctx.save();
   ctx.scale(this.pixelRatio, this.pixelRatio);

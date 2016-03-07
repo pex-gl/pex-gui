@@ -597,6 +597,22 @@ GUI.prototype.dispose = function () {
 };
 
 /**
+ * [function description]
+ * @param  {[type]} items [description]
+ * @return {[type]}       [description]
+ */
+GUI.prototype.isAnyItemDirty = function(items) {
+  var dirty = false;
+  items.forEach(function(item) {
+    if (item.dirty) {
+      item.dirty = false;
+      dirty = true;
+    }
+  });
+  return dirty;
+};
+
+/**
  * [draw description]
  * @return {[type]} [description]
  */
@@ -608,7 +624,10 @@ GUI.prototype.draw = function () {
     if (this.items.length === 0) {
         return;
     }
-    this.renderer.draw(this.items, this.scale);
+
+    if (this.isAnyItemDirty(this.items)) {
+        this.renderer.draw(this.items, this.scale);
+    }
 
     var ctx = this._ctx;
 

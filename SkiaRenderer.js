@@ -73,29 +73,10 @@ function SkiaRenderer(ctx, width, height, pixelRatio) {
 /**
  * [function description]
  * @param  {[type]} items [description]
- * @return {[type]}       [description]
- */
-SkiaRenderer.prototype.isAnyItemDirty = function(items) {
-  var dirty = false;
-  items.forEach(function(item) {
-    if (item.dirty) {
-      item.dirty = false;
-      dirty = true;
-    }
-  });
-  return dirty;
-};
-
-/**
- * [function description]
- * @param  {[type]} items [description]
  * @param  {[type]} scale [description]
  * @return {[type]}       [description]
  */
 SkiaRenderer.prototype.draw = function(items, scale) {
-  if (!this.isAnyItemDirty(items)) {
-    return;
-  }
   var canvas = this.canvas;
   canvas.save();
   canvas.scale(this.pixelRatio, this.pixelRatio);
