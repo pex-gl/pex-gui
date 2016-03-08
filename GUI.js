@@ -659,7 +659,6 @@ GUI.prototype.drawTextures = function () {
   for (var i = 0; i < this.items.length; i++) {
     var item = this.items[i];
     var scale = this.scale * this._pixelRatio;
-    console.log('GUI.drawTextures', scale, this.scale, this._pixelRatio)
     if (item.type == 'texture2D') {
       //we are trying to match flipped gui texture which 0,0 starts at the top with window coords that have 0,0 at the bottom
       var bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale];
