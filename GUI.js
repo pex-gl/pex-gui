@@ -1,7 +1,6 @@
-var isBrowser = require('is-browser');
+var isPlask = require('is-plask');
 var GUIControl = require('./GUIControl');
-var SkiaRenderer = require('./SkiaRenderer');
-var HTMLCanvasRenderer = require('./HTMLCanvasRenderer');
+var Renderer = isPlask ? require('./SkiaRenderer') : require('./HTMLCanvasRenderer');
 var Rect = require('pex-geom/Rect');
 var KeyboardEvent = require('pex-sys/KeyboardEvent');
 
@@ -55,7 +54,7 @@ void main() { \
     }\
 }';
 
-if (isBrowser) {
+if (!isPlask) {
     TEXTURE_2D_FRAG = 'precision highp float;\n' + TEXTURE_2D_FRAG;
     TEXTURE_CUBE_FRAG = 'precision highp float;\n' + TEXTURE_CUBE_FRAG;
 }
@@ -89,12 +88,7 @@ function GUI(ctx, windowWidth, windowHeight, pixelRatio) {
     ],  { data: [[0, 1, 2], [0, 2, 3]] }
     );
 
-    if (isBrowser) {
-        this.renderer = new HTMLCanvasRenderer(ctx,windowWidth, windowHeight, pixelRatio);
-    }
-    else {
-        this.renderer = new SkiaRenderer(ctx, windowWidth, windowHeight, pixelRatio);
-    }
+    this.renderer = new Renderer(ctx,windowWidth, windowHeight, pixelRatio);
 
     this.screenBounds = [0, 0, windowWidth, windowHeight];
 
