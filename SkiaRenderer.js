@@ -1,5 +1,4 @@
-var isBrowser = require('is-browser');
-var plask     = isBrowser ? {} : require('plask');
+var plask     = require('plask');
 var SkCanvas  = plask.SkCanvas;
 var SkPaint   = plask.SkPaint;
 var Rect = require('pex-geom/Rect');
