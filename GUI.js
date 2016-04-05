@@ -57,6 +57,11 @@ void main() { \
 if (!isPlask) {
     TEXTURE_2D_FRAG = 'precision highp float;\n' + TEXTURE_2D_FRAG;
     TEXTURE_CUBE_FRAG = 'precision highp float;\n' + TEXTURE_CUBE_FRAG;
+    TEXTURE_CUBE_FRAG = '#extension GL_EXT_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG;
+    TEXTURE_CUBE_FRAG = '#define textureCubeLod textureCubeLodExt\n' + TEXTURE_CUBE_FRAG;
+}
+else {
+    TEXTURE_CUBE_FRAG = '#extension GL_ARB_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG;
 }
 
 /**
