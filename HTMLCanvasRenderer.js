@@ -64,9 +64,10 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
     if (e.type == 'textureCube') eh = 24 + w / 2;
     if (e.type == 'radiolist') eh = 18 + e.items.length * 20 * scale;
     if (e.type == 'texturelist') {
+      var aspectRatio = e.items[0].texture.getWidth() / e.items[0].texture.getHeight();
       cellSize = Math.floor((w - 2*margin) / e.itemsPerRow);
       numRows = Math.ceil(e.items.length / e.itemsPerRow);
-      eh = 18 + 3 + numRows * cellSize;
+      eh = 18 + 3 + numRows * cellSize / aspectRatio;
     }
     if (e.type == 'header') eh = 26 * scale;
     if (e.type == 'text') eh = 45 * scale;
