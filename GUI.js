@@ -40,6 +40,7 @@ const float PI = 3.1415926; \
 varying vec2 vTexCoord0; \
 uniform samplerCube uTexture; \
 uniform float uHDR; \
+uniform float uLevel; \
 void main() { \
     float theta = vTexCoord0.x * 2.0 * PI - PI/2.0; \
     float phi = vTexCoord0.y * PI; \
@@ -47,7 +48,7 @@ void main() { \
     float y = -cos(phi); \
     float z = sin(theta) * sin(phi); \
     vec3 N = normalize(vec3(-1.0 * x, y, z)); \
-    gl_FragColor = textureCube(uTexture, N); \
+    gl_FragColor = textureCubeLod(uTexture, N, uLevel); \
     if (uHDR == 1.0) { \
         gl_FragColor.rgb = gl_FragColor.rgb / (gl_FragColor.rgb + 1.0); \
         gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(1.0/2.2)); \
@@ -58,7 +59,7 @@ if (!isPlask) {
     TEXTURE_2D_FRAG = 'precision highp float;\n' + TEXTURE_2D_FRAG;
     TEXTURE_CUBE_FRAG = 'precision highp float;\n' + TEXTURE_CUBE_FRAG;
     TEXTURE_CUBE_FRAG = '#extension GL_EXT_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG;
-    TEXTURE_CUBE_FRAG = '#define textureCubeLod textureCubeLodExt\n' + TEXTURE_CUBE_FRAG;
+    TEXTURE_CUBE_FRAG = '#define textureCubeLod textureCubeLodEXT\n' + TEXTURE_CUBE_FRAG;
 }
 else {
     TEXTURE_CUBE_FRAG = '#extension GL_ARB_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG;
@@ -678,11 +679,13 @@ GUI.prototype.drawTextures = function () {
       }.bind(this));
     }
     if (item.type == 'textureCube') {
+      var level = (item.options && item.options.level !== undefined) ? item.options.level : 0
       ctx.bindProgram(this.textureCubeProgram);
       //we are trying to match flipped gui texture which 0,0 starts at the top with window coords that have 0,0 at the bottom
       var bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale];
       ctx.bindTexture(item.texture);
       this.textureCubeProgram.setUniform('uRect', bounds);
+      this.textureCubeProgram.setUniform('uLevel', level);
       this.textureCubeProgram.setUniform('uHDR', item.options && item.options.hdr ? 1 : 0);
       ctx.drawMesh();
     }
