@@ -35,11 +35,13 @@ void main() { \
 
 //we want normal (not fliped) cubemaps maps to be represented same way as
 //latlong panoramas so we flip by -1.0 by default
+//render target dynamic cubemaps should be not flipped
 var TEXTURE_CUBE_FRAG = '\
 const float PI = 3.1415926; \
 varying vec2 vTexCoord0; \
 uniform samplerCube uTexture; \
 uniform float uHDR; \
+uniform float uFlipEnvMap; \
 uniform float uLevel; \
 void main() { \
     float theta = vTexCoord0.x * 2.0 * PI - PI/2.0; \
@@ -47,7 +49,7 @@ void main() { \
     float x = cos(theta) * sin(phi); \
     float y = -cos(phi); \
     float z = sin(theta) * sin(phi); \
-    vec3 N = normalize(vec3(-1.0 * x, y, z)); \
+    vec3 N = normalize(vec3(uFlipEnvMap * x, y, z)); \
     gl_FragColor = textureCubeLod(uTexture, N, uLevel); \
     if (uHDR == 1.0) { \
         gl_FragColor.rgb = gl_FragColor.rgb / (gl_FragColor.rgb + 1.0); \
@@ -665,6 +667,7 @@ GUI.prototype.drawTextures = function () {
       ctx.bindProgram(this.texture2DProgram);
       ctx.bindTexture(item.texture);
       this.texture2DProgram.setUniform('uRect', bounds);
+      this.texture2DProgram.setUniform('uHDR', item.options && item.options.hdr ? 1 : 0);
       ctx.drawMesh();
     }
     if (item.type == 'texturelist') {
@@ -687,6 +690,7 @@ GUI.prototype.drawTextures = function () {
       this.textureCubeProgram.setUniform('uRect', bounds);
       this.textureCubeProgram.setUniform('uLevel', level);
       this.textureCubeProgram.setUniform('uHDR', item.options && item.options.hdr ? 1 : 0);
+      this.textureCubeProgram.setUniform('uFlipEnvMap', item.texture.getFlipEnvMap());
       ctx.drawMesh();
     }
   }
