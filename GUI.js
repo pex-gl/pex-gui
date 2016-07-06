@@ -49,23 +49,18 @@ void main() { \
     float x = cos(theta) * sin(phi); \
     float y = -cos(phi); \
     float z = sin(theta) * sin(phi); \
-    vec3 N = normalize(vec3(uFlipEnvMap * x, y, z)); \
-    gl_FragColor = textureCubeLod(uTexture, N, uLevel); \
-    if (uHDR == 1.0) { \
+    vec3 N = normalize(vec3(uFlipEnvMap * x, y, z));\n' + 
+'#ifdef CAPS_SHADER_TEXTURE_LOD\n' + 
+    'gl_FragColor = textureCubeLod(uTexture, N, uLevel); \n' + 
+'#else \n' + 
+    'gl_FragColor = textureCube(uTexture, N, uLevel); \n' + 
+'#endif \n' +
+    'if (uHDR == 1.0) { \
         gl_FragColor.rgb = gl_FragColor.rgb / (gl_FragColor.rgb + 1.0); \
         gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(1.0/2.2)); \
     }\
 }';
 
-if (!isPlask) {
-    TEXTURE_2D_FRAG = 'precision highp float;\n' + TEXTURE_2D_FRAG;
-    TEXTURE_CUBE_FRAG = 'precision highp float;\n' + TEXTURE_CUBE_FRAG;
-    TEXTURE_CUBE_FRAG = '#extension GL_EXT_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG;
-    TEXTURE_CUBE_FRAG = '#define textureCubeLod textureCubeLodEXT\n' + TEXTURE_CUBE_FRAG;
-}
-else {
-    TEXTURE_CUBE_FRAG = '#extension GL_ARB_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG;
-}
 
 /**
  * [GUI description]
@@ -87,6 +82,19 @@ function GUI(ctx, windowWidth, windowHeight, pixelRatio) {
     this.y = 0;
     this.mousePos = [0, 0];
     this.scale = 1;
+
+    if (!isPlask) {
+        TEXTURE_2D_FRAG = 'precision highp float;\n' + TEXTURE_2D_FRAG;
+        TEXTURE_CUBE_FRAG = 'precision highp float;\n' + TEXTURE_CUBE_FRAG;
+        if (ctx.isSupported(ctx.CAPS_SHADER_TEXTURE_LOD)) {
+          TEXTURE_CUBE_FRAG = '#define CAPS_SHADER_TEXTURE_LOD\n' + TEXTURE_CUBE_FRAG;
+          TEXTURE_CUBE_FRAG = '#extension GL_EXT_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG;
+        }
+        TEXTURE_CUBE_FRAG = '#define textureCubeLod textureCubeLodEXT\n' + TEXTURE_CUBE_FRAG;
+    }
+    else {
+        TEXTURE_CUBE_FRAG = '#extension GL_ARB_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG;
+    }
 
     this.texture2DProgram = ctx.createProgram(VERT, TEXTURE_2D_FRAG);
     this.textureCubeProgram = ctx.createProgram(VERT, TEXTURE_CUBE_FRAG);

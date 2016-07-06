@@ -18,6 +18,8 @@
     "float-hsl2rgb": "^1.0.2",
     "float-rgb2hsl": "^1.0.1",
     "is-plask": "^1.0.0",
+    "pex-geom": "^1.0.0-beta.2",
+    "pex-sys": "^1.5.1",
     "rgb-hex": "^1.0.0"
   },
   "repository": {
