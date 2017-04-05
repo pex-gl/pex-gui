@@ -1,1 +1,1 @@
-module.exports = require('./GUI');
+module.exports = require('./GUI')

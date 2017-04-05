@@ -1,4 +1,4 @@
-const plask = require('plask')
+const plask = require('plask-wrap')
 const SkCanvas = plask.SkCanvas
 const SkPaint = plask.SkPaint
 const Rect = require('pex-geom/Rect')
@@ -10,10 +10,11 @@ const Rect = require('pex-geom/Rect')
  * @param {[type]} height [description]
  */
 function SkiaRenderer (ctx, width, height, pixelRatio) {
-  this._ctx = ctx
-  this.tex = ctx.createTexture2D(null, width, height)
+  this.ctx = ctx
+  this.tex = ctx.texture2D({ width: width, height: height })
+  console.log('tex', this.tex.width, this.tex.height)
   this.pixelRatio = pixelRatio
-  this.canvas = new SkCanvas.create(width, height)
+  this.canvas = SkCanvas.create(width, height)
   this.canvasPaint = new SkPaint()
   this.fontPaint = new SkPaint()
   this.fontPaint.setStyle(SkPaint.kFillStyle)
@@ -87,6 +88,7 @@ SkiaRenderer.prototype.draw = function (items, scale) {
   let cellSize = 0
   let numRows = 0
   const margin = 3
+  let numColumns = 0
 
   for (let i = 0; i < items.length; i++) {
     const e = items[i]
@@ -104,17 +106,24 @@ SkiaRenderer.prototype.draw = function (items, scale) {
       }
     }
 
+    if (e.type === 'column') {
+      console.log('column!')
+      dx = 10 + numColumns * (w + margin)
+      dy = 10
+      numColumns++
+      continue
+    }
     if (e.type === 'slider') eh = 20 * scale + 14
     if (e.type === 'toggle') eh = 20 * scale
     if (e.type === 'multislider') eh = 20 + e.getValue().length * 14 * scale
     if (e.type === 'color') eh = 20 + (e.options.alpha ? 4 : 3) * 14 * scale
     if (e.type === 'color' && e.options.paletteImage) eh += (w * e.options.paletteImage.height / e.options.paletteImage.width + 2) * scale
     if (e.type === 'button') eh = 24 * scale
-    if (e.type === 'texture2D') eh = 24 + e.texture.getHeight() * w / e.texture.getWidth()
+    if (e.type === 'texture2D') eh = 24 + e.texture.height * w / e.texture.width
     if (e.type === 'textureCube') eh = 24 + w / 2
     if (e.type === 'radiolist') eh = 18 + e.items.length * 20 * scale
     if (e.type === 'texturelist') {
-      const aspectRatio = e.items[0].texture.getWidth() / e.items[0].texture.getHeight()
+      const aspectRatio = e.items[0].texture.width / e.items[0].texture.height
       cellSize = Math.floor((w - 2 * margin) / e.itemsPerRow)
       numRows = Math.ceil(e.items.length / e.itemsPerRow)
       eh = 18 + 3 + numRows * cellSize / aspectRatio
@@ -127,6 +136,7 @@ SkiaRenderer.prototype.draw = function (items, scale) {
     }
 
     if (e.type === 'slider') {
+      // const value = e.getValue()
       canvas.drawRect(this.controlBgPaint, dx + 3, dy + 18, dx + w - 3, dy + eh - 5)
       canvas.drawRect(this.controlHighlightPaint, dx + 3, dy + 18, dx + 3 + (w - 6) * e.getNormalizedValue(), dy + eh - 5)
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18)
@@ -158,7 +168,7 @@ SkiaRenderer.prototype.draw = function (items, scale) {
       canvas.drawRect(btnColor, dx + 3, dy + 3, dx + w - 3, dy + eh - 5)
       Rect.set4(e.activeArea, dx + 3, dy + 3, w - 3 - 3, eh - 5)
       if (e.options.color) {
-        const c = e.options.color
+        let c = e.options.color
         this.controlFeaturePaint.setColor(255 * c[0], 255 * c[1], 255 * c[2], 255)
         canvas.drawRect(this.controlFeaturePaint, dx + w - 8, dy + 3, dx + w - 3, dy + eh - 5)
       }
@@ -171,11 +181,12 @@ SkiaRenderer.prototype.draw = function (items, scale) {
       canvas.drawText(this.fontPaint, items[i].title, dx + eh, dy + 13)
     } else if (e.type === 'radiolist') {
       canvas.drawText(this.fontPaint, e.title, dx + 4, dy + 14)
+      // const itemColor = this.controlBgPaint
       const itemHeight = 20 * scale
       for (let j = 0; j < e.items.length; j++) {
         const item = e.items[j]
-        const on = e.contextObject[e.attributeName] === item.value
-        const itemColor = on ? this.controlHighlightPaint : this.controlBgPaint
+        let on = e.contextObject[e.attributeName] === item.value
+        let itemColor = on ? this.controlHighlightPaint : this.controlBgPaint
         canvas.drawRect(itemColor, dx + 3, 18 + j * itemHeight + dy + 3, dx + itemHeight - 5, itemHeight + j * itemHeight + dy + 18 - 5)
         canvas.drawText(this.fontPaint, item.name, dx + itemHeight, 18 + j * itemHeight + dy + 13)
       }
@@ -185,7 +196,7 @@ SkiaRenderer.prototype.draw = function (items, scale) {
       for (let j = 0; j < e.items.length; j++) {
         const col = j % e.itemsPerRow
         const row = Math.floor(j / e.itemsPerRow)
-        const itemColor = this.controlBgPaint
+        let itemColor = this.controlBgPaint
         let shrink = 0
         canvas.drawRect(itemColor, dx + 3 + col * cellSize, dy + 18 + row * cellSize, dx + 3 + (col + 1) * cellSize - 1, dy + 18 + (row + 1) * cellSize - 1)
         if (e.items[j].value === e.contextObject[e.attributeName]) {
@@ -271,9 +282,32 @@ SkiaRenderer.prototype.getCanvasPaint = function () {
  * [function description]
  * @return {[type]} [description]
  */
+
 SkiaRenderer.prototype.updateTexture = function () {
   if (!this.tex) return
-  this.tex.update(this.canvas, this.canvas.width, this.canvas.height)
+
+  const numPixels = this.canvas.width * this.canvas.height * 4
+  if (!this.pixels || this.pixels.length !== numPixels) {
+    this.pixels = new Uint8Array(numPixels)
+  }
+  const pixels = this.pixels
+  const canvas = this.canvas
+  for (let y = canvas.height - 1; y >= 0; y--) {
+    for (let x = 0; x < canvas.width; x++) {
+      const i = (x + y * canvas.width) * 4
+      // SkiaCanvas is BGRA
+      pixels[i] = canvas.pixels[i + 2]
+      pixels[i + 1] = canvas.pixels[i + 1]
+      pixels[i + 2] = canvas.pixels[i + 0]
+      pixels[i + 3] = canvas.pixels[i + 3]
+    }
+  }
+  this.ctx.update(this.tex, {
+    data: pixels,
+    width: this.canvas.width,
+    height: this.canvas.height,
+    flipY: true
+  })
 }
 
 module.exports = SkiaRenderer
