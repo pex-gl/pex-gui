@@ -108,7 +108,8 @@ function GUI (ctx) {
     pipeline: ctx.pipeline({
       vert: VERT,
       frag: TEXTURE_2D_FRAG,
-      depthEnabled: false,
+      depthTest: false,
+      depthWrite: false,
       blendEnabled: true,
       blendSrcRGBFactor: ctx.BlendFactor.SrcAlpha,
       blendSrcAlphaFactor: ctx.BlendFactor.One,
