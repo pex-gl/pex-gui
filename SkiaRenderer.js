@@ -11,7 +11,12 @@ const Rect = require('pex-geom/Rect')
  */
 function SkiaRenderer (ctx, width, height, pixelRatio) {
   this.ctx = ctx
-  this.tex = ctx.texture2D({ width: width, height: height })
+  this.tex = ctx.texture2D({
+    width: width,
+    height: height,
+    pixelFormat: ctx.PixelFormat.RGBA8,
+    encoding: ctx.Encoding.SRGB
+  })
   console.log('tex', this.tex.width, this.tex.height)
   this.pixelRatio = pixelRatio
   this.canvas = SkCanvas.create(width, height)

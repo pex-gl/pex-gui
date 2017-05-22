@@ -16,7 +16,12 @@ function HTMLCanvasRenderer (ctx, width, height, pixelRatio) {
   this.pixelRatio = pixelRatio || 1
   this.canvas = document.createElement('canvas')
   // TODO: move this up
-  this.tex = ctx.texture2D({ width: width, height: height })
+  this.tex = ctx.texture2D({
+    width: width,
+    height: height,
+    pixelFormat: ctx.PixelFormat.RGBA8,
+    encoding: ctx.Encoding.SRGB
+  })
   this.canvas.width = width
   this.canvas.height = height
   this.ctx = this.canvas.getContext('2d')

@@ -25,42 +25,96 @@ void main() {
   gl_Position = vec4(pos, 0.0, 1.0);
 }`
 
-let TEXTURE_2D_FRAG = `
+const DECODE_ENCODE = `
+#define LINEAR 1
+#define GAMMA 2
+#define SRGB 3
+#define RGBM 4
+
+vec3 decodeRGBM (vec4 rgbm) {
+  vec3 r = rgbm.rgb * (7.0 * rgbm.a);
+  return r * r;
+}
+
+vec4 encodeRGBM (vec3 rgb) {
+  vec4 r;
+  r.xyz = (1.0 / 7.0) * sqrt(rgb);
+  r.a = max(max(r.x, r.y), r.z);
+  r.a = clamp(r.a, 1.0 / 255.0, 1.0);
+  r.a = ceil(r.a * 255.0) / 255.0;
+  r.xyz /= r.a;
+  return r;
+}
+
+const float gamma = 2.2;
+
+vec4 toLinear(vec4 v) {
+  return vec4(pow(v.rgb, vec3(gamma)), v.a);
+}
+
+vec4 toGamma(vec4 v) {
+  return vec4(pow(v.rgb, vec3(1.0 / gamma)), v.a);
+}
+
+vec4 decode(vec4 pixel, int encoding) {
+  if (encoding == LINEAR) return pixel;
+  if (encoding == GAMMA) return toLinear(pixel);
+  if (encoding == SRGB) return toLinear(pixel);
+  if (encoding == RGBM) return vec4(decodeRGBM(pixel), 1.0);
+  return pixel;
+}
+
+vec4 encode(vec4 pixel, int encoding) {
+  if (encoding == LINEAR) return pixel;
+  if (encoding == GAMMA) return toGamma(pixel);
+  if (encoding == SRGB) return toGamma(pixel);
+  if (encoding == RGBM) return encodeRGBM(pixel.rgb);
+  return pixel;
+}
+`
+
+let TEXTURE_2D_FRAG = DECODE_ENCODE + `
 uniform sampler2D uTexture;
+uniform int uTextureEncoding;
 uniform float uHDR;
 varying vec2 vTexCoord0;
 void main() {
-  gl_FragColor = texture2D(uTexture, vec2(vTexCoord0.x, vTexCoord0.y));
-  if (uHDR == 1.0) {
-    gl_FragColor.rgb = gl_FragColor.rgb / (gl_FragColor.rgb + 1.0);
-    gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(1.0/2.2));
+  vec4 color = texture2D(uTexture, vTexCoord0);
+  color = decode(color, uTextureEncoding);
+  // if LINEAR || RGBM then tonemap
+  if (uTextureEncoding == 1 || uTextureEncoding == 3) {
+    color.rgb = color.rgb / (color.rgb + 1.0);
   }
+  gl_FragColor = encode(color, 2); // to gamma
 }`
 
 // we want normal (not fliped) cubemaps maps to be represented same way as
 // latlong panoramas so we flip by -1.0 by default
 // render target dynamic cubemaps should be not flipped
-let TEXTURE_CUBE_FRAG = `
+let TEXTURE_CUBE_FRAG = DECODE_ENCODE + `
 const float PI = 3.1415926;
 varying vec2 vTexCoord0;
 uniform samplerCube uTexture;
+uniform int uTextureEncoding;
 uniform float uHDR;
-uniform float uFlipEnvMap;
 uniform float uLevel;
 void main() {
-float theta = vTexCoord0.x * 2.0 * PI - PI/2.0;
-  float phi = vTexCoord0.y * PI;
-  float x = cos(theta) * sin(phi);
-  float y = -cos(phi);
-  float z = sin(theta) * sin(phi);
-  vec3 N = normalize(vec3(uFlipEnvMap * x, y, z));
-  gl_FragColor = textureCube(uTexture, N, uLevel);
-  if (uHDR == 1.0) {
-    gl_FragColor.rgb = gl_FragColor.rgb / (gl_FragColor.rgb + 1.0);
-    gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(1.0/2.2));
-  }
-}`
+  float theta = PI * (vTexCoord0.x * 2.0 - 1.0);
+  float phi = PI * (1.0 - vTexCoord0.y);
 
+  float x = sin(phi) * sin(theta);
+  float y = cos(phi);
+  float z = -sin(phi) * cos(theta);
+
+  vec3 N = normalize(vec3(x, y, z));
+  vec4 color = textureCube(uTexture, N, uLevel);
+  color = decode(color, uTextureEncoding);
+  // if LINEAR || RGBM then tonemap
+  if (uTextureEncoding == 1 || uTextureEncoding == 3) {
+    color.rgb = color.rgb / (color.rgb + 1.0);
+  }
+  gl_FragColor = encode(color, 2); // to gamma
+}`
 if (!isPlask) {
   TEXTURE_2D_FRAG = '#version 100\nprecision highp float;\n\n' + TEXTURE_2D_FRAG
   TEXTURE_CUBE_FRAG = '#version 100\nprecision highp float;\n\n' + TEXTURE_CUBE_FRAG
@@ -123,19 +177,51 @@ function GUI (ctx) {
     },
     indices: { buffer: ctx.indexBuffer(rectIndices) },
     uniforms: {
-      // uTexture: regl.prop('texture'),
-      // uWindowSize: (context) => [context.viewportWidth, context.viewportHeight],
-      // uRect: regl.prop('rect'),
-      // uHDR: regl.prop('hdr')
     }
   }
+
+  this.drawTextureCubeCmd = {
+    name: 'gui_drawTextureCube',
+    pipeline: ctx.pipeline({
+      vert: VERT,
+      frag: TEXTURE_CUBE_FRAG,
+      depthTest: false,
+      depthWrite: false,
+      blendEnabled: true,
+      blendSrcRGBFactor: ctx.BlendFactor.SrcAlpha,
+      blendSrcAlphaFactor: ctx.BlendFactor.One,
+      blendDstRGBFactor: ctx.BlendFactor.OneMinusSrcAlpha,
+      blendDstAlphaFactor: ctx.BlendFactor.One
+    }),
+    viewport: [0, 0, windowWidth, windowHeight],
+    attributes: {
+      aPosition: { buffer: ctx.vertexBuffer(rectPositions) },
+      aTexCoord0: { buffer: ctx.vertexBuffer(rectTexCoords) }
+    },
+    indices: { buffer: ctx.indexBuffer(rectIndices) },
+    uniforms: {
+    }
+  }
+
   this.drawTexture2d = (props) => {
     ctx.submit(this.drawTexture2dCmd, {
       uniforms: {
         uTexture: props.texture,
+        uTextureEncoding: props.texture.encoding,
+        uWindowSize: this._windowSize,
+        uRect: props.rect
+      }
+    })
+  }
+
+  this.drawTextureCube = (props) => {
+    ctx.submit(this.drawTextureCubeCmd, {
+      uniforms: {
+        uTexture: props.texture,
+        uTextureEncoding: props.texture.encoding,
         uWindowSize: this._windowSize,
         uRect: props.rect,
-        uHDR: props.hdr
+        uLevel: props.level
       }
     })
   }
@@ -861,8 +947,7 @@ GUI.prototype.draw = function () {
 
   this.drawTexture2d({
     texture: this.renderer.getTexture(),
-    rect: this._textureRect,
-    hdr: 0
+    rect: this._textureRect
   })
 
   this.drawTextures()
@@ -894,8 +979,7 @@ GUI.prototype.drawTextures = function () {
       bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale]
       this.drawTexture2d({
         texture: item.texture,
-        rect: bounds,
-        hdr: item.options && item.options.hdr ? 1 : 0
+        rect: bounds
       })
     }
     if (item.type === 'texturelist') {
@@ -904,8 +988,7 @@ GUI.prototype.drawTextures = function () {
         bounds = [textureItem.activeArea[0][0] * scale, this._windowHeight - textureItem.activeArea[1][1] * scale, textureItem.activeArea[1][0] * scale, this._windowHeight - textureItem.activeArea[0][1] * scale]
         this.drawTexture2d({
           texture: textureItem.texture,
-          rect: bounds,
-          hdr: item.options && item.options.hdr ? 1 : 0
+          rect: bounds
         })
       }.bind(this))
     }
@@ -916,9 +999,7 @@ GUI.prototype.drawTextures = function () {
       this.drawTextureCube({
         texture: item.texture,
         rect: bounds,
-        hdr: item.options && item.options.hdr ? 1 : 0,
-        level: level,
-        flipEnvMap: 1 // FIXME: how to handle item.texture.getFlipEnvMap()
+        level: level
       })
     }
   }
