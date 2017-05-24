@@ -497,6 +497,7 @@ GUI.prototype.onKeyDown = function (e) {
         focusedItem.onchange(focusedItem.contextObject[focusedItem.attributeName])
       }
       e.stopPropagation()
+      e.preventDefault()
       break
   }
 
@@ -508,6 +509,7 @@ GUI.prototype.onKeyDown = function (e) {
       focusedItem.onchange(focusedItem.contextObject[focusedItem.attributeName])
     }
     e.stopPropagation()
+    e.preventDefault()
   }
 }
 
