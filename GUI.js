@@ -2,7 +2,6 @@ const isPlask = require('is-plask')
 const GUIControl = require('./GUIControl')
 const Renderer = isPlask ? require('./SkiaRenderer') : require('./HTMLCanvasRenderer')
 const Rect = require('pex-geom/Rect')
-const KeyboardEvent = require('pex-sys/KeyboardEvent')
 const Time = require('pex-sys/Time')
 
 const keyboardPolyfill = require('keyboardevent-key-polyfill')
@@ -82,10 +81,11 @@ void main() {
   vec4 color = texture2D(uTexture, vTexCoord0);
   color = decode(color, uTextureEncoding);
   // if LINEAR || RGBM then tonemap
-  if (uTextureEncoding == 1 || uTextureEncoding == 3) {
+  if (uTextureEncoding == LINEAR || uTextureEncoding == RGBM) {
     color.rgb = color.rgb / (color.rgb + 1.0);
   }
   gl_FragColor = encode(color, 2); // to gamma
+  gl_FragColor = vec4(color.rgba);
 }`
 
 // we want normal (not fliped) cubemaps maps to be represented same way as
@@ -110,7 +110,7 @@ void main() {
   vec4 color = textureCube(uTexture, N, uLevel);
   color = decode(color, uTextureEncoding);
   // if LINEAR || RGBM then tonemap
-  if (uTextureEncoding == 1 || uTextureEncoding == 3) {
+  if (uTextureEncoding == LINEAR || uTextureEncoding == RGBM) {
     color.rgb = color.rgb / (color.rgb + 1.0);
   }
   gl_FragColor = encode(color, 2); // to gamma
@@ -164,7 +164,7 @@ function GUI (ctx) {
       frag: TEXTURE_2D_FRAG,
       depthTest: false,
       depthWrite: false,
-      blendEnabled: true,
+      blend: true,
       blendSrcRGBFactor: ctx.BlendFactor.SrcAlpha,
       blendSrcAlphaFactor: ctx.BlendFactor.One,
       blendDstRGBFactor: ctx.BlendFactor.OneMinusSrcAlpha,
@@ -187,7 +187,7 @@ function GUI (ctx) {
       frag: TEXTURE_CUBE_FRAG,
       depthTest: false,
       depthWrite: false,
-      blendEnabled: true,
+      blend: true,
       blendSrcRGBFactor: ctx.BlendFactor.SrcAlpha,
       blendSrcAlphaFactor: ctx.BlendFactor.One,
       blendDstRGBFactor: ctx.BlendFactor.OneMinusSrcAlpha,
@@ -225,37 +225,6 @@ function GUI (ctx) {
       }
     })
   }
-
-  // TODO
-  // this.drawTextureCube = regl({
-    // vert: VERT,
-    // frag: TEXTURE_CUBE_FRAG,
-    // attributes: {
-      // aPosition: rectPositions,
-      // aTexCoord0: rectTexCoords
-    // },
-    // elements: rectIndices,
-    // uniforms: {
-      // uTexture: regl.prop('texture'),
-      // uWindowSize: (context) => [context.viewportWidth, context.viewportHeight],
-      // uRect: regl.prop('rect'),
-      // uHDR: regl.prop('hdr'),
-      // uFlipEnvMap: regl.prop('flipEnvMap'),
-      // uLevel: regl.prop('level')
-    // },
-    // depth: {
-      // enable: false
-    // },
-    // blend: {
-      // enable: true,
-      // func: {
-        // srcRGB: 'src alpha',
-        // srcAlpha: 1,
-        // dstRGB: 'one minus src alpha',
-        // dstAlpha: 1
-      // }
-    // }
-  // })
 
   this.renderer = new Renderer(ctx, windowWidth, windowHeight, pixelRatio)
 
@@ -699,49 +668,6 @@ GUI.prototype.addParam = function (title, contextObject, attributeName, options,
   }
 }
 
-GUI.prototype.addComponent = function (component, headerTitle) {
-  this.addHeader(headerTitle)
-  if (component.meta) {
-    for (const name in component.meta) {
-      const options = {}
-      const prop = component.meta[name]
-      if (prop.type) options.type = prop.type
-      if (prop.min) options.min = prop.min
-      if (prop.max) options.max = prop.max
-      function callback () {
-        if (component.meta) {
-          const opts = { }
-          opts[name] = component[name]
-          component(opts)
-        } else {
-          component.changed.dispatch(name)
-        }
-      }
-      if (prop.type === 'radiolist') {
-        this.addRadioList(name, component, name, prop.options, callback)
-      } else if (prop.type === 'texture2d') {
-        this.addTexture2D(name, component[name])
-      } else {
-        this.addParam(name, component, name, options, callback)
-      }
-    }
-  }
-  if (component.params) {
-    for (const name in component.params) {
-      const prop = component.params[name]
-      if (!prop.value) continue
-      const options = {}
-      if (prop.type) options.type = prop.type
-      if (prop.min) options.min = prop.min
-      if (prop.max) options.max = prop.max
-      function callback () {
-        component.changed.dispatch(name)
-      }
-      this.addParam(name, component.params[name], 'value', options, callback)
-    }
-  }
-}
-
 /**
  * [addButton description]
  * @param {[type]} title   [description]
@@ -855,30 +781,6 @@ GUI.prototype.addFPSMeeter = function () {
   return ctrl
 }
 
-GUI.prototype.addStats = function () {
-  const self = this
-  const ctrl = new GUIControl({
-    type: 'stats',
-    title: 'Stats',
-    activeArea: [[0, 0], [0, 0]],
-    dirty: true,
-    bufferCount: 0,
-    elementsCount: 0,
-    framebufferCount: 0,
-    textureMemSize: 0,
-    update: function () {
-      this.bufferCount = self._regl.stats.bufferCount
-      this.elementsCount = self._regl.stats.elementsCount
-      this.framebufferCount = self._regl.stats.framebufferCount
-      this.textureMemSize = (self._regl.stats.getTotalTextureSize)
-        ? Math.floor(self._regl.stats.getTotalTextureSize() / (1024 * 1024)) + 'MB'
-        : 0
-    }
-  })
-  this.items.push(ctrl)
-  return ctrl
-}
-
 /**
  * [dispose description]
  * @return {[type]} [description]
@@ -962,7 +864,6 @@ GUI.prototype.draw = function () {
 GUI.prototype.drawTextures = function () {
   const items = this.items
   const tabs = items.filter((item) => item.type === 'tab')
-  const ctx = this._ctx
   for (let i = 0; i < this.items.length; i++) {
     const item = this.items[i]
     if (tabs.length > 0) {
