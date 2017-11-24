@@ -85,7 +85,6 @@ void main() {
     color.rgb = color.rgb / (color.rgb + 1.0);
   }
   gl_FragColor = encode(color, 2); // to gamma
-  gl_FragColor = vec4(color.rgba);
 }`
 
 // we want normal (not fliped) cubemaps maps to be represented same way as
