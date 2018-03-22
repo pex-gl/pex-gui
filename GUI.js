@@ -10,17 +10,20 @@ const keyboardPolyfill = require('keyboardevent-key-polyfill')
 const VERT = `
 attribute vec2 aPosition;
 attribute vec2 aTexCoord0;
-uniform vec2 uWindowSize;
+uniform vec4 uViewport;
 uniform vec4 uRect;
 varying vec2 vTexCoord0;
 void main() {
-  vTexCoord0 = aTexCoord0;
-  vec2 pos = aPosition.xy * 0.5 + 0.5;
-  pos.x = uRect.x + pos.x * (uRect.z - uRect.x);
-  pos.y = uRect.y + pos.y * (uRect.w - uRect.y);
-  pos.x /= uWindowSize.x;
-  pos.y /= uWindowSize.y;
-  pos = (pos - 0.5) * 2.0;
+  vTexCoord0 = vec2(aTexCoord0.x, 1.0 - aTexCoord0.y);
+  vec2 vertexPos = aPosition * 0.5 + 0.5;
+
+  vec2 pos = vec2(0.0, 0.0); // window pos
+  vec2 windowSize = vec2(uViewport.z - uViewport.x, uViewport.w - uViewport.y);
+  pos.x = uRect.x / windowSize.x + vertexPos.x * (uRect.z - uRect.x) / windowSize.x;
+  pos.y = uRect.y / windowSize.y + vertexPos.y * (uRect.w - uRect.y) / windowSize.y;
+  pos.y = 1.0 - pos.y;
+  pos = pos * 2.0 - 1.0;
+
   gl_Position = vec4(pos, 0.0, 1.0);
 }`
 
@@ -132,16 +135,11 @@ TEXTURE_2D_FRAG = TEXTURE_2D_FRAG.split(';').join(';\n')
  * @param {[type]} windowHeight [description]
  */
 function GUI (ctx) {
-  const pixelRatio = 1
-  const windowWidth = ctx.gl.drawingBufferWidth
-  const windowHeight = ctx.gl.drawingBufferHeight
+  const W = ctx.gl.drawingBufferWidth
+  const H = ctx.gl.drawingBufferHeight
   this._ctx = ctx
-  this._pixelRatio = pixelRatio
-  this._windowWidth = windowWidth
-  this._windowHeight = windowHeight
-  this._windowSize = [windowWidth, windowHeight]
-  this._textureRect = [0, 0, windowWidth, windowHeight]
-  this._textureTmpRect = [0, 0, 0, 0]
+  this._textureRect = [0, 0, W, H]
+  this._viewport = [0, 0, W, H]
   this._timeSinceLastUpdate = 0
   this._prev = Date.now() / 1000
   this.x = 0
@@ -169,7 +167,6 @@ function GUI (ctx) {
       blendDstRGBFactor: ctx.BlendFactor.OneMinusSrcAlpha,
       blendDstAlphaFactor: ctx.BlendFactor.One
     }),
-    viewport: [0, 0, windowWidth, windowHeight],
     attributes: {
       aPosition: { buffer: ctx.vertexBuffer(rectPositions) },
       aTexCoord0: { buffer: ctx.vertexBuffer(rectTexCoords) }
@@ -192,7 +189,6 @@ function GUI (ctx) {
       blendDstRGBFactor: ctx.BlendFactor.OneMinusSrcAlpha,
       blendDstAlphaFactor: ctx.BlendFactor.One
     }),
-    viewport: [0, 0, windowWidth, windowHeight],
     attributes: {
       aPosition: { buffer: ctx.vertexBuffer(rectPositions) },
       aTexCoord0: { buffer: ctx.vertexBuffer(rectTexCoords) }
@@ -204,10 +200,11 @@ function GUI (ctx) {
 
   this.drawTexture2d = (props) => {
     ctx.submit(this.drawTexture2dCmd, {
+      viewport: this._viewport,
       uniforms: {
         uTexture: props.texture,
         uTextureEncoding: props.texture.encoding,
-        uWindowSize: this._windowSize,
+        uViewport: this._viewport,
         uRect: props.rect
       }
     })
@@ -215,19 +212,18 @@ function GUI (ctx) {
 
   this.drawTextureCube = (props) => {
     ctx.submit(this.drawTextureCubeCmd, {
+      viewport: this._viewport,
       uniforms: {
         uTexture: props.texture,
         uTextureEncoding: props.texture.encoding,
-        uWindowSize: this._windowSize,
+        uViewport: this._viewport,
         uRect: props.rect,
         uLevel: props.level
       }
     })
   }
 
-  this.renderer = new Renderer(ctx, windowWidth, windowHeight, pixelRatio)
-
-  this.screenBounds = [0, 0, windowWidth, windowHeight]
+  this.renderer = new Renderer(ctx, W, H)
 
   this.items = []
   this.enabled = true
@@ -256,8 +252,12 @@ GUI.prototype.onMouseDown = function (e) {
   })
 
   this.activeControl = null
-  this.mousePos[0] = e.x / this._pixelRatio - this.x
-  this.mousePos[1] = e.y / this._pixelRatio - this.y
+  let mx = e.offsetX
+  let my = e.offsetY
+  mx = mx - this.x
+  my = my - this.y
+  this.mousePos[0] = mx
+  this.mousePos[1] = my
   for (let i = 0; i < this.items.length; i++) {
     const prevTabs = this.items.filter((e, index) => {
       return index < i && e.type === 'tab'
@@ -315,12 +315,12 @@ GUI.prototype.onMouseDown = function (e) {
         if (this.activeControl.options.palette) {
           const iw = this.activeControl.options.paletteImage.width
           const ih = this.activeControl.options.paletteImage.height
-          let y = e.y / this._pixelRatio - aa[0][1]
+          let y = mx - aa[0][1]
           const imageDisplayHeight = aaWidth * ih / iw
           const imageStartY = aaHeight - imageDisplayHeight
 
           if (y > imageStartY) {
-            const u = (e.x / this._pixelRatio - aa[0][0]) / aaWidth
+            const u = (mx - aa[0][0]) / aaWidth
             const v = (y - imageStartY) / imageDisplayHeight
             const x = Math.floor(iw * u)
             y = Math.floor(ih * v)
@@ -354,6 +354,10 @@ GUI.prototype.onMouseDown = function (e) {
  */
 GUI.prototype.onMouseDrag = function (e) {
   if (!this.enabled) return
+  let mx = e.offsetX// ? e.offsetX : e.pageX - this._ctx.gl.canvas.offsetLeft
+  let my = e.offsetY// ? e.offsetY : e.pageY - this._ctx.gl.canvas.offsetTop
+  mx = mx - this.x
+  my = my - this.y
 
   if (this.activeControl) {
     const aa = this.activeControl.activeArea
@@ -362,7 +366,7 @@ GUI.prototype.onMouseDrag = function (e) {
     let val = 0
     let idx = 0
     if (this.activeControl.type === 'slider') {
-      val = (e.x / this._pixelRatio - aa[0][0]) / aaWidth
+      val = (mx - aa[0][0]) / aaWidth
       val = Math.max(0, Math.min(val, 1))
       this.activeControl.setNormalizedValue(val)
       if (this.activeControl.onchange) {
@@ -370,9 +374,9 @@ GUI.prototype.onMouseDrag = function (e) {
       }
       this.activeControl.dirty = true
     } else if (this.activeControl.type === 'multislider') {
-      val = (e.x / this._pixelRatio - aa[0][0]) / aaWidth
+      val = (mx - aa[0][0]) / aaWidth
       val = Math.max(0, Math.min(val, 1))
-      idx = Math.floor(this.activeControl.getValue().length * (e.y / this._pixelRatio - aa[0][1]) / aaHeight)
+      idx = Math.floor(this.activeControl.getValue().length * (my - aa[0][1]) / aaHeight)
       if (!isNaN(this.activeControl.clickedSlider)) {
         idx = this.activeControl.clickedSlider
       } else {
@@ -389,12 +393,12 @@ GUI.prototype.onMouseDrag = function (e) {
       if (this.activeControl.options.palette) {
         const iw = this.activeControl.options.paletteImage.width
         const ih = this.activeControl.options.paletteImage.height
-        let y = e.y / this._pixelRatio - aa[0][1]
+        let y = my - aa[0][1]
         slidersHeight = aaHeight - aaWidth * ih / iw
         const imageDisplayHeight = aaWidth * ih / iw
         const imageStartY = aaHeight - imageDisplayHeight
         if (y > imageStartY && isNaN(this.activeControl.clickedSlider)) {
-          const u = (e.x / this._pixelRatio - aa[0][0]) / aaWidth
+          const u = (mx - aa[0][0]) / aaWidth
           const v = (y - imageStartY) / imageDisplayHeight
           const x = Math.floor(iw * u)
           y = Math.floor(ih * v)
@@ -411,9 +415,9 @@ GUI.prototype.onMouseDrag = function (e) {
         }
       }
 
-      val = (e.x / this._pixelRatio - aa[0][0]) / aaWidth
+      val = (mx - aa[0][0]) / aaWidth
       val = Math.max(0, Math.min(val, 1))
-      idx = Math.floor(numSliders * (e.y / this._pixelRatio - aa[0][1]) / slidersHeight)
+      idx = Math.floor(numSliders * (my / this._ctx.pixelRatio - aa[0][1]) / slidersHeight)
       if (!isNaN(this.activeControl.clickedSlider)) {
         idx = this.activeControl.clickedSlider
       } else {
@@ -844,12 +848,26 @@ GUI.prototype.draw = function () {
     return
   }
 
-  if (this.isAnyItemDirty(this.items)) {
-    this.renderer.draw(this.items, this.scale)
+  const w = this._ctx.gl.drawingBufferWidth
+  const h = this._ctx.gl.drawingBufferHeight
+  const pixelRatio = this._ctx.pixelRatio
+  let resized = false
+  if (w !== this._viewport[2] || h !== this._viewport[3]) {
+    this._viewport[2] = w
+    this._viewport[3] = h
+    resized = true
   }
 
+  if (this.isAnyItemDirty(this.items) || resized || this.renderer.dirty) {
+    this.renderer.draw(this.items)
+  }
+
+  const tex = this.renderer.getTexture()
+  this._textureRect[2] = tex.width
+  this._textureRect[3] = tex.height
+
   this.drawTexture2d({
-    texture: this.renderer.getTexture(),
+    texture: tex,
     rect: this._textureRect
   })
 
@@ -874,11 +892,16 @@ GUI.prototype.drawTextures = function () {
         continue
       }
     }
-    const scale = this.scale * this._pixelRatio
+    const scale = this.scale * this._ctx.pixelRatio
     let bounds = []
     if (item.type === 'texture2D') {
       // we are trying to match flipped gui texture which 0,0 starts at the top with window coords that have 0,0 at the bottom
-      bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale]
+      bounds = [item.activeArea[0][0] * scale, item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, item.activeArea[0][1] * scale]
+      if (item.texture.flipY) {
+        var tmp = bounds[1]
+        bounds[1] = bounds[3]
+        bounds[3] = tmp
+      }
       this.drawTexture2d({
         texture: item.texture,
         rect: bounds
@@ -887,7 +910,12 @@ GUI.prototype.drawTextures = function () {
     if (item.type === 'texturelist') {
       item.items.forEach(function (textureItem) {
         // const bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale]
-        bounds = [textureItem.activeArea[0][0] * scale, this._windowHeight - textureItem.activeArea[1][1] * scale, textureItem.activeArea[1][0] * scale, this._windowHeight - textureItem.activeArea[0][1] * scale]
+        bounds = [textureItem.activeArea[0][0] * scale, textureItem.activeArea[1][1] * scale, textureItem.activeArea[1][0] * scale, textureItem.activeArea[0][1] * scale]
+        if (textureItem.texture.flipY) {
+          var tmp = bounds[1]
+          bounds[1] = bounds[3]
+          bounds[3] = tmp
+        }
         this.drawTexture2d({
           texture: textureItem.texture,
           rect: bounds
@@ -897,7 +925,7 @@ GUI.prototype.drawTextures = function () {
     if (item.type === 'textureCube') {
       const level = (item.options && item.options.level !== undefined) ? item.options.level : 0
       // we are trying to match flipped gui texture which 0,0 starts at the top with window coords that have 0,0 at the bottom
-      bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale]
+      bounds = [item.activeArea[0][0] * scale, item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, item.activeArea[0][1] * scale]
       this.drawTextureCube({
         texture: item.texture,
         rect: bounds,
@@ -905,8 +933,6 @@ GUI.prototype.drawTextures = function () {
       })
     }
   }
-  // this.screenImage.setBounds(this.screenBounds)
-  // this.screenImage.setImage(this.renderer.getTexture())
 }
 
 /**
@@ -961,6 +987,6 @@ GUI.prototype.toggleEnabled = function () {
   return this.enabled
 }
 
-module.exports = function createGUI (ctx, width, height, pixelRatio) {
-  return new GUI(ctx, width, height, pixelRatio)
+module.exports = function createGUI (ctx) {
+  return new GUI(ctx)
 }

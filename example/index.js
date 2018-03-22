@@ -48,7 +48,7 @@ void main() {
   gl_FragColor = texture2D(uTexture, vTexCoord * uRepeat);
 }`
 
-const ctx = createContext()
+const ctx = createContext({ pixelRatio: 2 })
 
 let gui = createGUI(ctx)
 
@@ -64,7 +64,8 @@ const camera = createCamera({
 const orbiter = createOrbiter({ camera: camera })
 
 function initGUI (res) {
-  gui.addHeader('Settings')
+  gui.addTab('One')
+  gui.addColumn('Settings')
   gui.addFPSMeeter()
   gui.addParam('Scale', State, 'scale', { min: 0.1, max: 2 })
   gui.addParam('Rotate camera', State, 'rotate')
@@ -72,21 +73,20 @@ function initGUI (res) {
   gui.addSeparator()
   gui.addHeader('Color')
   gui.addParam('BG Color [RGBA]', State, 'bgColor')
-  gui.addParam('BG Color [HSB]', State, 'bgColor', { type: 'color', palette: res.palette })
+  gui.addParam('BG Color [HSB]', State, 'bgColor', { type: 'color', palette2: res.palette })
 
-  gui.addHeader('Geometry').setPosition(180, 10)
+  gui.addColumn('Geometry')
   gui.addRadioList('Type', State, 'currentGeometry', State.geometries)
   gui.addParam('Torus Size', State, 'size', { min: 0.1, max: 2 }, onTorusSizeChange)
 
-  // this.gui.addSeparator()
-  gui.addSeparator()
-  gui.addHeader('Texture')
-  gui.addTexture2D('Default', State.textures[0])
+  gui.addTab('Two')
+  gui.addColumn('Texture')
+  gui.addTexture2D('Default', State.textures[1])
   gui.addTexture2DList('Default', State, 'currentTexture', State.textures.map(function (tex, index) {
     return { texture: tex, value: index }
   }))
 
-  gui.addHeader('Text').setPosition(360, 10)
+  gui.addColumn('Text')
   gui.addParam('Test message', State, 'text', {}, function (e) {
     console.log('New text: ', 'text')
   })
@@ -110,13 +110,11 @@ load(resources, (err, res) => {
   if (err) console.log(err)
 
   State.textures = [
-    ctx.texture2D({ data: res.plask, flipY: true, wrap: ctx.Wrap.Repeat, encoding: ctx.Encoding.SRGB }),
-    // ctx.texture2D({ data: res.pex, flipY: true, wrap: ctx.Wrap.Repeat, encoding: ctx.Encoding.SRGB }),
-    // ctx.texture2D({ data: res.noise, flipY: true, wrap: ctx.Wrap.Repeat, encoding: ctx.Encoding.SRGB })
+    ctx.texture2D({ data: res.plask, width: res.plask.width, height: res.plask.height, flipY: true, wrap: ctx.Wrap.Repeat, encoding: ctx.Encoding.SRGB }),
+    ctx.texture2D({ data: res.pex, width: res.pex.width, height: res.pex.height, flipY: true, wrap: ctx.Wrap.Repeat, encoding: ctx.Encoding.SRGB }),
+    ctx.texture2D({ data: res.noise, width: res.noise.width, height: res.noise.height, flipY: true, wrap: ctx.Wrap.Repeat, encoding: ctx.Encoding.SRGB })
   ]
 
-  console.log('#')
-  console.log(ctx.Filter)
   ctx.update(State.textures[0], {
     mipmap: true,
     min: ctx.Filter.LinearMipmapLinear,
@@ -124,8 +122,6 @@ load(resources, (err, res) => {
     // wrap: ctx.Wrap.Clamp,
     // mag: ctx.Filter.Linear
   })
-  console.log(State.textures[0])
-  console.log('#')
   initGUI(res)
 })
 

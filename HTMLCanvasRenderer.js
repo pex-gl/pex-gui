@@ -11,19 +11,21 @@ function floatRgb2Hex (rgb) {
  * @param {[type]} width  [description]
  * @param {[type]} height [description]
  */
-function HTMLCanvasRenderer (ctx, width, height, pixelRatio) {
+function HTMLCanvasRenderer (ctx) {
   this._ctx = ctx
-  this.pixelRatio = pixelRatio || 1
   this.canvas = document.createElement('canvas')
+
+  const W = (ctx.gl.drawingBufferWidth / 3 | 0)
+  const H = (ctx.gl.drawingBufferHeight / 3) | 0
   // TODO: move this up
   this.tex = ctx.texture2D({
-    width: width,
-    height: height,
+    width: W,
+    height: H,
     pixelFormat: ctx.PixelFormat.RGBA8,
     encoding: ctx.Encoding.SRGB
   })
-  this.canvas.width = width
-  this.canvas.height = height
+  this.canvas.width = W
+  this.canvas.height = H
   this.ctx = this.canvas.getContext('2d')
   this.dirty = true
 }
@@ -34,7 +36,8 @@ function HTMLCanvasRenderer (ctx, width, height, pixelRatio) {
  * @param  {[type]} scale [description]
  * @return {[type]}       [description]
  */
-HTMLCanvasRenderer.prototype.draw = function (items, scale) {
+HTMLCanvasRenderer.prototype.draw = function (items) {
+  this.dirty = false
   function makePaletteImage (e, img) {
     const canvas = document.createElement('canvas')
     canvas.width = w
@@ -47,9 +50,11 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
     e.dirty = true
   }
 
+  const scale = 1
+  const pixelRatio = this._ctx.pixelRatio
   const ctx = this.ctx
   ctx.save()
-  ctx.scale(this.pixelRatio, this.pixelRatio)
+  ctx.scale(scale * pixelRatio, scale * pixelRatio)
   ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
   ctx.font = '10px Monaco'
   let dy = 10
@@ -79,12 +84,14 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
   }
   dx = 10
 
+  let maxWidth = 0
+  let maxHeight = 0
   for (let i = 0; i < items.length; i++) {
     const e = items[i]
 
     if (e.px && e.px) {
-      dx = e.px / this.pixelRatio
-      dy = e.py / this.pixelRatio
+      dx = e.px
+      dy = e.py
     }
 
     let eh = 20 * scale
@@ -129,6 +136,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
     if (e.type === 'fps') eh = (24 + 40) * scale
     if (e.type === 'stats') eh = (18 + 4 * 19) * scale
     if (e.type === 'label') eh = e.title.split('\n').length * 18 * scale
+    if (e.type === 'separator') eh /= 2
 
     if (e.type !== 'separator') {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.56)'
@@ -296,9 +304,27 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
       ctx.fillText(items[i].title, dx + 5, dy + 13)
     }
     dy += eh
+    maxWidth = Math.max(maxWidth, dx + w)
+    maxHeight = Math.max(maxHeight, dy)
   }
   ctx.restore()
   this.updateTexture()
+
+  if (maxWidth && maxHeight) {
+    maxWidth = (maxWidth * this._ctx.pixelRatio) | 0
+    maxHeight = (maxHeight * this._ctx.pixelRatio) | 0
+    if (this.canvas.width !== maxWidth) {
+      this.canvas.width = maxWidth
+      this.dirty = true
+    }
+    if (this.canvas.height !== maxHeight) {
+      this.canvas.height = maxHeight
+      this.dirty = true
+    }
+    if (this.dirty) {
+      this.draw(items)
+    }
+  }
 }
 
 /**
@@ -329,7 +355,6 @@ HTMLCanvasRenderer.prototype.getImageColor = function (image, x, y) {
  */
 HTMLCanvasRenderer.prototype.updateTexture = function () {
   // const gl = this.gl
-
   this._ctx.update(this.tex, {
     data: this.canvas,
     width: this.canvas.width,

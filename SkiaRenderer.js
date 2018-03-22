@@ -1,6 +1,7 @@
 const plask = require('plask-wrap')
 const SkCanvas = plask.SkCanvas
 const SkPaint = plask.SkPaint
+const SkPath = plask.SkPath
 const Rect = require('pex-geom/Rect')
 
 /**
@@ -9,7 +10,9 @@ const Rect = require('pex-geom/Rect')
  * @param {[type]} width  [description]
  * @param {[type]} height [description]
  */
-function SkiaRenderer (ctx, width, height, pixelRatio) {
+function SkiaRenderer (ctx) {
+  const width = (ctx.gl.drawingBufferWidth / 3) | 0
+  const height = (ctx.gl.drawingBufferHeight / 3) | 0
   this.ctx = ctx
   this.tex = ctx.texture2D({
     width: width,
@@ -17,8 +20,6 @@ function SkiaRenderer (ctx, width, height, pixelRatio) {
     pixelFormat: ctx.PixelFormat.RGBA8,
     encoding: ctx.Encoding.SRGB
   })
-  console.log('tex', this.tex.width, this.tex.height)
-  this.pixelRatio = pixelRatio
   this.canvas = SkCanvas.create(width, height)
   this.canvasPaint = new SkPaint()
   this.fontPaint = new SkPaint()
@@ -27,6 +28,10 @@ function SkiaRenderer (ctx, width, height, pixelRatio) {
   this.fontPaint.setTextSize(10)
   this.fontPaint.setFontFamily('Monaco')
   this.fontPaint.setStrokeWidth(0)
+  this.linePaint = new SkPaint()
+  this.linePaint.setColor(255, 255, 255, 255)
+  this.linePaint.setStroke()
+  this.tabPaint = new SkPaint()
   this.headerFontPaint = new SkPaint()
   this.headerFontPaint.setStyle(SkPaint.kFillStyle)
   this.headerFontPaint.setColor(0, 0, 0, 255)
@@ -73,6 +78,7 @@ function SkiaRenderer (ctx, width, height, pixelRatio) {
   this.colorPaint = new SkPaint()
   this.colorPaint.setStyle(SkPaint.kFillStyle)
   this.colorPaint.setColor(255, 255, 255, 255)
+  this.dirty = true
 }
 
 /**
@@ -81,10 +87,12 @@ function SkiaRenderer (ctx, width, height, pixelRatio) {
  * @param  {[type]} scale [description]
  * @return {[type]}       [description]
  */
-SkiaRenderer.prototype.draw = function (items, scale) {
+SkiaRenderer.prototype.draw = function (items) {
+  this.dirty = false
+  const scale = 1
   const canvas = this.canvas
   canvas.save()
-  canvas.scale(this.pixelRatio, this.pixelRatio)
+  canvas.scale(this.ctx.pixelRatio * scale, this.ctx.pixelRatio * scale)
   canvas.drawColor(0, 0, 0, 0, plask.SkPaint.kClearMode)
   // transparent
   let dy = 10
@@ -95,13 +103,52 @@ SkiaRenderer.prototype.draw = function (items, scale) {
   const margin = 3
   let numColumns = 0
 
+  const tabs = items.filter((item) => item.type === 'tab')
+  const defaultDy = tabs.length ? 10 + 26 * scale + 5 : 10
+
+  for (let j = 0; j < tabs.length; j++) {
+    const tab = tabs[j]
+    let eh = 30 * scale
+    // ctx.fillStyle = 'rgba(0, 0, 0, 0.56)'
+    // ctx.fillRect(dx, dy, w, eh - 2)
+    canvas.drawRect(this.panelBgPaint, dx, dy, dx + w, dy + eh)
+    tab.current ? this.tabPaint.setColor(46, 204, 46 + 113, 255) : this.tabPaint.setColor(75, 75, 75, 255)
+    // ctx.fillStyle = tab.current ? 'rgba(46, 204, 113, 1.0)' : 'rgba(75, 75, 75, 1.0)'
+    // ctx.fillRect(dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3)
+    canvas.drawRect(this.tabPaint, dx + 3, dy + 3, dx + w - 3, dy + eh - 3)
+    // ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+    // ctx.fillRect(dx, dy + eh - 8, w, 4)
+    this.tabPaint.setColor(0, 0, 0, 128)
+    canvas.drawRect(this.tabPaint, dx + 3, dy + eh - 3, dx + w - 3, dy + eh - 7)
+    // ctx.fillStyle = tab.current ? 'rgba(0, 0, 0, 1)' : 'rgba(175, 175, 175, 1.0)'
+    // ctx.fillText(tab.title, dx + 5, dy + 16)
+    canvas.drawText(tab.current ? this.headerFontPaint : this.fontPaint, tab.title, dx + 4 + 3, dy + 3 + 13)
+    Rect.set4(tab.activeArea, dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3)
+    dx += w + margin
+  }
+
+  dx = 10
+  let maxWidth = 0
+  let maxHeight = 0
   for (let i = 0; i < items.length; i++) {
     const e = items[i]
     if (e.px && e.px) {
-      dx = e.px / this.pixelRatio
-      dy = e.py / this.pixelRatio
+      dx = e.px
+      dy = e.py
     }
     let eh = 20
+    if (e.type === 'tab') {
+      continue
+    }
+    if (tabs.length > 0) {
+      const prevTabs = items.filter((e, index) => {
+        return index < i && e.type === 'tab'
+      })
+      const parentTab = prevTabs[prevTabs.length - 1]
+      if (parentTab && !parentTab.current) {
+        continue
+      }
+    }
 
     if (e.options && e.options.palette && !e.options.paletteImage) {
       if (e.options.palette.width) {
@@ -112,9 +159,8 @@ SkiaRenderer.prototype.draw = function (items, scale) {
     }
 
     if (e.type === 'column') {
-      console.log('column!')
       dx = 10 + numColumns * (w + margin)
-      dy = 10
+      dy = defaultDy
       numColumns++
       continue
     }
@@ -135,6 +181,8 @@ SkiaRenderer.prototype.draw = function (items, scale) {
     }
     if (e.type === 'header') eh = 26 * scale
     if (e.type === 'text') eh = 45 * scale
+    if (e.type === 'fps') eh = (24 + 40) * scale
+    if (e.type === 'separator') eh /= 2
 
     if (e.type !== 'separator') {
       canvas.drawRect(this.panelBgPaint, dx, dy, dx + w, dy + eh - 2)
@@ -224,6 +272,22 @@ SkiaRenderer.prototype.draw = function (items, scale) {
     } else if (e.type === 'header') {
       canvas.drawRect(this.headerBgPaint, dx + 3, dy + 3, dx + w - 3, dy + eh - 5)
       canvas.drawText(this.headerFontPaint, items[i].title, dx + 6, dy + 16)
+    } else if (e.type === 'fps') {
+      // FIXME: dirty dependency between FPS history and GUI width
+      if (e.values.length > w - 6) e.values.shift()
+      // ctx.fillStyle = 'rgba(50, 50, 50, 1)'
+      const gh = eh - 20 - 5
+      // ctx.fillRect(dx + 3, dy + 20, w - 6, gh)
+      canvas.drawRect(this.textBgPaint, dx + 3, dy + 20, dx + w - 3, dy + 20 + gh)
+      let py = gh - (e.values[0] || 0) / 60 * gh
+      let path = new SkPath()
+      path.moveTo(dx + 3, dy + 20 + py)
+      for (let j = 0; j < e.values.length; j++) {
+        py = gh - e.values[j] / 60 * gh
+        path.lineTo(dx + 3 + j, dy + 20 + py)
+      }
+      canvas.drawPath(this.linePaint, path)
+      canvas.drawText(this.fontPaint, e.title + ' : ' + e.currentValue, dx + 6, dy + 16)
     } else if (e.type === 'text') {
       canvas.drawText(this.fontPaint, items[i].title, dx + 3, dy + 13)
       canvas.drawRect(this.textBgPaint, dx + 3, dy + 20, dx + w - 3, dy + eh - 5)
@@ -238,9 +302,22 @@ SkiaRenderer.prototype.draw = function (items, scale) {
       canvas.drawText(this.fontPaint, items[i].title, dx + 3, dy + 13)
     }
     dy += eh
+    maxWidth = Math.max(maxWidth, dx + w)
+    maxHeight = Math.max(maxHeight, dy)
   }
   canvas.restore()
   this.updateTexture()
+
+  if (maxWidth && maxHeight) {
+    maxWidth = (maxWidth * this.ctx.pixelRatio) | 0
+    maxHeight = (maxHeight * this.ctx.pixelRatio) | 0
+    if (maxWidth !== this.canvas.width || maxHeight !== this.canvas.height) {
+      console.log('Resize GUI Canvas', maxWidth, maxHeight)
+      this.canvas = SkCanvas.create(maxWidth, maxHeight)
+      this.dirty = true
+      this.draw(items)
+    }
+  }
 }
 
 /**
