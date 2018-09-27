@@ -78,7 +78,6 @@ vec4 encode(vec4 pixel, int encoding) {
 let TEXTURE_2D_FRAG = DECODE_ENCODE + `
 uniform sampler2D uTexture;
 uniform int uTextureEncoding;
-uniform float uHDR;
 varying vec2 vTexCoord0;
 void main() {
   vec4 color = texture2D(uTexture, vTexCoord0);
@@ -98,7 +97,6 @@ const float PI = 3.1415926;
 varying vec2 vTexCoord0;
 uniform samplerCube uTexture;
 uniform int uTextureEncoding;
-uniform float uHDR;
 uniform float uLevel;
 uniform float uFlipEnvMap;
 void main() {
@@ -853,7 +851,6 @@ GUI.prototype.draw = function () {
 
   const w = this._ctx.gl.drawingBufferWidth
   const h = this._ctx.gl.drawingBufferHeight
-  const pixelRatio = this._ctx.pixelRatio
   let resized = false
   if (w !== this._viewport[2] || h !== this._viewport[3]) {
     this._viewport[2] = w
