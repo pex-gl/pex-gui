@@ -2,6 +2,8 @@
 
 GUI widgets for the pex library
 
+![](screenshot.png)
+
 # Usage
 
 ```
