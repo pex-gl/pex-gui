@@ -729,7 +729,7 @@ GUI.prototype.addTexture2DList = function (title, contextObject, attributeName, 
     contextObject: contextObject,
     attributeName: attributeName,
     activeArea: [[0, 0], [0, 0]],
-    items: items,
+    items: items.map((item) => ({ value: item })),
     itemsPerRow: itemsPerRow || 4,
     onchange: onchange,
     dirty: true
@@ -911,13 +911,13 @@ GUI.prototype.drawTextures = function () {
       item.items.forEach(function (textureItem) {
         // const bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale]
         bounds = [textureItem.activeArea[0][0] * scale, textureItem.activeArea[1][1] * scale, textureItem.activeArea[1][0] * scale, textureItem.activeArea[0][1] * scale]
-        if (textureItem.texture.flipY) {
+        if (textureItem.value.flipY) {
           var tmp = bounds[1]
           bounds[1] = bounds[3]
           bounds[3] = tmp
         }
         this.drawTexture2d({
-          texture: textureItem.texture,
+          texture: textureItem.value,
           rect: bounds
         })
       }.bind(this))

@@ -126,7 +126,7 @@ HTMLCanvasRenderer.prototype.draw = function (items) {
     if (e.type === 'textureCube') eh = 24 + w / 2
     if (e.type === 'radiolist') eh = 18 + e.items.length * 20 * scale
     if (e.type === 'texturelist') {
-      const aspectRatio = e.items[0].texture.width / e.items[0].texture.height
+      const aspectRatio = e.items[0].value.width / e.items[0].value.height
       cellSize = Math.floor((w - 2 * margin) / e.itemsPerRow)
       numRows = Math.ceil(e.items.length / e.itemsPerRow)
       eh = 18 + 3 + numRows * cellSize / aspectRatio
