@@ -100,15 +100,16 @@ uniform samplerCube uTexture;
 uniform int uTextureEncoding;
 uniform float uHDR;
 uniform float uLevel;
+uniform float uFlipEnvMap;
 void main() {
-  float theta = PI * (vTexCoord0.x * 2.0 - 1.0);
+  float theta = PI * (vTexCoord0.x * 2.0);
   float phi = PI * (1.0 - vTexCoord0.y);
 
   float x = sin(phi) * sin(theta);
-  float y = cos(phi);
+  float y = -cos(phi);
   float z = -sin(phi) * cos(theta);
 
-  vec3 N = normalize(vec3(x, y, z));
+  vec3 N = normalize(vec3(uFlipEnvMap * x, y, z));
   vec4 color = textureCube(uTexture, N, uLevel);
   color = decode(color, uTextureEncoding);
   // if LINEAR || RGBM then tonemap
@@ -195,6 +196,7 @@ function GUI (ctx) {
     },
     indices: { buffer: ctx.indexBuffer(rectIndices) },
     uniforms: {
+      uFlipEnvMap: 1
     }
   }
 
@@ -218,7 +220,8 @@ function GUI (ctx) {
         uTextureEncoding: props.texture.encoding,
         uViewport: this._viewport,
         uRect: props.rect,
-        uLevel: props.level
+        uLevel: props.level,
+        uFlipEnvMap: props.flipEnvMap || 1
       }
     })
   }
@@ -761,7 +764,7 @@ GUI.prototype.addTextureCube = function (title, texture, options) {
     type: 'textureCube',
     title: title,
     texture: texture,
-    options: options,
+    options: options || { flipEnvMap: 1 },
     activeArea: [[0, 0], [0, 0]],
     dirty: true,
     flipZ: 1
@@ -929,7 +932,8 @@ GUI.prototype.drawTextures = function () {
       this.drawTextureCube({
         texture: item.texture,
         rect: bounds,
-        level: level
+        level: level,
+        flipEnvMap: item.options.flipEnvMap
       })
     }
   }

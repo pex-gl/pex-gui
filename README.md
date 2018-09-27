@@ -61,7 +61,11 @@ gui.addParam('Force', settings, 'force', { min: 0, max: 1 })
 - `items`: Array of `Texture2D` (from pex-context)
 
 ### `addTexture2D(title, texture, options)`
-### `addTextureCube(title, texture, options)`
+
+### `addTextureCube(title, texture, { flipEnvMap: 1 })`
+
+- `flipEnvMap` - should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped
+
 ### `addFPSMeeter()`
 ### `setEnabled(state)`
 ### `isEnabled()`
