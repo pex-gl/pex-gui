@@ -17,7 +17,7 @@ const State = {
   rotation: [0, 0, 0],
   bgColor: [0.92, 0.2, 0.2, 1.0],
   textures: [],
-  currentTexture: 0,
+  currentTexture: null,
   geometries: [],
   currentGeometry: 0,
   text: 'test message'
@@ -82,9 +82,7 @@ function initGUI (res) {
   gui.addTab('Two')
   gui.addColumn('Texture')
   gui.addTexture2D('Default', State.textures[1])
-  gui.addTexture2DList('Default', State, 'currentTexture', State.textures.map(function (tex, index) {
-    return { texture: tex, value: index }
-  }))
+  gui.addTexture2DList('Texture List', State, 'currentTexture', State.textures)
 
   gui.addColumn('Text')
   gui.addParam('Test message', State, 'text', {}, function (e) {
@@ -196,7 +194,7 @@ ctx.frame(function frame () {
       attributes: State.geometries[State.currentGeometry].attributes,
       indices: State.geometries[State.currentGeometry].indices,
       uniforms: {
-        uTexture: State.textures[State.currentTexture]
+        uTexture: State.currentTexture || State.textures[0]
       }
     })
   }
