@@ -1,6 +1,6 @@
 {
   "name": "pex-gui",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "GUI widgets for the pex library",
   "homepage": "https://github.com/pex-gl/pex-gui.git",
   "keywords": [
