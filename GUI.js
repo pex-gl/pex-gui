@@ -8,11 +8,12 @@ const Renderer = isPlask
   : require('./HTMLCanvasRenderer')
 const GUIControl = require('./GUIControl')
 
+const DEFAULT_THEME = require('./theme.js')
 const VERT = require('./shaders/main.vert.js')
 const TEXTURE_CUBE_FRAG = require('./shaders/texture-cube.frag.js')
 const TEXTURE_2D_FRAG = require('./shaders/texture-2d.frag.js')
 
-function GUI(ctx) {
+function GUI(ctx, { theme = {} } = {}) {
   const W = ctx.gl.drawingBufferWidth
   const H = ctx.gl.drawingBufferHeight
   this._ctx = ctx
@@ -102,7 +103,7 @@ function GUI(ctx) {
     })
   }
 
-  this.renderer = new Renderer(ctx, W, H)
+  this.renderer = new Renderer(ctx, { ...DEFAULT_THEME, ...theme })
 
   this.items = []
   this.enabled = true
@@ -655,8 +656,7 @@ GUI.prototype.addTextureCube = function(title, texture, options) {
     texture: texture,
     options: options || { flipEnvMap: 1 },
     activeArea: [[0, 0], [0, 0]],
-    dirty: true,
-    flipZ: 1
+    dirty: true
   })
   this.items.push(ctrl)
   return ctrl
@@ -709,6 +709,7 @@ GUI.prototype.update = function() {
       }
       e.dirty = needsRedraw
     } else if (e.type === 'stats') {
+      // TODO: document
       e.update()
       e.dirty = needsRedraw
     }
@@ -859,6 +860,6 @@ GUI.prototype.toggleEnabled = function() {
   return this.enabled
 }
 
-module.exports = function createGUI(ctx) {
-  return new GUI(ctx)
+module.exports = function createGUI(ctx, opts) {
+  return new GUI(ctx, opts)
 }

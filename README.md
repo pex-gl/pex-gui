@@ -1,82 +1,232 @@
 # pex-gui
 
-GUI widgets for the pex library
+GUI controls for the pex library.
 
 ![](screenshot.png)
 
-# Usage
+## Usage
 
 ```js
-const ctx = require('pex-context')()
+const createContext = require('pex-context')
 const createGUI = require('pex-gui')
 
-const settings = {
-  force: 0
+const State = {
+  rotation: 0
 }
 
+const ctx = createContext()
 const gui = createGUI(ctx)
-gui.addParam('Force', settings, 'force', { min: 0, max: 1 })
+
+gui.addParam('Rotation', State, 'rotation', {
+  min: -Math.PI / 2,
+  max: Math.PI / 2
+})
 
 ctx.frame(() => {
   gui.draw()
 })
 ```
 
-# API
+## API
 
-## GUI
+### GUI
 
-### gui = createGUI(ctx)
+#### gui = createGUI(ctx [, options])
 
 - `ctx`: Context - gl context from `pex-context`
+- `options.theme`: Object - optional theme customiser object. Colors defined by `rgba()` strings. See [theme file](https://github.com/pex-gl/pex-gui/theme.js) for all options.
 
-```javascript
+```js
 const createGUI = require('pex-gui')
+
 const gui = createGUI(ctx)
 ```
 
-### `gui.draw()`
+#### `gui.draw()`
 
-Renders the gui. Should be called at the end of the frame.
+Renders the GUI. Should be called at the end of the frame.
 
-### `gui.addParam(name, object, propName, [, opts, onChange])`
+#### `gui.addTab(title)`
 
-- `name`: String
-- `object`: Object - source object holding the value
-- `propName`: String - source object property to control
-- `opts`:
-  - `min`: Number, min value
-  - `max`: Number, max value
-- `onChange`: Function, on change callback
+Add a tab component.
 
-```javascript
-gui.addParam('Force', settings, 'force', { min: 0, max: 1 })
+| option  | info          | type   |
+| ------- | ------------- | ------ |
+| `title` | Control title | String |
+
+```js
+gui.addTab('Example')
 ```
 
-### `addButton(title, onClick)`
+#### `gui.addColumn(title)`
 
-### `addRadioList(title, contextObject, attributeName, items, onchange)`
+Add a column component.
 
-- `items`: Array of `{ name: String, value: Int }`
+| option  | info          | type   |
+| ------- | ------------- | ------ |
+| `title` | Control title | String |
 
-### `addTexture2DList(title, contextObject, attributeName, items, itemsPerRow, onchange)`
+```js
+gui.addColumn('Inputs')
+```
 
-- `items`: Array of `Texture2D` (from pex-context)
+#### `gui.addSeparator()`
 
-### `addTexture2D(title, texture, options)`
+Add some breathing space between controls.
 
-### `addTextureCube(title, texture, { flipEnvMap: 1 })`
+```js
+gui.addSeparator()
+```
 
-- `flipEnvMap` - should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped
+#### `gui.addParam(title, object, propName, [, opts, onChange])`
 
-### `addFPSMeeter()`
+| option            | info                              | type     |
+| ----------------- | --------------------------------- | -------- |
+| `title`           | Control title                     | String   |
+| `object`          | Source object holding the value   | Object   |
+| `propName`        | Source object property to control | String   |
+| `opts.min`        | Minimum value                     | Number   |
+| `opts.min`        | Maximum value                     | Number   |
+| `onChange(value)` | Callback triggered on change      | Function |
 
-### `setEnabled(state)`
+```js
+gui.addParam('Checkbox', State, 'rotate')
 
-### `isEnabled()`
+gui.addParam('Text message', State, 'text', {}, function(value) {
+  console.log(value)
+})
 
-### `toggleEnabled()`
+gui.addParam('Slider', State, 'range', {
+  min: -Math.PI / 2,
+  max: Math.PI / 2
+})
 
-### `serialize()`
+gui.addParam('Multi Slider', State, 'position', {
+  min: 0,
+  max: 10
+})
 
-### `deserialize(data)`
+gui.addParam('Color [RGBA]', State, 'color')
+```
+
+#### `gui.addButton(title, onClick)`
+
+Add a clickable button.
+
+| option    | info                        | type     |
+| --------- | --------------------------- | -------- |
+| `title`   | Control title               | String   |
+| `onClick` | Callback triggered on click | Function |
+
+```js
+gui.addButton('Button', () => {
+  console.log('Called back')
+})
+```
+
+#### `gui.addRadioList(title, object, propName, items, onChange)`
+
+Add a radio list with options.
+
+| option     | info                            | type                                    |
+| ---------- | ------------------------------- | --------------------------------------- |
+| `title`    | Control title                   | String                                  |
+| `object`   | Source object holding the value | Object                                  |
+| `index`    | Index of the initial option     | Number                                  |
+| `items`    | List of options                 | Array of `{ name: String, value: Int }` |
+| `onChange` | Callback triggered on change    | Function                                |
+
+```js
+gui.addRadioList(
+  'Radio list',
+  State,
+  'currentRadioListChoice',
+  State.radioListChoices
+)
+```
+
+#### `gui.addTexture2D(title, texture)`
+
+Add a texture visualiser (from pex-context).
+
+| option    | info           | type      |
+| --------- | -------------- | --------- |
+| `title`   | Control title  | String    |
+| `texture` | Texture object | Texture2D |
+
+```js
+gui.addTexture2D('Single', State.textures[1])
+```
+
+#### `gui.addTexture2DList(title, object, propName, items, itemsPerRow, onChange)`
+
+Add a texture visualiser for multiple textures (from pex-context).
+
+| option    | info           | type      |
+| --------- | -------------- | --------- |
+| `title`   | Control title  | String    |
+| `texture` | Texture object | Texture2D |
+
+| option        | info                            | type                                          |
+| ------------- | ------------------------------- | --------------------------------------------- |
+| `title`       | Control title                   | String                                        |
+| `object`      | Source object holding the value | Object                                        |
+| `index`       | Index of the initial texture    | Number                                        |
+| `items`       | List of textures                | Array of `{ texture: Texture2D, value: Int }` |
+| `itemsPerRow` | Number of items per row         | Number (default 4)                            |
+| `onChange`    | Callback triggered on change    | Function                                      |
+
+```js
+gui.addTexture2DList(
+  'List',
+  State,
+  'currentTexture',
+  State.textures.map((tex, index) => ({ texture: tex, value: index }))
+)
+```
+
+#### `gui.addTextureCube(title, texture, options)`
+
+Add a cube texture visualiser (from pex-context).
+
+| option               | info                                                                               | type      |
+| -------------------- | ---------------------------------------------------------------------------------- | --------- |
+| `title`              | Control title                                                                      | String    |
+| `texture`            | Texture object                                                                     | Texture2D |
+| `options.flipEnvMap` | should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped | Number    |
+
+```js
+gui.addTextureCube('Single', State.textures[1])
+```
+
+#### `gui.addFPSMeeter()`
+
+Add a FPS counter.
+
+```js
+gui.addFPSMeeter()
+```
+
+#### `gui.setEnabled(state)`
+
+Enable or disable the gui visibility.
+
+#### `gui.isEnabled()`
+
+Check if the gui is enabled.
+
+#### `gui.toggleEnabled()`
+
+Toggle the gui visibility.
+
+#### `gui.serialize()`
+
+Retrieve a serialized value of the current GUI's state.
+
+#### `gui.deserialize(data)`
+
+Deserialize a previously serialized data state GUI's state.
+
+## License
+
+MIT, see [LICENSE.md](http://github.com/pex-gl/pex-gui/blob/master/LICENSE.md) for details.

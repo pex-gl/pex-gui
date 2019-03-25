@@ -1,29 +1,43 @@
-const mat4 = require('pex-math/mat4')
-const quat = require('pex-math/quat')
-const createTorus = require('primitive-torus')
-const createCube = require('primitive-cube')
-const createGUI = require('../../pex-gui')
+const createGUI = require('../')
+
 const load = require('pex-io/load')
 const createContext = require('pex-context')
 const createCamera = require('pex-cam/perspective')
 const createOrbiter = require('pex-cam/orbiter')
+const mat4 = require('pex-math/mat4')
+const quat = require('pex-math/quat')
+const createTorus = require('primitive-torus')
+const createCube = require('primitive-cube')
 const isBrowser = require('is-browser')
 
 const State = {
+  currentRadioListChoice: 0,
+  radioListChoices: ['Choice 1', 'Choice 2', 'Choice 3'].map((name, value) => ({
+    name,
+    value
+  })),
+  checkboxValue: false,
+  message: 'Message',
+  range: 0,
+  position: [2, 0],
+  rgba: [0.92, 0.2, 0.2, 1.0],
+  hsb: [0.2, 0.92, 0.2, 1.0],
+  currentTexture: 0,
+  textures: [],
+}
+
+const ExampleState = {
   scale: 1,
   rotate: false,
   time: 0,
   size: [1, 0.2],
   rotation: [0, 0, 0],
   bgColor: [0.92, 0.2, 0.2, 1.0],
-  textures: [],
-  currentTexture: 0,
-  geometries: [],
   currentGeometry: 0,
-  text: 'test message'
+  geometries: []
 }
 
-const vert = `
+const vert = /* glsl */ `
 attribute vec2 aTexCoord;
 attribute vec3 aPosition;
 uniform mat4 uProjectionMatrix;
@@ -36,7 +50,7 @@ void main() {
 }
 `
 
-const frag = `
+const frag = /* glsl */ `
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -50,7 +64,7 @@ void main() {
 
 const ctx = createContext({ pixelRatio: 2 })
 
-let gui = createGUI(ctx)
+const gui = createGUI(ctx)
 
 const camera = createCamera({
   fov: Math.PI / 4,
@@ -64,34 +78,90 @@ const camera = createCamera({
 const orbiter = createOrbiter({ camera: camera })
 
 function initGUI(res) {
-  gui.addTab('One')
-  gui.addColumn('Settings')
-  gui.addFPSMeeter()
-  gui.addParam('Scale', State, 'scale', { min: 0.1, max: 2 })
-  gui.addParam('Rotate camera', State, 'rotate')
-  gui.addParam('Rotation', State, 'rotation', {
+  // Controls
+  gui.addTab('Controls')
+  gui.addColumn('Inputs')
+  gui.addLabel('Special Parameters')
+  gui.addButton('Button', () => {
+    // eslint-disable-next-line no-console
+    console.log('Called back')
+  })
+  gui.addRadioList(
+    'Radio list',
+    State,
+    'currentRadioListChoice',
+    State.radioListChoices
+  )
+
+  gui.addSeparator()
+  gui.addLabel('Smart Parameters')
+  gui.addParam('Checkbox', State, 'checkboxValue')
+  gui.addParam('Text message', State, 'message', {}, function(value) {
+    // eslint-disable-next-line no-console
+    console.log(value)
+  })
+  gui.addParam('Slider', State, 'range', {
     min: -Math.PI / 2,
     max: Math.PI / 2
   })
-  gui.addSeparator()
+  gui.addParam('Multi Slider', State, 'position', {
+    min: 0,
+    max: 10
+  })
+
+  gui.addColumn('Colors')
+  gui.addParam('Color [RGBA]', State, 'rgba')
+  gui.addParam('Color [HSB]', State, 'hsb', {
+    type: 'color',
+    palette2: res.palette
+  })
+
+  gui.addColumn('Textures')
+  gui.addTexture2D('Single', State.textures[1])
+  gui.addTexture2DList(
+    'List',
+    State,
+    'currentTexture',
+    State.textures.map((tex, index) => ({ texture: tex, value: index }))
+  )
+  gui.addTextureCube('Cube', State.cubeTexture)
+
+  gui.addColumn('Graphs')
+  gui.addFPSMeeter()
+
+  // Example
+  gui.addTab('Example')
+  gui.addColumn('Settings')
+  gui.addParam('Scale', ExampleState, 'scale', { min: 0.1, max: 2 })
+  gui.addParam('Rotate camera', ExampleState, 'rotate')
+  gui.addParam('Rotation', ExampleState, 'rotation', {
+    min: -Math.PI / 2,
+    max: Math.PI / 2
+  })
   gui.addHeader('Color')
-  gui.addParam('BG Color [RGBA]', State, 'bgColor')
-  gui.addParam('BG Color [HSB]', State, 'bgColor', {
+  gui.addParam('BG Color [RGBA]', ExampleState, 'bgColor')
+  gui.addParam('BG Color [HSB]', ExampleState, 'bgColor', {
     type: 'color',
     palette2: res.palette
   })
 
   gui.addColumn('Geometry')
-  gui.addRadioList('Type', State, 'currentGeometry', State.geometries)
-  gui.addParam(
-    'Torus Size',
-    State,
-    'size',
-    { min: 0.1, max: 2 },
-    onTorusSizeChange
+  gui.addRadioList(
+    'Type',
+    ExampleState,
+    'currentGeometry',
+    ExampleState.geometries
   )
+  gui.addParam('Torus Size', ExampleState, 'size', { min: 0.1, max: 2 }, () => {
+    const torus = createTorus({
+      majorRadius: ExampleState.size[0],
+      minorRadius: ExampleState.size[1]
+    })
+    ctx.update(ExampleState.geometries[1].attributes.aPosition, {
+      data: torus.positions
+    })
+  })
 
-  gui.addTab('Two')
   gui.addColumn('Texture')
   gui.addTexture2D('Default', State.textures[1])
   gui.addTexture2DList(
@@ -102,22 +172,6 @@ function initGUI(res) {
       return { texture: tex, value: index }
     })
   )
-
-  gui.addColumn('Text')
-  gui.addParam('Test message', State, 'text', {}, function() {
-    // eslint-disable-next-line no-console
-    console.log('New text: ', 'text')
-  })
-}
-
-function onTorusSizeChange() {
-  const torus = createTorus({
-    majorRadius: State.size[0],
-    minorRadius: State.size[1]
-  })
-  ctx.update(State.geometries[1].attributes.aPosition, {
-    data: torus.positions
-  })
 }
 
 const ASSET_DIR = isBrowser ? 'assets' : `${__dirname}/assets`
@@ -126,7 +180,13 @@ const resources = {
   palette: { image: ASSET_DIR + '/rainbow.jpg' },
   plask: { image: ASSET_DIR + '/plask.png' },
   pex: { image: ASSET_DIR + '/pex.png' },
-  noise: { image: ASSET_DIR + '/noise.png' }
+  noise: { image: ASSET_DIR + '/noise.png' },
+  posx: { image: ASSET_DIR + '/pisa/pisa_posx.jpg' },
+  negx: { image: ASSET_DIR + '/pisa/pisa_negx.jpg' },
+  posy: { image: ASSET_DIR + '/pisa/pisa_posy.jpg' },
+  negy: { image: ASSET_DIR + '/pisa/pisa_negy.jpg' },
+  posz: { image: ASSET_DIR + '/pisa/pisa_posz.jpg' },
+  negz: { image: ASSET_DIR + '/pisa/pisa_negz.jpg' }
 }
 
 load(resources, (err, res) => {
@@ -159,6 +219,12 @@ load(resources, (err, res) => {
     })
   ]
 
+  State.cubeTexture = ctx.textureCube({
+    data: [res.posx, res.negx, res.posy, res.negy, res.posz, res.negz],
+    width: 64,
+    height: 64
+  })
+
   ctx.update(State.textures[0], {
     mipmap: true,
     min: ctx.Filter.LinearMipmapLinear,
@@ -171,13 +237,13 @@ load(resources, (err, res) => {
 
 const clearCmd = {
   pass: ctx.pass({
-    clearColor: State.bgColor,
+    clearColor: ExampleState.bgColor,
     clearDepth: 1
   })
 }
 
 const cube = createCube()
-State.geometries.push({
+ExampleState.geometries.push({
   name: 'Cube',
   value: 0,
   attributes: {
@@ -188,7 +254,7 @@ State.geometries.push({
 })
 
 const torus = createTorus()
-State.geometries.push({
+ExampleState.geometries.push({
   name: 'Torus',
   value: 1,
   attributes: {
@@ -223,20 +289,24 @@ ctx.frame(function frame() {
 
   quat.setEuler(
     rotationQuat,
-    State.rotation[0],
-    State.rotation[1],
-    State.rotation[2]
+    ExampleState.rotation[0],
+    ExampleState.rotation[1],
+    ExampleState.rotation[2]
   )
   mat4.fromQuat(modelMatrix, rotationQuat)
-  mat4.scale(modelMatrix, [State.scale, State.scale, State.scale])
+  mat4.scale(modelMatrix, [
+    ExampleState.scale,
+    ExampleState.scale,
+    ExampleState.scale
+  ])
 
-  if (State.rotate) {
-    State.time += 1 / 60
+  if (ExampleState.rotate) {
+    ExampleState.time += 1 / 60
     camera.set({
       position: [
-        Math.cos(State.time * Math.PI) * 5,
-        Math.sin(State.time * 0.5) * 3,
-        Math.sin(State.time * Math.PI) * 5
+        Math.cos(ExampleState.time * Math.PI) * 5,
+        Math.sin(ExampleState.time * 0.5) * 3,
+        Math.sin(ExampleState.time * Math.PI) * 5
       ]
     })
     orbiter.set({ camera: camera })
@@ -244,13 +314,14 @@ ctx.frame(function frame() {
 
   if (State.textures.length > 0) {
     ctx.submit(drawCmd, {
-      attributes: State.geometries[State.currentGeometry].attributes,
-      indices: State.geometries[State.currentGeometry].indices,
+      attributes:
+        ExampleState.geometries[ExampleState.currentGeometry].attributes,
+      indices: ExampleState.geometries[ExampleState.currentGeometry].indices,
       uniforms: {
         uTexture: State.textures[State.currentTexture]
       }
     })
   }
 
-  if (gui) gui.draw()
+  gui.draw()
 })

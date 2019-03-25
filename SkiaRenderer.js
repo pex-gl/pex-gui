@@ -4,10 +4,20 @@ const SkPaint = plask.SkPaint
 const SkPath = plask.SkPath
 const Rect = require('pex-geom/Rect')
 
-function SkiaRenderer(ctx) {
+const fromRGBAString = (col) => {
+  let matches = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/.exec(
+    col
+  )
+  return matches
+    ? [+matches[1], +matches[2], +matches[3], Math.floor(+matches[4] * 255)]
+    : null
+}
+
+function SkiaRenderer(ctx, theme) {
   const width = (ctx.gl.drawingBufferWidth / 3) | 0
   const height = (ctx.gl.drawingBufferHeight / 3) | 0
   this.ctx = ctx
+  this.theme = theme
   this.tex = ctx.texture2D({
     width: width,
     height: height,
@@ -18,60 +28,62 @@ function SkiaRenderer(ctx) {
   this.canvasPaint = new SkPaint()
   this.fontPaint = new SkPaint()
   this.fontPaint.setStyle(SkPaint.kFillStyle)
-  this.fontPaint.setColor(255, 255, 255, 255)
-  this.fontPaint.setTextSize(10)
-  this.fontPaint.setFontFamily('Monaco')
+  this.fontPaint.setColor(...fromRGBAString(this.theme.color))
+  this.fontPaint.setTextSize(this.theme.fontSize)
+  this.fontPaint.setFontFamily(this.theme.fontFamily)
   this.fontPaint.setStrokeWidth(0)
   this.linePaint = new SkPaint()
-  this.linePaint.setColor(255, 255, 255, 255)
+  this.linePaint.setColor(...fromRGBAString(this.theme.color))
   this.linePaint.setStroke()
   this.tabPaint = new SkPaint()
   this.headerFontPaint = new SkPaint()
   this.headerFontPaint.setStyle(SkPaint.kFillStyle)
-  this.headerFontPaint.setColor(0, 0, 0, 255)
-  this.headerFontPaint.setTextSize(10)
-  this.headerFontPaint.setFontFamily('Monaco')
+  this.headerFontPaint.setColor(...fromRGBAString(this.theme.headerColor))
+  this.headerFontPaint.setTextSize(this.theme.fontSize)
+  this.headerFontPaint.setFontFamily(this.theme.fontFamily)
   this.headerFontPaint.setStrokeWidth(0)
   this.fontHighlightPaint = new SkPaint()
   this.fontHighlightPaint.setStyle(SkPaint.kFillStyle)
-  this.fontHighlightPaint.setColor(100, 100, 100, 255)
-  this.fontHighlightPaint.setTextSize(10)
-  this.fontHighlightPaint.setFontFamily('Monaco')
+  this.fontHighlightPaint.setColor(...fromRGBAString(this.theme.colorActive))
+  this.fontHighlightPaint.setTextSize(this.theme.fontSize)
+  this.fontHighlightPaint.setFontFamily(this.theme.fontFamily)
   this.fontHighlightPaint.setStrokeWidth(0)
   this.panelBgPaint = new SkPaint()
   this.panelBgPaint.setStyle(SkPaint.kFillStyle)
-  this.panelBgPaint.setColor(0, 0, 0, 150)
+  this.panelBgPaint.setColor(...fromRGBAString(this.theme.background))
   this.headerBgPaint = new SkPaint()
   this.headerBgPaint.setStyle(SkPaint.kFillStyle)
-  this.headerBgPaint.setColor(255, 255, 255, 255)
+  this.headerBgPaint.setColor(...fromRGBAString(this.theme.color))
   this.textBgPaint = new SkPaint()
   this.textBgPaint.setStyle(SkPaint.kFillStyle)
-  this.textBgPaint.setColor(50, 50, 50, 255)
+  this.textBgPaint.setColor(...fromRGBAString(this.theme.input))
   this.textBorderPaint = new SkPaint()
   this.textBorderPaint.setStyle(SkPaint.kStrokeStyle)
-  this.textBorderPaint.setColor(255, 255, 0, 255)
+  this.textBorderPaint.setColor(...fromRGBAString(this.theme.accent))
   this.controlBgPaint = new SkPaint()
   this.controlBgPaint.setStyle(SkPaint.kFillStyle)
-  this.controlBgPaint.setColor(150, 150, 150, 255)
+  this.controlBgPaint.setColor(...fromRGBAString(this.theme.input))
   this.controlHighlightPaint = new SkPaint()
   this.controlHighlightPaint.setStyle(SkPaint.kFillStyle)
-  this.controlHighlightPaint.setColor(255, 255, 0, 255)
+  this.controlHighlightPaint.setColor(...fromRGBAString(this.theme.accent))
   this.controlHighlightPaint.setAntiAlias(true)
   this.controlStrokeHighlightPaint = new SkPaint()
   this.controlStrokeHighlightPaint.setStyle(SkPaint.kStrokeStyle)
-  this.controlStrokeHighlightPaint.setColor(255, 255, 0, 255)
+  this.controlStrokeHighlightPaint.setColor(
+    ...fromRGBAString(this.theme.accent)
+  )
   this.controlStrokeHighlightPaint.setAntiAlias(false)
   this.controlStrokeHighlightPaint.setStrokeWidth(2)
   this.controlFeaturePaint = new SkPaint()
   this.controlFeaturePaint.setStyle(SkPaint.kFillStyle)
-  this.controlFeaturePaint.setColor(255, 255, 255, 255)
+  this.controlFeaturePaint.setColor(...fromRGBAString(this.theme.color))
   this.controlFeaturePaint.setAntiAlias(true)
   this.imagePaint = new SkPaint()
   this.imagePaint.setStyle(SkPaint.kFillStyle)
-  this.imagePaint.setColor(255, 255, 255, 255)
+  this.imagePaint.setColor(...fromRGBAString(this.theme.color))
   this.colorPaint = new SkPaint()
   this.colorPaint.setStyle(SkPaint.kFillStyle)
-  this.colorPaint.setColor(255, 255, 255, 255)
+  this.colorPaint.setColor(...fromRGBAString(this.theme.color))
   this.dirty = true
 }
 
@@ -101,14 +113,16 @@ SkiaRenderer.prototype.draw = function(items) {
     // ctx.fillRect(dx, dy, w, eh - 2)
     canvas.drawRect(this.panelBgPaint, dx, dy, dx + w, dy + eh)
     tab.current
-      ? this.tabPaint.setColor(46, 204, 46 + 113, 255)
-      : this.tabPaint.setColor(75, 75, 75, 255)
+      ? this.tabPaint.setColor(
+          ...fromRGBAString(this.theme.tabBackgroundActive)
+        )
+      : this.tabPaint.setColor(...fromRGBAString(this.theme.tabBackground))
     // ctx.fillStyle = tab.current ? 'rgba(46, 204, 113, 1.0)' : 'rgba(75, 75, 75, 1.0)'
     // ctx.fillRect(dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3)
     canvas.drawRect(this.tabPaint, dx + 3, dy + 3, dx + w - 3, dy + eh - 3)
     // ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
     // ctx.fillRect(dx, dy + eh - 8, w, 4)
-    this.tabPaint.setColor(0, 0, 0, 128)
+    this.tabPaint.setColor(...fromRGBAString(this.theme.tabShadow))
     canvas.drawRect(this.tabPaint, dx + 3, dy + eh - 3, dx + w - 3, dy + eh - 7)
     // ctx.fillStyle = tab.current ? 'rgba(0, 0, 0, 1)' : 'rgba(175, 175, 175, 1.0)'
     // ctx.fillText(tab.title, dx + 5, dy + 16)

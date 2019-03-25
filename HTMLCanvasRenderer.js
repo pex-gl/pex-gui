@@ -9,8 +9,9 @@ function floatRgb2Hex(rgb) {
   )
 }
 
-function HTMLCanvasRenderer(ctx) {
+function HTMLCanvasRenderer(ctx, theme) {
   this._ctx = ctx
+  this.theme = theme
   this.canvas = document.createElement('canvas')
 
   const W = (ctx.gl.drawingBufferWidth / 3) | 0
@@ -53,7 +54,7 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
   ctx.save()
   ctx.scale(scale * pixelRatio, scale * pixelRatio)
   ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-  ctx.font = '10px Monaco'
+  ctx.font = `${this.theme.fontSize} ${this.theme.fontFamily}`
   let dy = 10
   let dx = 10
   let w = 160
@@ -68,17 +69,19 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
   for (let j = 0; j < tabs.length; j++) {
     const tab = tabs[j]
     let eh = 30 * scale
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.56)'
+    ctx.fillStyle = this.theme.background
     ctx.fillRect(dx, dy, w, eh - 2)
     ctx.fillStyle = tab.current
-      ? 'rgba(46, 204, 113, 1.0)'
-      : 'rgba(75, 75, 75, 1.0)'
+      ? this.theme.tabBackgroundActive
+      : this.theme.tabBackground
     ctx.fillRect(dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3)
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
-    ctx.fillRect(dx, dy + eh - 8, w, 4)
+    if (!tab.current) {
+      ctx.fillStyle = this.theme.tabShadow
+      ctx.fillRect(dx + 3, dy + eh - 6, w - 6, 3)
+    }
     ctx.fillStyle = tab.current
-      ? 'rgba(0, 0, 0, 1)'
-      : 'rgba(175, 175, 175, 1.0)'
+      ? this.theme.tabColorActive
+      : this.theme.tabColor
     ctx.fillText(tab.title, dx + 5, dy + 16)
     Rect.set4(tab.activeArea, dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3)
     dx += w + margin
@@ -145,7 +148,7 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
     if (e.type === 'separator') eh /= 2
 
     if (e.type !== 'separator') {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.56)'
+      ctx.fillStyle = this.theme.background
       ctx.fillRect(dx, dy, w, eh - 2)
     }
 
@@ -162,9 +165,9 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
     }
 
     if (e.type === 'slider') {
-      ctx.fillStyle = 'rgba(150, 150, 150, 1)'
+      ctx.fillStyle = this.theme.input
       ctx.fillRect(dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18)
-      ctx.fillStyle = 'rgba(255, 255, 0, 1)'
+      ctx.fillStyle = this.theme.accent
       ctx.fillRect(
         dx + 3,
         dy + 18,
@@ -172,13 +175,13 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
         eh - 5 - 18
       )
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18)
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13)
     } else if (e.type === 'multislider') {
       for (let j = 0; j < e.getValue().length; j++) {
-        ctx.fillStyle = 'rgba(150, 150, 150, 1)'
+        ctx.fillStyle = this.theme.input
         ctx.fillRect(dx + 3, dy + 18 + j * 14 * scale, w - 6, 14 * scale - 3)
-        ctx.fillStyle = 'rgba(255, 255, 0, 1)'
+        ctx.fillStyle = this.theme.accent
         ctx.fillRect(
           dx + 3,
           dy + 18 + j * 14 * scale,
@@ -187,14 +190,14 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
         )
       }
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18)
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13)
     } else if (e.type === 'color') {
       const numSliders = e.options.alpha ? 4 : 3
       for (let j = 0; j < numSliders; j++) {
-        ctx.fillStyle = 'rgba(150, 150, 150, 1)'
+        ctx.fillStyle = this.theme.input
         ctx.fillRect(dx + 3, dy + 18 + j * 14 * scale, w - 6, 14 * scale - 3)
-        ctx.fillStyle = 'rgba(255, 255, 0, 1)'
+        ctx.fillStyle = this.theme.accent
         ctx.fillRect(
           dx + 3,
           dy + 18 + j * 14 * scale,
@@ -213,18 +216,14 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
           (w * e.options.paletteImage.height) / e.options.paletteImage.width
         )
       }
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13)
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18)
     } else if (e.type === 'button') {
-      ctx.fillStyle = e.active
-        ? 'rgba(255, 255, 0, 1)'
-        : 'rgba(150, 150, 150, 1)'
+      ctx.fillStyle = e.active ? this.theme.accent : this.theme.input
       ctx.fillRect(dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3)
       Rect.set4(e.activeArea, dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3)
-      ctx.fillStyle = e.active
-        ? 'rgba(100, 100, 100, 1)'
-        : 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = e.active ? this.theme.colorActive : this.theme.color
       ctx.fillText(items[i].title, dx + 5, dy + 15)
       if (e.options.color) {
         const c = e.options.color
@@ -234,26 +233,26 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
       }
     } else if (e.type === 'toggle') {
       const on = e.contextObject[e.attributeName]
-      ctx.fillStyle = on ? 'rgba(255, 255, 0, 1)' : 'rgba(150, 150, 150, 1)'
+      ctx.fillStyle = on ? this.theme.accent : this.theme.input
       ctx.fillRect(dx + 3, dy + 3, eh - 5 - 3, eh - 5 - 3)
       Rect.set4(e.activeArea, dx + 3, dy + 3, eh - 5 - 3, eh - 5 - 3)
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(items[i].title, dx + eh, dy + 12)
     } else if (e.type === 'radiolist') {
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(e.title, dx + 4, dy + 13)
       const itemHeight = 20 * scale
       for (let j = 0; j < e.items.length; j++) {
         const item = e.items[j]
         let on = e.contextObject[e.attributeName] === item.value
-        ctx.fillStyle = on ? 'rgba(255, 255, 0, 1)' : 'rgba(150, 150, 150, 1)'
+        ctx.fillStyle = on ? this.theme.accent : this.theme.input
         ctx.fillRect(
           dx + 3,
           18 + j * itemHeight + dy + 3,
           itemHeight - 5 - 3,
           itemHeight - 5 - 3
         )
-        ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+        ctx.fillStyle = this.theme.color
         ctx.fillText(
           item.name,
           dx + 5 + itemHeight - 5,
@@ -268,7 +267,7 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
         e.items.length * itemHeight - 5
       )
     } else if (e.type === 'texturelist') {
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(e.title, dx + 4, dy + 13)
       for (let j = 0; j < e.items.length; j++) {
         const col = j % e.itemsPerRow
@@ -277,7 +276,7 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
         let shrink = 0
         if (e.items[j].value === e.contextObject[e.attributeName]) {
           ctx.fillStyle = 'none'
-          ctx.strokeStyle = 'rgba(255, 255, 0, 1)'
+          ctx.strokeStyle = this.theme.accent
           ctx.lineWidth = '2'
           ctx.strokeRect(
             dx + 3 + col * cellSize + 1,
@@ -307,33 +306,33 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
         cellSize * numRows - 5
       )
     } else if (e.type === 'texture2D') {
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(items[i].title, dx + 5, dy + 15)
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18)
     } else if (e.type === 'textureCube') {
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(items[i].title, dx + 5, dy + 15)
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18)
     } else if (e.type === 'header') {
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.headerBackground
       ctx.fillRect(dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3)
-      ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+      ctx.fillStyle = this.theme.headerColor
       ctx.fillText(items[i].title, dx + 5, dy + 16)
     } else if (e.type === 'text') {
       Rect.set4(e.activeArea, dx + 3, dy + 20, w - 6, eh - 20 - 5)
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(items[i].title, dx + 3, dy + 13)
-      ctx.fillStyle = 'rgba(50, 50, 50, 1)'
+      ctx.fillStyle = this.theme.input
       ctx.fillRect(
         dx + 3,
         dy + 20,
         e.activeArea[1][0] - e.activeArea[0][0],
         e.activeArea[1][1] - e.activeArea[0][1]
       )
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(e.contextObject[e.attributeName], dx + 3 + 3, dy + 15 + 20)
       if (e.focus) {
-        ctx.strokeStyle = 'rgba(255, 255, 0, 1)'
+        ctx.strokeStyle = this.theme.accent
         ctx.strokeRect(
           e.activeArea[0][0] - 0.5,
           e.activeArea[0][1] - 0.5,
@@ -344,7 +343,7 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
     } else if (e.type === 'fps') {
       // FIXME: dirty dependency between FPS history and GUI width
       if (e.values.length > w - 6) e.values.shift()
-      ctx.fillStyle = 'rgba(50, 50, 50, 1)'
+      ctx.fillStyle = this.theme.graphBackground
       const gh = eh - 20 - 5
       ctx.fillRect(dx + 3, dy + 20, w - 6, gh)
       let py = gh - ((e.values[0] || 0) / 60) * gh
@@ -354,12 +353,12 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
         py = gh - (e.values[j] / 60) * gh
         ctx.lineTo(dx + 3 + j, dy + 20 + py)
       }
-      ctx.strokeStyle = 'rgba(255, 255, 255, 1)'
+      ctx.strokeStyle = this.theme.color
       ctx.stroke()
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(e.title + ' : ' + e.currentValue, dx + 5, dy + 13)
     } else if (e.type === 'stats') {
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(e.title, dx + 5, dy + 13)
       ctx.fillText('Buffers: ' + e.bufferCount, dx + 5, dy + 13 + 18)
       ctx.fillText('Elements: ' + e.elementsCount, dx + 5, dy + 13 + 18 * 2)
@@ -368,13 +367,13 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
     } else if (e.type === 'separator') {
       // do nothing
     } else if (e.type === 'label') {
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       const lines = items[i].title.split('\n')
       lines.forEach((line, lineIndex) => {
-        ctx.fillText(line, dx + 5, dy + 13 + 18 * lineIndex + 13)
+        ctx.fillText(line, dx + 5, dy + 13 + 18 * lineIndex)
       })
     } else {
-      ctx.fillStyle = 'rgba(255, 255, 255, 1)'
+      ctx.fillStyle = this.theme.color
       ctx.fillText(items[i].title, dx + 5, dy + 13)
     }
     dy += eh
