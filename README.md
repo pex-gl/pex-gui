@@ -6,15 +6,15 @@ GUI widgets for the pex library
 
 # Usage
 
-```
-var ctx = require('pex-context')()
-var createGUI = require('pex-gui')
+```js
+const ctx = require('pex-context')()
+const createGUI = require('pex-gui')
 
-var settings = {
+const settings = {
   force: 0
 }
 
-var gui = createGUI(ctx)
+const gui = createGUI(ctx)
 gui.addParam('Force', settings, 'force', { min: 0, max: 1 })
 
 ctx.frame(() => {
@@ -31,8 +31,8 @@ ctx.frame(() => {
 - `ctx`: Context - gl context from `pex-context`
 
 ```javascript
-var createGUI = require('pex-gui')
-var gui = createGUI(ctx)
+const createGUI = require('pex-gui')
+const gui = createGUI(ctx)
 ```
 
 ### `gui.draw()`
@@ -42,11 +42,11 @@ Renders the gui. Should be called at the end of the frame.
 ### `gui.addParam(name, object, propName, [, opts, onChange])`
 
 - `name`: String
-- `object`: Object - source object holiding the value
+- `object`: Object - source object holding the value
 - `propName`: String - source object property to control
 - `opts`:
-    - `min`: Number, min value
-    - `max`: Number, max value
+  - `min`: Number, min value
+  - `max`: Number, max value
 - `onChange`: Function, on change callback
 
 ```javascript
@@ -54,6 +54,7 @@ gui.addParam('Force', settings, 'force', { min: 0, max: 1 })
 ```
 
 ### `addButton(title, onClick)`
+
 ### `addRadioList(title, contextObject, attributeName, items, onchange)`
 
 - `items`: Array of `{ name: String, value: Int }`
@@ -69,8 +70,13 @@ gui.addParam('Force', settings, 'force', { min: 0, max: 1 })
 - `flipEnvMap` - should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped
 
 ### `addFPSMeeter()`
+
 ### `setEnabled(state)`
+
 ### `isEnabled()`
+
 ### `toggleEnabled()`
+
 ### `serialize()`
+
 ### `deserialize(data)`
