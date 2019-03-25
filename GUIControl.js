@@ -5,7 +5,7 @@ var hsl2rgb = require('float-hsl2rgb')
  * [GUIControl description]
  * @param {[type]} o [description]
  */
-function GUIControl (o) {
+function GUIControl(o) {
   for (var i in o) {
     this[i] = o[i]
   }
@@ -17,7 +17,7 @@ function GUIControl (o) {
  * @param  {[type]} y [description]
  * @return {[type]}   [description]
  */
-GUIControl.prototype.setPosition = function (x, y) {
+GUIControl.prototype.setPosition = function(x, y) {
   this.px = x
   this.py = y
 }
@@ -27,7 +27,7 @@ GUIControl.prototype.setPosition = function (x, y) {
  * @param  {[type]} idx [description]
  * @return {[type]}     [description]
  */
-GUIControl.prototype.getNormalizedValue = function (idx) {
+GUIControl.prototype.getNormalizedValue = function(idx) {
   if (!this.contextObject) {
     return 0
   }
@@ -56,7 +56,7 @@ GUIControl.prototype.getNormalizedValue = function (idx) {
  * @param  {[type]} idx [description]
  * @return {[type]}     [description]
  */
-GUIControl.prototype.setNormalizedValue = function (val, idx) {
+GUIControl.prototype.setNormalizedValue = function(val, idx) {
   if (!this.contextObject) {
     return
   }
@@ -89,7 +89,7 @@ GUIControl.prototype.setNormalizedValue = function (val, idx) {
       val = options.min + val * (options.max - options.min)
     }
     if (options && options.step) {
-      val = val - val % options.step
+      val = val - (val % options.step)
     }
   }
   this.contextObject[this.attributeName] = val
@@ -99,7 +99,7 @@ GUIControl.prototype.setNormalizedValue = function (val, idx) {
  * [function description]
  * @return {[type]} [description]
  */
-GUIControl.prototype.getSerializedValue = function () {
+GUIControl.prototype.getSerializedValue = function() {
   if (this.contextObject) {
     return this.contextObject[this.attributeName]
   } else {
@@ -112,7 +112,7 @@ GUIControl.prototype.getSerializedValue = function () {
  * @param  {[type]} value [description]
  * @return {[type]}       [description]
  */
-GUIControl.prototype.setSerializedValue = function (value) {
+GUIControl.prototype.setSerializedValue = function(value) {
   if (this.type === 'slider') {
     this.contextObject[this.attributeName] = value
   } else if (this.type === 'multislider') {
@@ -133,7 +133,7 @@ GUIControl.prototype.setSerializedValue = function (value) {
  * [function description]
  * @return {[type]} [description]
  */
-GUIControl.prototype.getValue = function () {
+GUIControl.prototype.getValue = function() {
   if (this.type === 'slider') {
     return this.contextObject[this.attributeName]
   } else if (this.type === 'multislider') {
@@ -151,7 +151,7 @@ GUIControl.prototype.getValue = function () {
  * [function description]
  * @return {[type]} [description]
  */
-GUIControl.prototype.getStrValue = function () {
+GUIControl.prototype.getStrValue = function() {
   if (this.type === 'slider') {
     var str = '' + this.contextObject[this.attributeName]
     var dotPos = str.indexOf('.') + 1

@@ -1,6 +1,8 @@
 const isPlask = require('is-plask')
 const GUIControl = require('./GUIControl')
-const Renderer = isPlask ? require('./SkiaRenderer') : require('./HTMLCanvasRenderer')
+const Renderer = isPlask
+  ? require('./SkiaRenderer')
+  : require('./HTMLCanvasRenderer')
 const Rect = require('pex-geom/Rect')
 const Time = require('pex-sys/Time')
 
@@ -75,7 +77,9 @@ vec4 encode(vec4 pixel, int encoding) {
 }
 `
 
-let TEXTURE_2D_FRAG = DECODE_ENCODE + `
+let TEXTURE_2D_FRAG =
+  DECODE_ENCODE +
+  `
 uniform sampler2D uTexture;
 uniform int uTextureEncoding;
 varying vec2 vTexCoord0;
@@ -92,7 +96,9 @@ void main() {
 // we want normal (not fliped) cubemaps maps to be represented same way as
 // latlong panoramas so we flip by -1.0 by default
 // render target dynamic cubemaps should be not flipped
-let TEXTURE_CUBE_FRAG = DECODE_ENCODE + `
+let TEXTURE_CUBE_FRAG =
+  DECODE_ENCODE +
+  `
 const float PI = 3.1415926;
 varying vec2 vTexCoord0;
 uniform samplerCube uTexture;
@@ -118,7 +124,8 @@ void main() {
 }`
 if (!isPlask) {
   TEXTURE_2D_FRAG = '#version 100\nprecision highp float;\n\n' + TEXTURE_2D_FRAG
-  TEXTURE_CUBE_FRAG = '#version 100\nprecision highp float;\n\n' + TEXTURE_CUBE_FRAG
+  TEXTURE_CUBE_FRAG =
+    '#version 100\nprecision highp float;\n\n' + TEXTURE_CUBE_FRAG
   // TEXTURE_CUBE_FRAG = '#extension GL_EXT_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG
   // TEXTURE_CUBE_FRAG = '#define textureCubeLod textureCubeLodEXT\n' + TEXTURE_CUBE_FRAG
 } else {
@@ -133,7 +140,7 @@ TEXTURE_2D_FRAG = TEXTURE_2D_FRAG.split(';').join(';\n')
  * @param {[type]} windowWidth  [description]
  * @param {[type]} windowHeight [description]
  */
-function GUI (ctx) {
+function GUI(ctx) {
   const W = ctx.gl.drawingBufferWidth
   const H = ctx.gl.drawingBufferHeight
   this._ctx = ctx
@@ -171,8 +178,7 @@ function GUI (ctx) {
       aTexCoord0: { buffer: ctx.vertexBuffer(rectTexCoords) }
     },
     indices: { buffer: ctx.indexBuffer(rectIndices) },
-    uniforms: {
-    }
+    uniforms: {}
   }
 
   this.drawTextureCubeCmd = {
@@ -240,10 +246,10 @@ function GUI (ctx) {
  * @param  {[type]} e [description]
  * @return {[type]}   [description]
  */
-GUI.prototype.onMouseDown = function (e) {
+GUI.prototype.onMouseDown = function(e) {
   if (!this.enabled) return
 
-  this.items.forEach(function (item) {
+  this.items.forEach(function(item) {
     if (item.type === 'text') {
       if (item.focus) {
         item.focus = false
@@ -264,7 +270,7 @@ GUI.prototype.onMouseDown = function (e) {
       return index < i && e.type === 'tab'
     })
     const parentTab = prevTabs[prevTabs.length - 1]
-    if (parentTab && !parentTab.current && (this.items[i].type !== 'tab')) {
+    if (parentTab && !parentTab.current && this.items[i].type !== 'tab') {
       continue
     }
     if (Rect.containsPoint(this.items[i].activeArea, this.mousePos)) {
@@ -279,36 +285,49 @@ GUI.prototype.onMouseDown = function (e) {
       } else if (this.activeControl.type === 'tab') {
         this.activeControl.setActive(true)
       } else if (this.activeControl.type === 'toggle') {
-        this.activeControl.contextObject[this.activeControl.attributeName] = !this.activeControl.contextObject[this.activeControl.attributeName]
+        this.activeControl.contextObject[
+          this.activeControl.attributeName
+        ] = !this.activeControl.contextObject[this.activeControl.attributeName]
         if (this.activeControl.onchange) {
-          this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName])
+          this.activeControl.onchange(
+            this.activeControl.contextObject[this.activeControl.attributeName]
+          )
         }
       } else if (this.activeControl.type === 'radiolist') {
         const hitY = this.mousePos[1] - aa[0][1]
-        const hitItemIndex = Math.floor(this.activeControl.items.length * hitY / aaHeight)
+        const hitItemIndex = Math.floor(
+          (this.activeControl.items.length * hitY) / aaHeight
+        )
         if (hitItemIndex < 0) {
           continue
         }
         if (hitItemIndex >= this.activeControl.items.length) {
           continue
         }
-        this.activeControl.contextObject[this.activeControl.attributeName] = this.activeControl.items[hitItemIndex].value
+        this.activeControl.contextObject[
+          this.activeControl.attributeName
+        ] = this.activeControl.items[hitItemIndex].value
         if (this.activeControl.onchange) {
-          this.activeControl.onchange(this.activeControl.items[hitItemIndex].value)
+          this.activeControl.onchange(
+            this.activeControl.items[hitItemIndex].value
+          )
         }
       } else if (this.activeControl.type === 'texturelist') {
         let clickedItem = null
-        this.activeControl.items.forEach(function (item) {
-          if (Rect.containsPoint(item.activeArea, this.mousePos)) {
-            clickedItem = item
-          }
-        }.bind(this))
+        this.activeControl.items.forEach(
+          function(item) {
+            if (Rect.containsPoint(item.activeArea, this.mousePos)) {
+              clickedItem = item
+            }
+          }.bind(this)
+        )
 
         if (!clickedItem) {
           continue
         }
 
-        this.activeControl.contextObject[this.activeControl.attributeName] = clickedItem.value
+        this.activeControl.contextObject[this.activeControl.attributeName] =
+          clickedItem.value
         if (this.activeControl.onchange) {
           this.activeControl.onchange(clickedItem.value)
         }
@@ -317,7 +336,7 @@ GUI.prototype.onMouseDown = function (e) {
           const iw = this.activeControl.options.paletteImage.width
           const ih = this.activeControl.options.paletteImage.height
           let y = mx - aa[0][1]
-          const imageDisplayHeight = aaWidth * ih / iw
+          const imageDisplayHeight = (aaWidth * ih) / iw
           const imageStartY = aaHeight - imageDisplayHeight
 
           if (y > imageStartY) {
@@ -325,14 +344,28 @@ GUI.prototype.onMouseDown = function (e) {
             const v = (y - imageStartY) / imageDisplayHeight
             const x = Math.floor(iw * u)
             y = Math.floor(ih * v)
-            const color = this.renderer.getImageColor(this.activeControl.options.paletteImage, x, y)
+            const color = this.renderer.getImageColor(
+              this.activeControl.options.paletteImage,
+              x,
+              y
+            )
             this.activeControl.dirty = true
 
-            this.activeControl.contextObject[this.activeControl.attributeName][0] = color[0]
-            this.activeControl.contextObject[this.activeControl.attributeName][1] = color[1]
-            this.activeControl.contextObject[this.activeControl.attributeName][2] = color[2]
+            this.activeControl.contextObject[
+              this.activeControl.attributeName
+            ][0] = color[0]
+            this.activeControl.contextObject[
+              this.activeControl.attributeName
+            ][1] = color[1]
+            this.activeControl.contextObject[
+              this.activeControl.attributeName
+            ][2] = color[2]
             if (this.activeControl.onchange) {
-              this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName])
+              this.activeControl.onchange(
+                this.activeControl.contextObject[
+                  this.activeControl.attributeName
+                ]
+              )
             }
             continue
           }
@@ -353,10 +386,10 @@ GUI.prototype.onMouseDown = function (e) {
  * @param  {[type]} e [description]
  * @return {[type]}   [description]
  */
-GUI.prototype.onMouseDrag = function (e) {
+GUI.prototype.onMouseDrag = function(e) {
   if (!this.enabled) return
-  let mx = e.offsetX// ? e.offsetX : e.pageX - this._ctx.gl.canvas.offsetLeft
-  let my = e.offsetY// ? e.offsetY : e.pageY - this._ctx.gl.canvas.offsetTop
+  let mx = e.offsetX // ? e.offsetX : e.pageX - this._ctx.gl.canvas.offsetLeft
+  let my = e.offsetY // ? e.offsetY : e.pageY - this._ctx.gl.canvas.offsetTop
   mx = mx - this.x
   my = my - this.y
 
@@ -371,13 +404,17 @@ GUI.prototype.onMouseDrag = function (e) {
       val = Math.max(0, Math.min(val, 1))
       this.activeControl.setNormalizedValue(val)
       if (this.activeControl.onchange) {
-        this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName])
+        this.activeControl.onchange(
+          this.activeControl.contextObject[this.activeControl.attributeName]
+        )
       }
       this.activeControl.dirty = true
     } else if (this.activeControl.type === 'multislider') {
       val = (mx - aa[0][0]) / aaWidth
       val = Math.max(0, Math.min(val, 1))
-      idx = Math.floor(this.activeControl.getValue().length * (my - aa[0][1]) / aaHeight)
+      idx = Math.floor(
+        (this.activeControl.getValue().length * (my - aa[0][1])) / aaHeight
+      )
       if (!isNaN(this.activeControl.clickedSlider)) {
         idx = this.activeControl.clickedSlider
       } else {
@@ -385,7 +422,9 @@ GUI.prototype.onMouseDrag = function (e) {
       }
       this.activeControl.setNormalizedValue(val, idx)
       if (this.activeControl.onchange) {
-        this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName])
+        this.activeControl.onchange(
+          this.activeControl.contextObject[this.activeControl.attributeName]
+        )
       }
       this.activeControl.dirty = true
     } else if (this.activeControl.type === 'color') {
@@ -395,21 +434,33 @@ GUI.prototype.onMouseDrag = function (e) {
         const iw = this.activeControl.options.paletteImage.width
         const ih = this.activeControl.options.paletteImage.height
         let y = my - aa[0][1]
-        slidersHeight = aaHeight - aaWidth * ih / iw
-        const imageDisplayHeight = aaWidth * ih / iw
+        slidersHeight = aaHeight - (aaWidth * ih) / iw
+        const imageDisplayHeight = (aaWidth * ih) / iw
         const imageStartY = aaHeight - imageDisplayHeight
         if (y > imageStartY && isNaN(this.activeControl.clickedSlider)) {
           const u = (mx - aa[0][0]) / aaWidth
           const v = (y - imageStartY) / imageDisplayHeight
           const x = Math.floor(iw * u)
           y = Math.floor(ih * v)
-          const color = this.renderer.getImageColor(this.activeControl.options.paletteImage, x, y)
+          const color = this.renderer.getImageColor(
+            this.activeControl.options.paletteImage,
+            x,
+            y
+          )
           this.activeControl.dirty = true
-          this.activeControl.contextObject[this.activeControl.attributeName][0] = color[0]
-          this.activeControl.contextObject[this.activeControl.attributeName][1] = color[1]
-          this.activeControl.contextObject[this.activeControl.attributeName][2] = color[2]
+          this.activeControl.contextObject[
+            this.activeControl.attributeName
+          ][0] = color[0]
+          this.activeControl.contextObject[
+            this.activeControl.attributeName
+          ][1] = color[1]
+          this.activeControl.contextObject[
+            this.activeControl.attributeName
+          ][2] = color[2]
           if (this.activeControl.onchange) {
-            this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName])
+            this.activeControl.onchange(
+              this.activeControl.contextObject[this.activeControl.attributeName]
+            )
           }
           e.stopPropagation()
           return
@@ -418,7 +469,9 @@ GUI.prototype.onMouseDrag = function (e) {
 
       val = (mx - aa[0][0]) / aaWidth
       val = Math.max(0, Math.min(val, 1))
-      idx = Math.floor(numSliders * (my / this._ctx.pixelRatio - aa[0][1]) / slidersHeight)
+      idx = Math.floor(
+        (numSliders * (my / this._ctx.pixelRatio - aa[0][1])) / slidersHeight
+      )
       if (!isNaN(this.activeControl.clickedSlider)) {
         idx = this.activeControl.clickedSlider
       } else {
@@ -426,7 +479,9 @@ GUI.prototype.onMouseDrag = function (e) {
       }
       this.activeControl.setNormalizedValue(val, idx)
       if (this.activeControl.onchange) {
-        this.activeControl.onchange(this.activeControl.contextObject[this.activeControl.attributeName])
+        this.activeControl.onchange(
+          this.activeControl.contextObject[this.activeControl.attributeName]
+        )
       }
       this.activeControl.dirty = true
     }
@@ -439,7 +494,7 @@ GUI.prototype.onMouseDrag = function (e) {
  * @param  {[type]} e [description]
  * @return {[type]}   [description]
  */
-GUI.prototype.onMouseUp = function (e) {
+GUI.prototype.onMouseUp = function() {
   if (!this.enabled) return
 
   if (this.activeControl) {
@@ -455,23 +510,31 @@ GUI.prototype.onMouseUp = function (e) {
  * @param  {[type]} e [description]
  * @return {[type]}   [description]
  */
-GUI.prototype.onKeyDown = function (e) {
-  const focusedItem = this.items.filter(function (item) { return item.type === 'text' && item.focus })[0]
+GUI.prototype.onKeyDown = function(e) {
+  const focusedItem = this.items.filter(function(item) {
+    return item.type === 'text' && item.focus
+  })[0]
   if (!focusedItem) {
     return
   }
 
   switch (e.key) {
-    case 'Backspace':
+    case 'Backspace': {
       const str = focusedItem.contextObject[focusedItem.attributeName]
-      focusedItem.contextObject[focusedItem.attributeName] = str.substr(0, Math.max(0, str.length - 1))
+      focusedItem.contextObject[focusedItem.attributeName] = str.substr(
+        0,
+        Math.max(0, str.length - 1)
+      )
       focusedItem.dirty = true
       if (focusedItem.onchange) {
-        focusedItem.onchange(focusedItem.contextObject[focusedItem.attributeName])
+        focusedItem.onchange(
+          focusedItem.contextObject[focusedItem.attributeName]
+        )
       }
       e.stopPropagation()
       e.preventDefault()
       break
+    }
   }
 
   const c = e.key.charCodeAt(0)
@@ -486,7 +549,7 @@ GUI.prototype.onKeyDown = function (e) {
   }
 }
 
-GUI.prototype.addTab = function (title, contextObject, attributeName, options) {
+GUI.prototype.addTab = function(title, contextObject, attributeName, options) {
   const numTabs = this.items.filter((item) => item.type === 'tab').length
   const gui = this
   const tab = new GUIControl({
@@ -498,9 +561,11 @@ GUI.prototype.addTab = function (title, contextObject, attributeName, options) {
     attributeName: attributeName,
     value: options ? options.value : null,
     onChange: options ? options.onChange : null,
-    setActive: function () {
+    setActive: function() {
       const tabs = gui.items.filter((item) => item.type === 'tab')
-      tabs.forEach((item) => { item.current = (item === this) })
+      tabs.forEach((item) => {
+        item.current = item === this
+      })
       let prevValue = null
       if (contextObject) {
         prevValue = contextObject[attributeName]
@@ -518,7 +583,7 @@ GUI.prototype.addTab = function (title, contextObject, attributeName, options) {
  * [addColumn description]
  * @param {[type]} title [description]
  */
-GUI.prototype.addColumn = function (title, width) {
+GUI.prototype.addColumn = function(title, width) {
   const column = new GUIControl({
     width: width || 160,
     type: 'column',
@@ -530,7 +595,7 @@ GUI.prototype.addColumn = function (title, width) {
     title: title,
     dirty: true,
     activeArea: [[0, 0], [0, 0]],
-    setTitle: function (title) {
+    setTitle: function(title) {
       this.title = title
       this.dirty = true
     }
@@ -543,13 +608,13 @@ GUI.prototype.addColumn = function (title, width) {
  * [addHeader description]
  * @param {[type]} title [description]
  */
-GUI.prototype.addHeader = function (title) {
+GUI.prototype.addHeader = function(title) {
   const ctrl = new GUIControl({
     type: 'header',
     title: title,
     dirty: true,
     activeArea: [[0, 0], [0, 0]],
-    setTitle: function (title) {
+    setTitle: function(title) {
       this.title = title
       this.dirty = true
     }
@@ -562,7 +627,7 @@ GUI.prototype.addHeader = function (title) {
  * [addSeparator description]
  * @param {[type]} title [description]
  */
-GUI.prototype.addSeparator = function (title) {
+GUI.prototype.addSeparator = function() {
   const ctrl = new GUIControl({
     type: 'separator',
     dirty: true,
@@ -576,13 +641,13 @@ GUI.prototype.addSeparator = function (title) {
  * [addLabel description]
  * @param {[type]} title [description]
  */
-GUI.prototype.addLabel = function (title) {
+GUI.prototype.addLabel = function(title) {
   const ctrl = new GUIControl({
     type: 'label',
     title: title,
     dirty: true,
     activeArea: [[0, 0], [0, 0]],
-    setTitle: function (title) {
+    setTitle: function(title) {
       this.title = title
       this.dirty = true
     }
@@ -599,12 +664,21 @@ GUI.prototype.addLabel = function (title) {
  * @param {[type]} options       [description]
  * @param {[type]} onchange      [description]
  */
-GUI.prototype.addParam = function (title, contextObject, attributeName, options, onchange) {
+GUI.prototype.addParam = function(
+  title,
+  contextObject,
+  attributeName,
+  options,
+  onchange
+) {
   options = options || {}
   let ctrl = null
-  if (typeof (options.min) === 'undefined') options.min = 0
-  if (typeof (options.max) === 'undefined') options.max = 1
-  if (contextObject[attributeName] === false || contextObject[attributeName] === true) {
+  if (typeof options.min === 'undefined') options.min = 0
+  if (typeof options.max === 'undefined') options.max = 1
+  if (
+    contextObject[attributeName] === false ||
+    contextObject[attributeName] === true
+  ) {
     ctrl = new GUIControl({
       type: 'toggle',
       title: title,
@@ -630,7 +704,10 @@ GUI.prototype.addParam = function (title, contextObject, attributeName, options,
     })
     this.items.push(ctrl)
     return ctrl
-  } else if ((contextObject[attributeName] instanceof Array) && (options && options.type === 'color')) {
+  } else if (
+    contextObject[attributeName] instanceof Array &&
+    (options && options.type === 'color')
+  ) {
     ctrl = new GUIControl({
       type: 'color',
       title: title,
@@ -677,7 +754,7 @@ GUI.prototype.addParam = function (title, contextObject, attributeName, options,
  * @param {[type]} title   [description]
  * @param {[type]} onclick [description]
  */
-GUI.prototype.addButton = function (title, onClick) {
+GUI.prototype.addButton = function(title, onClick) {
   const ctrl = new GUIControl({
     type: 'button',
     title: title,
@@ -698,7 +775,13 @@ GUI.prototype.addButton = function (title, onClick) {
  * @param {[type]} items         [description]
  * @param {[type]} onchange      [description]
  */
-GUI.prototype.addRadioList = function (title, contextObject, attributeName, items, onchange) {
+GUI.prototype.addRadioList = function(
+  title,
+  contextObject,
+  attributeName,
+  items,
+  onchange
+) {
   const ctrl = new GUIControl({
     type: 'radiolist',
     title: title,
@@ -722,7 +805,14 @@ GUI.prototype.addRadioList = function (title, contextObject, attributeName, item
  * @param {[type]} itemsPerRow   [description]
  * @param {[type]} onchange      [description]
  */
-GUI.prototype.addTexture2DList = function (title, contextObject, attributeName, items, itemsPerRow, onchange) {
+GUI.prototype.addTexture2DList = function(
+  title,
+  contextObject,
+  attributeName,
+  items,
+  itemsPerRow,
+  onchange
+) {
   const ctrl = new GUIControl({
     type: 'texturelist',
     title: title,
@@ -744,7 +834,7 @@ GUI.prototype.addTexture2DList = function (title, contextObject, attributeName, 
  * @param {[type]} texture [description]
  * @param {[type]} options [description]
  */
-GUI.prototype.addTexture2D = function (title, texture, options) {
+GUI.prototype.addTexture2D = function(title, texture, options) {
   const ctrl = new GUIControl({
     type: 'texture2D',
     title: title,
@@ -757,7 +847,7 @@ GUI.prototype.addTexture2D = function (title, texture, options) {
   return ctrl
 }
 
-GUI.prototype.addTextureCube = function (title, texture, options) {
+GUI.prototype.addTextureCube = function(title, texture, options) {
   const ctrl = new GUIControl({
     type: 'textureCube',
     title: title,
@@ -771,7 +861,7 @@ GUI.prototype.addTextureCube = function (title, texture, options) {
   return ctrl
 }
 
-GUI.prototype.addFPSMeeter = function () {
+GUI.prototype.addFPSMeeter = function() {
   const ctrl = new GUIControl({
     type: 'fps',
     title: 'FPS',
@@ -789,17 +879,16 @@ GUI.prototype.addFPSMeeter = function () {
  * [dispose description]
  * @return {[type]} [description]
  */
-GUI.prototype.dispose = function () {
-}
+GUI.prototype.dispose = function() {}
 
 /**
  * [function description]
  * @param  {[type]} items [description]
  * @return {[type]}       [description]
  */
-GUI.prototype.isAnyItemDirty = function (items) {
+GUI.prototype.isAnyItemDirty = function(items) {
   let dirty = false
-  items.forEach(function (item) {
+  items.forEach(function(item) {
     if (item.dirty) {
       item.dirty = false
       dirty = true
@@ -808,7 +897,7 @@ GUI.prototype.isAnyItemDirty = function (items) {
   return dirty
 }
 
-GUI.prototype.update = function () {
+GUI.prototype.update = function() {
   const now = Date.now() / 1000
   const delta = now - this._prev
   this._timeSinceLastUpdate += delta
@@ -838,7 +927,7 @@ GUI.prototype.update = function () {
  * [draw description]
  * @return {[type]} [description]
  */
-GUI.prototype.draw = function () {
+GUI.prototype.draw = function() {
   if (!this.enabled) {
     return
   }
@@ -878,7 +967,7 @@ GUI.prototype.draw = function () {
  * [drawTextures description]
  * @return {[type]} [description]
  */
-GUI.prototype.drawTextures = function () {
+GUI.prototype.drawTextures = function() {
   const items = this.items
   const tabs = items.filter((item) => item.type === 'tab')
   for (let i = 0; i < this.items.length; i++) {
@@ -896,7 +985,12 @@ GUI.prototype.drawTextures = function () {
     let bounds = []
     if (item.type === 'texture2D') {
       // we are trying to match flipped gui texture which 0,0 starts at the top with window coords that have 0,0 at the bottom
-      bounds = [item.activeArea[0][0] * scale, item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, item.activeArea[0][1] * scale]
+      bounds = [
+        item.activeArea[0][0] * scale,
+        item.activeArea[1][1] * scale,
+        item.activeArea[1][0] * scale,
+        item.activeArea[0][1] * scale
+      ]
       if (item.texture.flipY) {
         var tmp = bounds[1]
         bounds[1] = bounds[3]
@@ -908,24 +1002,39 @@ GUI.prototype.drawTextures = function () {
       })
     }
     if (item.type === 'texturelist') {
-      item.items.forEach(function (textureItem) {
-        // const bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale]
-        bounds = [textureItem.activeArea[0][0] * scale, textureItem.activeArea[1][1] * scale, textureItem.activeArea[1][0] * scale, textureItem.activeArea[0][1] * scale]
-        if (textureItem.value.flipY) {
-          var tmp = bounds[1]
-          bounds[1] = bounds[3]
-          bounds[3] = tmp
-        }
-        this.drawTexture2d({
-          texture: textureItem.value,
-          rect: bounds
-        })
-      }.bind(this))
+      item.items.forEach(
+        function(textureItem) {
+          // const bounds = [item.activeArea[0][0] * scale, this._windowHeight - item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, this._windowHeight - item.activeArea[0][1] * scale]
+          bounds = [
+            textureItem.activeArea[0][0] * scale,
+            textureItem.activeArea[1][1] * scale,
+            textureItem.activeArea[1][0] * scale,
+            textureItem.activeArea[0][1] * scale
+          ]
+          if (textureItem.value.flipY) {
+            var tmp = bounds[1]
+            bounds[1] = bounds[3]
+            bounds[3] = tmp
+          }
+          this.drawTexture2d({
+            texture: textureItem.value,
+            rect: bounds
+          })
+        }.bind(this)
+      )
     }
     if (item.type === 'textureCube') {
-      const level = (item.options && item.options.level !== undefined) ? item.options.level : 0
+      const level =
+        item.options && item.options.level !== undefined
+          ? item.options.level
+          : 0
       // we are trying to match flipped gui texture which 0,0 starts at the top with window coords that have 0,0 at the bottom
-      bounds = [item.activeArea[0][0] * scale, item.activeArea[1][1] * scale, item.activeArea[1][0] * scale, item.activeArea[0][1] * scale]
+      bounds = [
+        item.activeArea[0][0] * scale,
+        item.activeArea[1][1] * scale,
+        item.activeArea[1][0] * scale,
+        item.activeArea[0][1] * scale
+      ]
       this.drawTextureCube({
         texture: item.texture,
         rect: bounds,
@@ -940,9 +1049,9 @@ GUI.prototype.drawTextures = function () {
  * [serialize description]
  * @return {[type]} [description]
  */
-GUI.prototype.serialize = function () {
+GUI.prototype.serialize = function() {
   const data = {}
-  this.items.forEach(function (item, i) {
+  this.items.forEach(function(item) {
     data[item.title] = item.getSerializedValue()
   })
   return data
@@ -953,8 +1062,8 @@ GUI.prototype.serialize = function () {
  * @param  {[type]} data [description]
  * @return {[type]}      [description]
  */
-GUI.prototype.deserialize = function (data) {
-  this.items.forEach(function (item, i) {
+GUI.prototype.deserialize = function(data) {
+  this.items.forEach(function(item) {
     if (data[item.title] !== undefined) {
       item.setSerializedValue(data[item.title])
       item.dirty = true
@@ -967,7 +1076,7 @@ GUI.prototype.deserialize = function (data) {
  * @param  {[type]} state [description]
  * @return {[type]}       [description]
  */
-GUI.prototype.setEnabled = function (state) {
+GUI.prototype.setEnabled = function(state) {
   this.enabled = state
 }
 
@@ -975,7 +1084,7 @@ GUI.prototype.setEnabled = function (state) {
  * [function description]
  * @return {[type]} [description]
  */
-GUI.prototype.isEnabled = function () {
+GUI.prototype.isEnabled = function() {
   return this.enabled
 }
 
@@ -983,11 +1092,11 @@ GUI.prototype.isEnabled = function () {
  * [function description]
  * @return {[type]} [description]
  */
-GUI.prototype.toggleEnabled = function () {
+GUI.prototype.toggleEnabled = function() {
   this.enabled = !this.enabled
   return this.enabled
 }
 
-module.exports = function createGUI (ctx) {
+module.exports = function createGUI(ctx) {
   return new GUI(ctx)
 }

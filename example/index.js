@@ -63,21 +63,33 @@ const camera = createCamera({
 
 const orbiter = createOrbiter({ camera: camera })
 
-function initGUI (res) {
+function initGUI(res) {
   gui.addTab('One')
   gui.addColumn('Settings')
   gui.addFPSMeeter()
   gui.addParam('Scale', State, 'scale', { min: 0.1, max: 2 })
   gui.addParam('Rotate camera', State, 'rotate')
-  gui.addParam('Rotation', State, 'rotation', { min: -Math.PI / 2, max: Math.PI / 2 })
+  gui.addParam('Rotation', State, 'rotation', {
+    min: -Math.PI / 2,
+    max: Math.PI / 2
+  })
   gui.addSeparator()
   gui.addHeader('Color')
   gui.addParam('BG Color [RGBA]', State, 'bgColor')
-  gui.addParam('BG Color [HSB]', State, 'bgColor', { type: 'color', palette2: res.palette })
+  gui.addParam('BG Color [HSB]', State, 'bgColor', {
+    type: 'color',
+    palette2: res.palette
+  })
 
   gui.addColumn('Geometry')
   gui.addRadioList('Type', State, 'currentGeometry', State.geometries)
-  gui.addParam('Torus Size', State, 'size', { min: 0.1, max: 2 }, onTorusSizeChange)
+  gui.addParam(
+    'Torus Size',
+    State,
+    'size',
+    { min: 0.1, max: 2 },
+    onTorusSizeChange
+  )
 
   gui.addTab('Two')
   gui.addColumn('Texture')
@@ -85,14 +97,20 @@ function initGUI (res) {
   gui.addTexture2DList('Texture List', State, 'currentTexture', State.textures)
 
   gui.addColumn('Text')
-  gui.addParam('Test message', State, 'text', {}, function (e) {
-    console.log('New text: ', 'text')
+  gui.addParam('Test message', State, 'text', {}, function(text) {
+    // eslint-disable-next-line no-console
+    console.log('New text: ', text)
   })
 }
 
-function onTorusSizeChange (value) {
-  const torus = createTorus({ majorRadius: State.size[0], minorRadius: State.size[1] })
-  ctx.update(State.geometries[1].attributes.aPosition, { data: torus.positions })
+function onTorusSizeChange() {
+  const torus = createTorus({
+    majorRadius: State.size[0],
+    minorRadius: State.size[1]
+  })
+  ctx.update(State.geometries[1].attributes.aPosition, {
+    data: torus.positions
+  })
 }
 
 const ASSET_DIR = isBrowser ? 'assets' : `${__dirname}/assets`
@@ -105,12 +123,33 @@ const resources = {
 }
 
 load(resources, (err, res) => {
-  if (err) console.log(err)
+  if (err) throw err
 
   State.textures = [
-    ctx.texture2D({ data: res.plask, width: res.plask.width, height: res.plask.height, flipY: true, wrap: ctx.Wrap.Repeat, encoding: ctx.Encoding.SRGB }),
-    ctx.texture2D({ data: res.pex, width: res.pex.width, height: res.pex.height, flipY: true, wrap: ctx.Wrap.Repeat, encoding: ctx.Encoding.SRGB }),
-    ctx.texture2D({ data: res.noise, width: res.noise.width, height: res.noise.height, flipY: true, wrap: ctx.Wrap.Repeat, encoding: ctx.Encoding.SRGB })
+    ctx.texture2D({
+      data: res.plask,
+      width: res.plask.width,
+      height: res.plask.height,
+      flipY: true,
+      wrap: ctx.Wrap.Repeat,
+      encoding: ctx.Encoding.SRGB
+    }),
+    ctx.texture2D({
+      data: res.pex,
+      width: res.pex.width,
+      height: res.pex.height,
+      flipY: true,
+      wrap: ctx.Wrap.Repeat,
+      encoding: ctx.Encoding.SRGB
+    }),
+    ctx.texture2D({
+      data: res.noise,
+      width: res.noise.width,
+      height: res.noise.height,
+      flipY: true,
+      wrap: ctx.Wrap.Repeat,
+      encoding: ctx.Encoding.SRGB
+    })
   ]
 
   ctx.update(State.textures[0], {
@@ -171,21 +210,28 @@ const drawCmd = {
 }
 
 let frameNumber = 0
-ctx.frame(function frame () {
+ctx.frame(function frame() {
   ctx.debug(frameNumber++ === 10)
   ctx.submit(clearCmd)
 
-  quat.setEuler(rotationQuat, State.rotation[0], State.rotation[1], State.rotation[2])
+  quat.setEuler(
+    rotationQuat,
+    State.rotation[0],
+    State.rotation[1],
+    State.rotation[2]
+  )
   mat4.fromQuat(modelMatrix, rotationQuat)
   mat4.scale(modelMatrix, [State.scale, State.scale, State.scale])
 
   if (State.rotate) {
     State.time += 1 / 60
-    camera.set({ position: [
-      Math.cos(State.time * Math.PI) * 5,
-      Math.sin(State.time * 0.5) * 3,
-      Math.sin(State.time * Math.PI) * 5
-    ]})
+    camera.set({
+      position: [
+        Math.cos(State.time * Math.PI) * 5,
+        Math.sin(State.time * 0.5) * 3,
+        Math.sin(State.time * Math.PI) * 5
+      ]
+    })
     orbiter.set({ camera: camera })
   }
 
