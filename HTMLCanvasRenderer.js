@@ -9,12 +9,6 @@ function floatRgb2Hex(rgb) {
   )
 }
 
-/**
- * [HTMLCanvasRenderer description]
- * @param {[type]} ctx    [description]
- * @param {[type]} width  [description]
- * @param {[type]} height [description]
- */
 function HTMLCanvasRenderer(ctx) {
   this._ctx = ctx
   this.canvas = document.createElement('canvas')
@@ -34,12 +28,6 @@ function HTMLCanvasRenderer(ctx) {
   this.dirty = true
 }
 
-/**
- * [draw description]
- * @param  {[type]} items [description]
- * @param  {[type]} scale [description]
- * @return {[type]}       [description]
- */
 HTMLCanvasRenderer.prototype.draw = function(items) {
   this.dirty = false
   function makePaletteImage(e, img) {
@@ -413,21 +401,10 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
   }
 }
 
-/**
- * [getTexture description]
- * @return {[type]} [description]
- */
 HTMLCanvasRenderer.prototype.getTexture = function() {
   return this.tex
 }
 
-/**
- * [function description]
- * @param  {[type]} image [description]
- * @param  {[type]} x     [description]
- * @param  {[type]} y     [description]
- * @return {[type]}       [description]
- */
 HTMLCanvasRenderer.prototype.getImageColor = function(image, x, y) {
   const r = image.data[(x + y * image.width) * 4 + 0] / 255
   const g = image.data[(x + y * image.width) * 4 + 1] / 255
@@ -435,10 +412,6 @@ HTMLCanvasRenderer.prototype.getImageColor = function(image, x, y) {
   return [r, g, b]
 }
 
-/**
- * [updateTexture description]
- * @return {[type]} [description]
- */
 HTMLCanvasRenderer.prototype.updateTexture = function() {
   // const gl = this.gl
   this._ctx.update(this.tex, {

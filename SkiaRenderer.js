@@ -4,12 +4,6 @@ const SkPaint = plask.SkPaint
 const SkPath = plask.SkPath
 const Rect = require('pex-geom/Rect')
 
-/**
- * [SkiaRenderer description]
- * @param {[type]} ctx    [description]
- * @param {[type]} width  [description]
- * @param {[type]} height [description]
- */
 function SkiaRenderer(ctx) {
   const width = (ctx.gl.drawingBufferWidth / 3) | 0
   const height = (ctx.gl.drawingBufferHeight / 3) | 0
@@ -81,12 +75,6 @@ function SkiaRenderer(ctx) {
   this.dirty = true
 }
 
-/**
- * [function description]
- * @param  {[type]} items [description]
- * @param  {[type]} scale [description]
- * @return {[type]}       [description]
- */
 SkiaRenderer.prototype.draw = function(items) {
   this.dirty = false
   const scale = 1
@@ -489,13 +477,6 @@ SkiaRenderer.prototype.draw = function(items) {
   }
 }
 
-/**
- * [function description]
- * @param  {[type]} image [description]
- * @param  {[type]} x     [description]
- * @param  {[type]} y     [description]
- * @return {[type]}       [description]
- */
 SkiaRenderer.prototype.getImageColor = function(image, x, y) {
   const pixels = image.pixels || image
   // Skia stores canvas data as BGR
@@ -505,34 +486,17 @@ SkiaRenderer.prototype.getImageColor = function(image, x, y) {
   return [r, g, b]
 }
 
-/**
- * [function description]
- * @return {[type]} [description]
- */
 SkiaRenderer.prototype.getTexture = function() {
   return this.tex
 }
 
-/**
- * [function description]
- * @return {[type]} [description]
- */
 SkiaRenderer.prototype.getCanvas = function() {
   return this.canvas
 }
 
-/**
- * [function description]
- * @return {[type]} [description]
- */
 SkiaRenderer.prototype.getCanvasPaint = function() {
   return this.canvasPaint
 }
-
-/**
- * [function description]
- * @return {[type]} [description]
- */
 
 SkiaRenderer.prototype.updateTexture = function() {
   if (!this.tex) return

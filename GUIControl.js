@@ -1,32 +1,15 @@
-var rgb2hsl = require('float-rgb2hsl')
-var hsl2rgb = require('float-hsl2rgb')
+const rgb2hsl = require('float-rgb2hsl')
+const hsl2rgb = require('float-hsl2rgb')
 
-/**
- * [GUIControl description]
- * @param {[type]} o [description]
- */
-function GUIControl(o) {
-  for (var i in o) {
-    this[i] = o[i]
-  }
+function GUIControl(options) {
+  Object.assign(this, options)
 }
 
-/**
- * [function description]
- * @param  {[type]} x [description]
- * @param  {[type]} y [description]
- * @return {[type]}   [description]
- */
 GUIControl.prototype.setPosition = function(x, y) {
   this.px = x
   this.py = y
 }
 
-/**
- * [function description]
- * @param  {[type]} idx [description]
- * @return {[type]}     [description]
- */
 GUIControl.prototype.getNormalizedValue = function(idx) {
   if (!this.contextObject) {
     return 0
@@ -50,12 +33,6 @@ GUIControl.prototype.getNormalizedValue = function(idx) {
   return val
 }
 
-/**
- * [function description]
- * @param  {[type]} val [description]
- * @param  {[type]} idx [description]
- * @return {[type]}     [description]
- */
 GUIControl.prototype.setNormalizedValue = function(val, idx) {
   if (!this.contextObject) {
     return
@@ -95,10 +72,6 @@ GUIControl.prototype.setNormalizedValue = function(val, idx) {
   this.contextObject[this.attributeName] = val
 }
 
-/**
- * [function description]
- * @return {[type]} [description]
- */
 GUIControl.prototype.getSerializedValue = function() {
   if (this.contextObject) {
     return this.contextObject[this.attributeName]
@@ -107,11 +80,6 @@ GUIControl.prototype.getSerializedValue = function() {
   }
 }
 
-/**
- * [function description]
- * @param  {[type]} value [description]
- * @return {[type]}       [description]
- */
 GUIControl.prototype.setSerializedValue = function(value) {
   if (this.type === 'slider') {
     this.contextObject[this.attributeName] = value
@@ -129,10 +97,6 @@ GUIControl.prototype.setSerializedValue = function(value) {
   }
 }
 
-/**
- * [function description]
- * @return {[type]} [description]
- */
 GUIControl.prototype.getValue = function() {
   if (this.type === 'slider') {
     return this.contextObject[this.attributeName]
@@ -147,10 +111,6 @@ GUIControl.prototype.getValue = function() {
   }
 }
 
-/**
- * [function description]
- * @return {[type]} [description]
- */
 GUIControl.prototype.getStrValue = function() {
   if (this.type === 'slider') {
     var str = '' + this.contextObject[this.attributeName]

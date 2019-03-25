@@ -7,9 +7,8 @@ const Rect = require('pex-geom/Rect')
 const Time = require('pex-sys/Time')
 
 const keyboardPolyfill = require('keyboardevent-key-polyfill')
-// const Signal = require('signals')
 
-const VERT = `
+const VERT = /* glsl */ `
 attribute vec2 aPosition;
 attribute vec2 aTexCoord0;
 uniform vec4 uViewport;
@@ -29,7 +28,7 @@ void main() {
   gl_Position = vec4(pos, 0.0, 1.0);
 }`
 
-const DECODE_ENCODE = `
+const DECODE_ENCODE = /* glsl */ `
 #define LINEAR 1
 #define GAMMA 2
 #define SRGB 3
@@ -77,9 +76,7 @@ vec4 encode(vec4 pixel, int encoding) {
 }
 `
 
-let TEXTURE_2D_FRAG =
-  DECODE_ENCODE +
-  `
+let TEXTURE_2D_FRAG = /* glsl */ `${DECODE_ENCODE}
 uniform sampler2D uTexture;
 uniform int uTextureEncoding;
 varying vec2 vTexCoord0;
@@ -96,9 +93,7 @@ void main() {
 // we want normal (not fliped) cubemaps maps to be represented same way as
 // latlong panoramas so we flip by -1.0 by default
 // render target dynamic cubemaps should be not flipped
-let TEXTURE_CUBE_FRAG =
-  DECODE_ENCODE +
-  `
+let TEXTURE_CUBE_FRAG = /* glsl */ `${DECODE_ENCODE}
 const float PI = 3.1415926;
 varying vec2 vTexCoord0;
 uniform samplerCube uTexture;
@@ -134,12 +129,6 @@ if (!isPlask) {
 
 TEXTURE_2D_FRAG = TEXTURE_2D_FRAG.split(';').join(';\n')
 
-/**
- * [GUI description]
- * @param {[type]} ctx          [description]
- * @param {[type]} windowWidth  [description]
- * @param {[type]} windowHeight [description]
- */
 function GUI(ctx) {
   const W = ctx.gl.drawingBufferWidth
   const H = ctx.gl.drawingBufferHeight
@@ -241,11 +230,6 @@ function GUI(ctx) {
   window.addEventListener('keydown', this.onKeyDown.bind(this))
 }
 
-/**
- * [onMouseDown description]
- * @param  {[type]} e [description]
- * @return {[type]}   [description]
- */
 GUI.prototype.onMouseDown = function(e) {
   if (!this.enabled) return
 
@@ -381,11 +365,6 @@ GUI.prototype.onMouseDown = function(e) {
   }
 }
 
-/**
- * [onMouseDrag description]
- * @param  {[type]} e [description]
- * @return {[type]}   [description]
- */
 GUI.prototype.onMouseDrag = function(e) {
   if (!this.enabled) return
   let mx = e.offsetX // ? e.offsetX : e.pageX - this._ctx.gl.canvas.offsetLeft
@@ -489,11 +468,6 @@ GUI.prototype.onMouseDrag = function(e) {
   }
 }
 
-/**
- * [onMouseUp description]
- * @param  {[type]} e [description]
- * @return {[type]}   [description]
- */
 GUI.prototype.onMouseUp = function() {
   if (!this.enabled) return
 
@@ -505,11 +479,6 @@ GUI.prototype.onMouseUp = function() {
   }
 }
 
-/**
- * [onKeyDown description]
- * @param  {[type]} e [description]
- * @return {[type]}   [description]
- */
 GUI.prototype.onKeyDown = function(e) {
   const focusedItem = this.items.filter(function(item) {
     return item.type === 'text' && item.focus
@@ -579,10 +548,7 @@ GUI.prototype.addTab = function(title, contextObject, attributeName, options) {
   this.items.push(tab)
   return tab
 }
-/**
- * [addColumn description]
- * @param {[type]} title [description]
- */
+
 GUI.prototype.addColumn = function(title, width) {
   const column = new GUIControl({
     width: width || 160,
@@ -604,10 +570,6 @@ GUI.prototype.addColumn = function(title, width) {
   return column
 }
 
-/**
- * [addHeader description]
- * @param {[type]} title [description]
- */
 GUI.prototype.addHeader = function(title) {
   const ctrl = new GUIControl({
     type: 'header',
@@ -623,10 +585,6 @@ GUI.prototype.addHeader = function(title) {
   return ctrl
 }
 
-/**
- * [addSeparator description]
- * @param {[type]} title [description]
- */
 GUI.prototype.addSeparator = function() {
   const ctrl = new GUIControl({
     type: 'separator',
@@ -637,10 +595,6 @@ GUI.prototype.addSeparator = function() {
   return ctrl
 }
 
-/**
- * [addLabel description]
- * @param {[type]} title [description]
- */
 GUI.prototype.addLabel = function(title) {
   const ctrl = new GUIControl({
     type: 'label',
@@ -656,14 +610,6 @@ GUI.prototype.addLabel = function(title) {
   return ctrl
 }
 
-/**
- * [addParam description]
- * @param {[type]} title         [description]
- * @param {[type]} contextObject [description]
- * @param {[type]} attributeName [description]
- * @param {[type]} options       [description]
- * @param {[type]} onchange      [description]
- */
 GUI.prototype.addParam = function(
   title,
   contextObject,
@@ -749,11 +695,6 @@ GUI.prototype.addParam = function(
   }
 }
 
-/**
- * [addButton description]
- * @param {[type]} title   [description]
- * @param {[type]} onclick [description]
- */
 GUI.prototype.addButton = function(title, onClick) {
   const ctrl = new GUIControl({
     type: 'button',
@@ -767,14 +708,6 @@ GUI.prototype.addButton = function(title, onClick) {
   return ctrl
 }
 
-/**
- * [addRadioList description]
- * @param {[type]} title         [description]
- * @param {[type]} contextObject [description]
- * @param {[type]} attributeName [description]
- * @param {[type]} items         [description]
- * @param {[type]} onchange      [description]
- */
 GUI.prototype.addRadioList = function(
   title,
   contextObject,
@@ -796,15 +729,6 @@ GUI.prototype.addRadioList = function(
   return ctrl
 }
 
-/**
- * [addTexture2DList description]
- * @param {[type]} title         [description]
- * @param {[type]} contextObject [description]
- * @param {[type]} attributeName [description]
- * @param {[type]} items         [description]
- * @param {[type]} itemsPerRow   [description]
- * @param {[type]} onchange      [description]
- */
 GUI.prototype.addTexture2DList = function(
   title,
   contextObject,
@@ -828,12 +752,6 @@ GUI.prototype.addTexture2DList = function(
   return ctrl
 }
 
-/**
- * [addTexture2D description]
- * @param {[type]} title   [description]
- * @param {[type]} texture [description]
- * @param {[type]} options [description]
- */
 GUI.prototype.addTexture2D = function(title, texture, options) {
   const ctrl = new GUIControl({
     type: 'texture2D',
@@ -875,17 +793,8 @@ GUI.prototype.addFPSMeeter = function() {
   return ctrl
 }
 
-/**
- * [dispose description]
- * @return {[type]} [description]
- */
 GUI.prototype.dispose = function() {}
 
-/**
- * [function description]
- * @param  {[type]} items [description]
- * @return {[type]}       [description]
- */
 GUI.prototype.isAnyItemDirty = function(items) {
   let dirty = false
   items.forEach(function(item) {
@@ -923,10 +832,6 @@ GUI.prototype.update = function() {
   }
 }
 
-/**
- * [draw description]
- * @return {[type]} [description]
- */
 GUI.prototype.draw = function() {
   if (!this.enabled) {
     return
@@ -963,10 +868,6 @@ GUI.prototype.draw = function() {
   this.drawTextures()
 }
 
-/**
- * [drawTextures description]
- * @return {[type]} [description]
- */
 GUI.prototype.drawTextures = function() {
   const items = this.items
   const tabs = items.filter((item) => item.type === 'tab')
@@ -1045,10 +946,6 @@ GUI.prototype.drawTextures = function() {
   }
 }
 
-/**
- * [serialize description]
- * @return {[type]} [description]
- */
 GUI.prototype.serialize = function() {
   const data = {}
   this.items.forEach(function(item) {
@@ -1057,11 +954,6 @@ GUI.prototype.serialize = function() {
   return data
 }
 
-/**
- * [deserialize description]
- * @param  {[type]} data [description]
- * @return {[type]}      [description]
- */
 GUI.prototype.deserialize = function(data) {
   this.items.forEach(function(item) {
     if (data[item.title] !== undefined) {
@@ -1071,27 +963,14 @@ GUI.prototype.deserialize = function(data) {
   })
 }
 
-/**
- * [function description]
- * @param  {[type]} state [description]
- * @return {[type]}       [description]
- */
 GUI.prototype.setEnabled = function(state) {
   this.enabled = state
 }
 
-/**
- * [function description]
- * @return {[type]} [description]
- */
 GUI.prototype.isEnabled = function() {
   return this.enabled
 }
 
-/**
- * [function description]
- * @return {[type]} [description]
- */
 GUI.prototype.toggleEnabled = function() {
   this.enabled = !this.enabled
   return this.enabled
