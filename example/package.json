@@ -4,17 +4,17 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "budo index.js --open --live"
+    "start": "npx budo index.js --open --live"
   },
   "author": "Marcin Ignac <marcin.ignac@gmail.com> (http://marcinignac.com/)",
   "license": "MIT",
   "dependencies": {
-    "budo": "^9.4.7",
-    "is-browser": "^2.0.1",
-    "pex-cam": "^2.4.0",
-    "pex-context": "^2.4.0",
-    "pex-io": "^1.5.0",
-    "pex-math": "^2.0.0",
+    "budo": "^11.6.1",
+    "is-browser": "^2.1.0",
+    "pex-cam": "^2.7.1",
+    "pex-context": "^2.8.0",
+    "pex-io": "^2.1.0",
+    "pex-math": "^2.1.1",
     "primitive-cube": "^2.0.1",
     "primitive-torus": "^1.0.4"
   }

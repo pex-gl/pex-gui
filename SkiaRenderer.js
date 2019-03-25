@@ -10,7 +10,7 @@ const Rect = require('pex-geom/Rect')
  * @param {[type]} width  [description]
  * @param {[type]} height [description]
  */
-function SkiaRenderer (ctx) {
+function SkiaRenderer(ctx) {
   const width = (ctx.gl.drawingBufferWidth / 3) | 0
   const height = (ctx.gl.drawingBufferHeight / 3) | 0
   this.ctx = ctx
@@ -87,7 +87,7 @@ function SkiaRenderer (ctx) {
  * @param  {[type]} scale [description]
  * @return {[type]}       [description]
  */
-SkiaRenderer.prototype.draw = function (items) {
+SkiaRenderer.prototype.draw = function(items) {
   this.dirty = false
   const scale = 1
   const canvas = this.canvas
@@ -112,7 +112,9 @@ SkiaRenderer.prototype.draw = function (items) {
     // ctx.fillStyle = 'rgba(0, 0, 0, 0.56)'
     // ctx.fillRect(dx, dy, w, eh - 2)
     canvas.drawRect(this.panelBgPaint, dx, dy, dx + w, dy + eh)
-    tab.current ? this.tabPaint.setColor(46, 204, 46 + 113, 255) : this.tabPaint.setColor(75, 75, 75, 255)
+    tab.current
+      ? this.tabPaint.setColor(46, 204, 46 + 113, 255)
+      : this.tabPaint.setColor(75, 75, 75, 255)
     // ctx.fillStyle = tab.current ? 'rgba(46, 204, 113, 1.0)' : 'rgba(75, 75, 75, 1.0)'
     // ctx.fillRect(dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3)
     canvas.drawRect(this.tabPaint, dx + 3, dy + 3, dx + w - 3, dy + eh - 3)
@@ -122,7 +124,12 @@ SkiaRenderer.prototype.draw = function (items) {
     canvas.drawRect(this.tabPaint, dx + 3, dy + eh - 3, dx + w - 3, dy + eh - 7)
     // ctx.fillStyle = tab.current ? 'rgba(0, 0, 0, 1)' : 'rgba(175, 175, 175, 1.0)'
     // ctx.fillText(tab.title, dx + 5, dy + 16)
-    canvas.drawText(tab.current ? this.headerFontPaint : this.fontPaint, tab.title, dx + 4 + 3, dy + 3 + 13)
+    canvas.drawText(
+      tab.current ? this.headerFontPaint : this.fontPaint,
+      tab.title,
+      dx + 4 + 3,
+      dy + 3 + 13
+    )
     Rect.set4(tab.activeArea, dx + 3, dy + 3, w - 3 - 3, eh - 5 - 3)
     dx += w + margin
   }
@@ -154,7 +161,9 @@ SkiaRenderer.prototype.draw = function (items) {
       if (e.options.palette.width) {
         e.options.paletteImage = e.options.palette
       } else {
-        e.options.paletteImage = plask.SkCanvas.createFromImage(e.options.palette)
+        e.options.paletteImage = plask.SkCanvas.createFromImage(
+          e.options.palette
+        )
       }
     }
 
@@ -168,16 +177,21 @@ SkiaRenderer.prototype.draw = function (items) {
     if (e.type === 'toggle') eh = 20 * scale
     if (e.type === 'multislider') eh = 20 + e.getValue().length * 14 * scale
     if (e.type === 'color') eh = 20 + (e.options.alpha ? 4 : 3) * 14 * scale
-    if (e.type === 'color' && e.options.paletteImage) eh += (w * e.options.paletteImage.height / e.options.paletteImage.width + 2) * scale
+    if (e.type === 'color' && e.options.paletteImage)
+      eh +=
+        ((w * e.options.paletteImage.height) / e.options.paletteImage.width +
+          2) *
+        scale
     if (e.type === 'button') eh = 24 * scale
-    if (e.type === 'texture2D') eh = 24 + e.texture.height * w / e.texture.width
+    if (e.type === 'texture2D')
+      eh = 24 + (e.texture.height * w) / e.texture.width
     if (e.type === 'textureCube') eh = 24 + w / 2
     if (e.type === 'radiolist') eh = 18 + e.items.length * 20 * scale
     if (e.type === 'texturelist') {
       const aspectRatio = e.items[0].texture.width / e.items[0].texture.height
       cellSize = Math.floor((w - 2 * margin) / e.itemsPerRow)
       numRows = Math.ceil(e.items.length / e.itemsPerRow)
-      eh = 18 + 3 + numRows * cellSize / aspectRatio
+      eh = 18 + 3 + (numRows * cellSize) / aspectRatio
     }
     if (e.type === 'header') eh = 26 * scale
     if (e.type === 'text') eh = 45 * scale
@@ -190,40 +204,120 @@ SkiaRenderer.prototype.draw = function (items) {
 
     if (e.type === 'slider') {
       // const value = e.getValue()
-      canvas.drawRect(this.controlBgPaint, dx + 3, dy + 18, dx + w - 3, dy + eh - 5)
-      canvas.drawRect(this.controlHighlightPaint, dx + 3, dy + 18, dx + 3 + (w - 6) * e.getNormalizedValue(), dy + eh - 5)
+      canvas.drawRect(
+        this.controlBgPaint,
+        dx + 3,
+        dy + 18,
+        dx + w - 3,
+        dy + eh - 5
+      )
+      canvas.drawRect(
+        this.controlHighlightPaint,
+        dx + 3,
+        dy + 18,
+        dx + 3 + (w - 6) * e.getNormalizedValue(),
+        dy + eh - 5
+      )
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18)
-      canvas.drawText(this.fontPaint, items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13)
+      canvas.drawText(
+        this.fontPaint,
+        items[i].title + ' : ' + e.getStrValue(),
+        dx + 4,
+        dy + 13
+      )
     } else if (e.type === 'multislider') {
       for (let j = 0; j < e.getValue().length; j++) {
-        canvas.drawRect(this.controlBgPaint, dx + 3, dy + 18 + j * 14 * scale, dx + w - 3, dy + 18 + (j + 1) * 14 * scale - 3)
-        canvas.drawRect(this.controlHighlightPaint, dx + 3, dy + 18 + j * 14 * scale, dx + 3 + (w - 6) * e.getNormalizedValue(j), dy + 18 + (j + 1) * 14 * scale - 3)
+        canvas.drawRect(
+          this.controlBgPaint,
+          dx + 3,
+          dy + 18 + j * 14 * scale,
+          dx + w - 3,
+          dy + 18 + (j + 1) * 14 * scale - 3
+        )
+        canvas.drawRect(
+          this.controlHighlightPaint,
+          dx + 3,
+          dy + 18 + j * 14 * scale,
+          dx + 3 + (w - 6) * e.getNormalizedValue(j),
+          dy + 18 + (j + 1) * 14 * scale - 3
+        )
       }
-      canvas.drawText(this.fontPaint, items[i].title + ' : ' + e.getStrValue(), dx + 4, dy + 13)
+      canvas.drawText(
+        this.fontPaint,
+        items[i].title + ' : ' + e.getStrValue(),
+        dx + 4,
+        dy + 13
+      )
       Rect.set4(e.activeArea, dx + 4, dy + 18, w - 3 - 3, eh - 5 - 18)
     } else if (e.type === 'color') {
       const numSliders = e.options.alpha ? 4 : 3
       for (let j = 0; j < numSliders; j++) {
-        canvas.drawRect(this.controlBgPaint, dx + 3, dy + 18 + j * 14 * scale, dx + w - 3, dy + 18 + (j + 1) * 14 * scale - 3)
-        canvas.drawRect(this.controlHighlightPaint, dx + 3, dy + 18 + j * 14 * scale, dx + 3 + (w - 6) * e.getNormalizedValue(j), dy + 18 + (j + 1) * 14 * scale - 3)
+        canvas.drawRect(
+          this.controlBgPaint,
+          dx + 3,
+          dy + 18 + j * 14 * scale,
+          dx + w - 3,
+          dy + 18 + (j + 1) * 14 * scale - 3
+        )
+        canvas.drawRect(
+          this.controlHighlightPaint,
+          dx + 3,
+          dy + 18 + j * 14 * scale,
+          dx + 3 + (w - 6) * e.getNormalizedValue(j),
+          dy + 18 + (j + 1) * 14 * scale - 3
+        )
       }
       const c = e.getValue()
       this.colorPaint.setColor(255 * c[0], 255 * c[1], 255 * c[2], 255)
-      canvas.drawRect(this.colorPaint, dx + w - 12 - 3, dy + 3, dx + w - 3, dy + 3 + 12)
+      canvas.drawRect(
+        this.colorPaint,
+        dx + w - 12 - 3,
+        dy + 3,
+        dx + w - 3,
+        dy + 3 + 12
+      )
       if (e.options.paletteImage) {
-        canvas.drawCanvas(this.imagePaint, e.options.paletteImage, dx + 3, dy + 18 + 14 * numSliders, dx + w - 3, dy + 18 + 14 * numSliders + w * e.options.paletteImage.height / e.options.paletteImage.width)
+        canvas.drawCanvas(
+          this.imagePaint,
+          e.options.paletteImage,
+          dx + 3,
+          dy + 18 + 14 * numSliders,
+          dx + w - 3,
+          dy +
+            18 +
+            14 * numSliders +
+            (w * e.options.paletteImage.height) / e.options.paletteImage.width
+        )
       }
-      canvas.drawText(this.fontPaint, items[i].title + ' : ' + e.getStrValue(), dx + 3, dy + 13)
+      canvas.drawText(
+        this.fontPaint,
+        items[i].title + ' : ' + e.getStrValue(),
+        dx + 3,
+        dy + 13
+      )
       Rect.set4(e.activeArea, dx + 4, dy + 18, w - 3 - 3, eh - 5 - 18)
     } else if (e.type === 'button') {
-      const btnColor = e.active ? this.controlHighlightPaint : this.controlBgPaint
+      const btnColor = e.active
+        ? this.controlHighlightPaint
+        : this.controlBgPaint
       const btnFont = e.active ? this.fontHighlightPaint : this.fontPaint
       canvas.drawRect(btnColor, dx + 3, dy + 3, dx + w - 3, dy + eh - 5)
       Rect.set4(e.activeArea, dx + 3, dy + 3, w - 3 - 3, eh - 5)
       if (e.options.color) {
         let c = e.options.color
-        this.controlFeaturePaint.setColor(255 * c[0], 255 * c[1], 255 * c[2], 255)
-        canvas.drawRect(this.controlFeaturePaint, dx + w - 8, dy + 3, dx + w - 3, dy + eh - 5)
+        this.controlFeaturePaint.setColor(
+          255 * c[0],
+          255 * c[1],
+          255 * c[2],
+          255
+        )
+        canvas.drawRect(
+          this.controlFeaturePaint,
+          dx + w - 8,
+          dy + 3,
+          dx + w - 3,
+          dy + eh - 5
+        )
       }
       canvas.drawText(btnFont, items[i].title, dx + 5, dy + 15)
     } else if (e.type === 'toggle') {
@@ -240,10 +334,27 @@ SkiaRenderer.prototype.draw = function (items) {
         const item = e.items[j]
         let on = e.contextObject[e.attributeName] === item.value
         let itemColor = on ? this.controlHighlightPaint : this.controlBgPaint
-        canvas.drawRect(itemColor, dx + 3, 18 + j * itemHeight + dy + 3, dx + itemHeight - 5, itemHeight + j * itemHeight + dy + 18 - 5)
-        canvas.drawText(this.fontPaint, item.name, dx + itemHeight, 18 + j * itemHeight + dy + 13)
+        canvas.drawRect(
+          itemColor,
+          dx + 3,
+          18 + j * itemHeight + dy + 3,
+          dx + itemHeight - 5,
+          itemHeight + j * itemHeight + dy + 18 - 5
+        )
+        canvas.drawText(
+          this.fontPaint,
+          item.name,
+          dx + itemHeight,
+          18 + j * itemHeight + dy + 13
+        )
       }
-      Rect.set4(e.activeArea, dx + 3, 18 + dy + 3, itemHeight - 5, e.items.length * itemHeight - 5)
+      Rect.set4(
+        e.activeArea,
+        dx + 3,
+        18 + dy + 3,
+        itemHeight - 5,
+        e.items.length * itemHeight - 5
+      )
     } else if (e.type === 'texturelist') {
       canvas.drawText(this.fontPaint, e.title, dx + 4, dy + 14)
       for (let j = 0; j < e.items.length; j++) {
@@ -251,18 +362,42 @@ SkiaRenderer.prototype.draw = function (items) {
         const row = Math.floor(j / e.itemsPerRow)
         let itemColor = this.controlBgPaint
         let shrink = 0
-        canvas.drawRect(itemColor, dx + 3 + col * cellSize, dy + 18 + row * cellSize, dx + 3 + (col + 1) * cellSize - 1, dy + 18 + (row + 1) * cellSize - 1)
+        canvas.drawRect(
+          itemColor,
+          dx + 3 + col * cellSize,
+          dy + 18 + row * cellSize,
+          dx + 3 + (col + 1) * cellSize - 1,
+          dy + 18 + (row + 1) * cellSize - 1
+        )
         if (e.items[j].value === e.contextObject[e.attributeName]) {
           const strokeColor = this.controlStrokeHighlightPaint
-          canvas.drawRect(strokeColor, dx + 3 + col * cellSize + 1, dy + 18 + row * cellSize + 1, dx + 3 + (col + 1) * cellSize - 1 - 1, dy + 18 + (row + 1) * cellSize - 1 - 1)
+          canvas.drawRect(
+            strokeColor,
+            dx + 3 + col * cellSize + 1,
+            dy + 18 + row * cellSize + 1,
+            dx + 3 + (col + 1) * cellSize - 1 - 1,
+            dy + 18 + (row + 1) * cellSize - 1 - 1
+          )
           shrink = 2
         }
         if (!e.items[j].activeArea) {
           e.items[j].activeArea = [[0, 0], [0, 0]]
         }
-        Rect.set4(e.items[j].activeArea, dx + 3 + col * cellSize + shrink, dy + 18 + row * cellSize + shrink, cellSize - 1 - 2 * shrink, cellSize - 1 - 2 * shrink)
+        Rect.set4(
+          e.items[j].activeArea,
+          dx + 3 + col * cellSize + shrink,
+          dy + 18 + row * cellSize + shrink,
+          cellSize - 1 - 2 * shrink,
+          cellSize - 1 - 2 * shrink
+        )
       }
-      Rect.set4(e.activeArea, dx + 3, 18 + dy + 3, w - 3 - 3, cellSize * numRows - 5)
+      Rect.set4(
+        e.activeArea,
+        dx + 3,
+        18 + dy + 3,
+        w - 3 - 3,
+        cellSize * numRows - 5
+      )
     } else if (e.type === 'texture2D') {
       canvas.drawText(this.fontPaint, e.title, dx + 3, dy + 13)
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18)
@@ -270,7 +405,13 @@ SkiaRenderer.prototype.draw = function (items) {
       canvas.drawText(this.fontPaint, e.title, dx + 3, dy + 13)
       Rect.set4(e.activeArea, dx + 3, dy + 18, w - 3 - 3, eh - 5 - 18)
     } else if (e.type === 'header') {
-      canvas.drawRect(this.headerBgPaint, dx + 3, dy + 3, dx + w - 3, dy + eh - 5)
+      canvas.drawRect(
+        this.headerBgPaint,
+        dx + 3,
+        dy + 3,
+        dx + w - 3,
+        dy + eh - 5
+      )
       canvas.drawText(this.headerFontPaint, items[i].title, dx + 6, dy + 16)
     } else if (e.type === 'fps') {
       // FIXME: dirty dependency between FPS history and GUI width
@@ -278,23 +419,51 @@ SkiaRenderer.prototype.draw = function (items) {
       // ctx.fillStyle = 'rgba(50, 50, 50, 1)'
       const gh = eh - 20 - 5
       // ctx.fillRect(dx + 3, dy + 20, w - 6, gh)
-      canvas.drawRect(this.textBgPaint, dx + 3, dy + 20, dx + w - 3, dy + 20 + gh)
-      let py = gh - (e.values[0] || 0) / 60 * gh
+      canvas.drawRect(
+        this.textBgPaint,
+        dx + 3,
+        dy + 20,
+        dx + w - 3,
+        dy + 20 + gh
+      )
+      let py = gh - ((e.values[0] || 0) / 60) * gh
       let path = new SkPath()
       path.moveTo(dx + 3, dy + 20 + py)
       for (let j = 0; j < e.values.length; j++) {
-        py = gh - e.values[j] / 60 * gh
+        py = gh - (e.values[j] / 60) * gh
         path.lineTo(dx + 3 + j, dy + 20 + py)
       }
       canvas.drawPath(this.linePaint, path)
-      canvas.drawText(this.fontPaint, e.title + ' : ' + e.currentValue, dx + 6, dy + 16)
+      canvas.drawText(
+        this.fontPaint,
+        e.title + ' : ' + e.currentValue,
+        dx + 6,
+        dy + 16
+      )
     } else if (e.type === 'text') {
       canvas.drawText(this.fontPaint, items[i].title, dx + 3, dy + 13)
-      canvas.drawRect(this.textBgPaint, dx + 3, dy + 20, dx + w - 3, dy + eh - 5)
-      canvas.drawText(this.fontPaint, e.contextObject[e.attributeName], dx + 3 + 3, dy + 15 + 20)
+      canvas.drawRect(
+        this.textBgPaint,
+        dx + 3,
+        dy + 20,
+        dx + w - 3,
+        dy + eh - 5
+      )
+      canvas.drawText(
+        this.fontPaint,
+        e.contextObject[e.attributeName],
+        dx + 3 + 3,
+        dy + 15 + 20
+      )
       Rect.set4(e.activeArea, dx + 3, dy + 20, w - 6, eh - 20 - 5)
       if (e.focus) {
-        canvas.drawRect(this.textBorderPaint, e.activeArea[0][0], e.activeArea[0][1], e.activeArea[1][0], e.activeArea[1][1])
+        canvas.drawRect(
+          this.textBorderPaint,
+          e.activeArea[0][0],
+          e.activeArea[0][1],
+          e.activeArea[1][0],
+          e.activeArea[1][1]
+        )
       }
     } else if (e.type === 'separator') {
       // do nothing
@@ -312,7 +481,7 @@ SkiaRenderer.prototype.draw = function (items) {
     maxWidth = (maxWidth * this.ctx.pixelRatio) | 0
     maxHeight = (maxHeight * this.ctx.pixelRatio) | 0
     if (maxWidth !== this.canvas.width || maxHeight !== this.canvas.height) {
-      console.log('Resize GUI Canvas', maxWidth, maxHeight)
+      // console.log('Resize GUI Canvas', maxWidth, maxHeight)
       this.canvas = SkCanvas.create(maxWidth, maxHeight)
       this.dirty = true
       this.draw(items)
@@ -327,7 +496,7 @@ SkiaRenderer.prototype.draw = function (items) {
  * @param  {[type]} y     [description]
  * @return {[type]}       [description]
  */
-SkiaRenderer.prototype.getImageColor = function (image, x, y) {
+SkiaRenderer.prototype.getImageColor = function(image, x, y) {
   const pixels = image.pixels || image
   // Skia stores canvas data as BGR
   const r = pixels[(x + y * image.width) * 4 + 2] / 255
@@ -340,7 +509,7 @@ SkiaRenderer.prototype.getImageColor = function (image, x, y) {
  * [function description]
  * @return {[type]} [description]
  */
-SkiaRenderer.prototype.getTexture = function () {
+SkiaRenderer.prototype.getTexture = function() {
   return this.tex
 }
 
@@ -348,7 +517,7 @@ SkiaRenderer.prototype.getTexture = function () {
  * [function description]
  * @return {[type]} [description]
  */
-SkiaRenderer.prototype.getCanvas = function () {
+SkiaRenderer.prototype.getCanvas = function() {
   return this.canvas
 }
 
@@ -356,7 +525,7 @@ SkiaRenderer.prototype.getCanvas = function () {
  * [function description]
  * @return {[type]} [description]
  */
-SkiaRenderer.prototype.getCanvasPaint = function () {
+SkiaRenderer.prototype.getCanvasPaint = function() {
   return this.canvasPaint
 }
 
@@ -365,7 +534,7 @@ SkiaRenderer.prototype.getCanvasPaint = function () {
  * @return {[type]} [description]
  */
 
-SkiaRenderer.prototype.updateTexture = function () {
+SkiaRenderer.prototype.updateTexture = function() {
   if (!this.tex) return
 
   const numPixels = this.canvas.width * this.canvas.height * 4
