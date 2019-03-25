@@ -1,133 +1,16 @@
+const Rect = require('pex-geom/Rect')
+const Time = require('pex-sys/Time')
 const isPlask = require('is-plask')
-const GUIControl = require('./GUIControl')
+const keyboardPolyfill = require('keyboardevent-key-polyfill')
+
 const Renderer = isPlask
   ? require('./SkiaRenderer')
   : require('./HTMLCanvasRenderer')
-const Rect = require('pex-geom/Rect')
-const Time = require('pex-sys/Time')
+const GUIControl = require('./GUIControl')
 
-const keyboardPolyfill = require('keyboardevent-key-polyfill')
-
-const VERT = /* glsl */ `
-attribute vec2 aPosition;
-attribute vec2 aTexCoord0;
-uniform vec4 uViewport;
-uniform vec4 uRect;
-varying vec2 vTexCoord0;
-void main() {
-  vTexCoord0 = vec2(aTexCoord0.x, 1.0 - aTexCoord0.y);
-  vec2 vertexPos = aPosition * 0.5 + 0.5;
-
-  vec2 pos = vec2(0.0, 0.0); // window pos
-  vec2 windowSize = vec2(uViewport.z - uViewport.x, uViewport.w - uViewport.y);
-  pos.x = uRect.x / windowSize.x + vertexPos.x * (uRect.z - uRect.x) / windowSize.x;
-  pos.y = uRect.y / windowSize.y + vertexPos.y * (uRect.w - uRect.y) / windowSize.y;
-  pos.y = 1.0 - pos.y;
-  pos = pos * 2.0 - 1.0;
-
-  gl_Position = vec4(pos, 0.0, 1.0);
-}`
-
-const DECODE_ENCODE = /* glsl */ `
-#define LINEAR 1
-#define GAMMA 2
-#define SRGB 3
-#define RGBM 4
-
-vec3 decodeRGBM (vec4 rgbm) {
-  vec3 r = rgbm.rgb * (7.0 * rgbm.a);
-  return r * r;
-}
-
-vec4 encodeRGBM (vec3 rgb) {
-  vec4 r;
-  r.xyz = (1.0 / 7.0) * sqrt(rgb);
-  r.a = max(max(r.x, r.y), r.z);
-  r.a = clamp(r.a, 1.0 / 255.0, 1.0);
-  r.a = ceil(r.a * 255.0) / 255.0;
-  r.xyz /= r.a;
-  return r;
-}
-
-const float gamma = 2.2;
-
-vec4 toLinear(vec4 v) {
-  return vec4(pow(v.rgb, vec3(gamma)), v.a);
-}
-
-vec4 toGamma(vec4 v) {
-  return vec4(pow(v.rgb, vec3(1.0 / gamma)), v.a);
-}
-
-vec4 decode(vec4 pixel, int encoding) {
-  if (encoding == LINEAR) return pixel;
-  if (encoding == GAMMA) return toLinear(pixel);
-  if (encoding == SRGB) return toLinear(pixel);
-  if (encoding == RGBM) return vec4(decodeRGBM(pixel), 1.0);
-  return pixel;
-}
-
-vec4 encode(vec4 pixel, int encoding) {
-  if (encoding == LINEAR) return pixel;
-  if (encoding == GAMMA) return toGamma(pixel);
-  if (encoding == SRGB) return toGamma(pixel);
-  if (encoding == RGBM) return encodeRGBM(pixel.rgb);
-  return pixel;
-}
-`
-
-let TEXTURE_2D_FRAG = /* glsl */ `${DECODE_ENCODE}
-uniform sampler2D uTexture;
-uniform int uTextureEncoding;
-varying vec2 vTexCoord0;
-void main() {
-  vec4 color = texture2D(uTexture, vTexCoord0);
-  color = decode(color, uTextureEncoding);
-  // if LINEAR || RGBM then tonemap
-  if (uTextureEncoding == LINEAR || uTextureEncoding == RGBM) {
-    color.rgb = color.rgb / (color.rgb + 1.0);
-  }
-  gl_FragColor = encode(color, 2); // to gamma
-}`
-
-// we want normal (not fliped) cubemaps maps to be represented same way as
-// latlong panoramas so we flip by -1.0 by default
-// render target dynamic cubemaps should be not flipped
-let TEXTURE_CUBE_FRAG = /* glsl */ `${DECODE_ENCODE}
-const float PI = 3.1415926;
-varying vec2 vTexCoord0;
-uniform samplerCube uTexture;
-uniform int uTextureEncoding;
-uniform float uLevel;
-uniform float uFlipEnvMap;
-void main() {
-  float theta = PI * (vTexCoord0.x * 2.0);
-  float phi = PI * (1.0 - vTexCoord0.y);
-
-  float x = sin(phi) * sin(theta);
-  float y = -cos(phi);
-  float z = -sin(phi) * cos(theta);
-
-  vec3 N = normalize(vec3(uFlipEnvMap * x, y, z));
-  vec4 color = textureCube(uTexture, N, uLevel);
-  color = decode(color, uTextureEncoding);
-  // if LINEAR || RGBM then tonemap
-  if (uTextureEncoding == LINEAR || uTextureEncoding == RGBM) {
-    color.rgb = color.rgb / (color.rgb + 1.0);
-  }
-  gl_FragColor = encode(color, 2); // to gamma
-}`
-if (!isPlask) {
-  TEXTURE_2D_FRAG = '#version 100\nprecision highp float;\n\n' + TEXTURE_2D_FRAG
-  TEXTURE_CUBE_FRAG =
-    '#version 100\nprecision highp float;\n\n' + TEXTURE_CUBE_FRAG
-  // TEXTURE_CUBE_FRAG = '#extension GL_EXT_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG
-  // TEXTURE_CUBE_FRAG = '#define textureCubeLod textureCubeLodEXT\n' + TEXTURE_CUBE_FRAG
-} else {
-  // TEXTURE_CUBE_FRAG = '#extension GL_ARB_shader_texture_lod : require\n' + TEXTURE_CUBE_FRAG
-}
-
-TEXTURE_2D_FRAG = TEXTURE_2D_FRAG.split(';').join(';\n')
+const VERT = require('./shaders/main.vert.js')
+const TEXTURE_CUBE_FRAG = require('./shaders/texture-cube.frag.js')
+const TEXTURE_2D_FRAG = require('./shaders/texture-2d.frag.js')
 
 function GUI(ctx) {
   const W = ctx.gl.drawingBufferWidth
