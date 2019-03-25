@@ -34,7 +34,7 @@ ctx.frame(() => {
 #### gui = createGUI(ctx [, options])
 
 - `ctx`: Context - gl context from `pex-context`
-- `options.theme`: Object - optional theme customiser object. Colors defined by `rgba()` strings. See [theme file](https://github.com/pex-gl/pex-gui/theme.js) for all options.
+- `options.theme`: Object - optional theme customiser object. Colors defined by `rgba()` strings. See [theme file](https://github.com/pex-gl/pex-gui/blob/master/theme.js) for all options.
 
 ```js
 const createGUI = require('pex-gui')
