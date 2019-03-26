@@ -479,6 +479,8 @@ SkiaRenderer.prototype.draw = function(items) {
   canvas.restore()
   this.updateTexture()
 
+  maxWidth = Math.max(maxWidth, tabs.length * (w + margin) + 13)
+
   if (maxWidth && maxHeight) {
     maxWidth = (maxWidth * this.ctx.pixelRatio) | 0
     maxHeight = (maxHeight * this.ctx.pixelRatio) | 0

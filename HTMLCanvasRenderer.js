@@ -383,6 +383,8 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
   ctx.restore()
   this.updateTexture()
 
+  maxWidth = Math.max(maxWidth, tabs.length * (w + margin) + 13)
+
   if (maxWidth && maxHeight) {
     maxWidth = (maxWidth * this._ctx.pixelRatio) | 0
     maxHeight = (maxHeight * this._ctx.pixelRatio) | 0
