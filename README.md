@@ -107,6 +107,9 @@ gui.addParam('Multi Slider', State, 'position', {
 })
 
 gui.addParam('Color [RGBA]', State, 'color')
+
+gui.addParam('Texture', State, 'texture')
+gui.addParam('Texture Cube', State, 'textureCube')
 ```
 
 #### `gui.addButton(title, onClick)`
@@ -158,6 +161,10 @@ Add a texture visualiser (from pex-context).
 gui.addTexture2D('Single', State.textures[1])
 ```
 
+---
+
+Notes: texture cannot be updated once created.
+
 #### `gui.addTexture2DList(title, object, index, items, itemsPerRow, onChange)`
 
 Add a texture visualiser for multiple textures (from pex-context).
@@ -180,6 +187,10 @@ gui.addTexture2DList(
 )
 ```
 
+---
+
+Notes: texture cannot be updated once created.
+
 #### `gui.addTextureCube(title, texture, options)`
 
 Add a cube texture visualiser (from pex-context).
@@ -193,6 +204,10 @@ Add a cube texture visualiser (from pex-context).
 ```js
 gui.addTextureCube('Cube', State.cubeTexture)
 ```
+
+---
+
+Notes: texture cannot be updated once created.
 
 #### `gui.addFPSMeeter()`
 

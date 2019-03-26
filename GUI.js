@@ -515,7 +515,39 @@ GUI.prototype.addParam = function(
   let ctrl = null
   if (typeof options.min === 'undefined') options.min = 0
   if (typeof options.max === 'undefined') options.max = 1
-  if (
+  // Check for class property
+  let isPexContextParam = hasOwnProperty.call(
+    contextObject[attributeName],
+    'class'
+  )
+  if (isPexContextParam && contextObject[attributeName].class === 'texture') {
+    const texture = contextObject[attributeName]
+    if (texture.target === this._ctx.gl.TEXTURE_CUBE_MAP) {
+      ctrl = new GUIControl({
+        type: 'textureCube',
+        title: title,
+        contextObject: contextObject,
+        attributeName: attributeName,
+        texture: texture,
+        options: options || { flipEnvMap: 1 },
+        activeArea: [[0, 0], [0, 0]],
+        dirty: true
+      })
+    } else {
+      ctrl = new GUIControl({
+        type: 'texture2D',
+        title: title,
+        contextObject: contextObject,
+        attributeName: attributeName,
+        texture: texture,
+        options: options,
+        activeArea: [[0, 0], [0, 0]],
+        dirty: true
+      })
+    }
+    this.items.push(ctrl)
+    return ctrl
+  } else if (
     contextObject[attributeName] === false ||
     contextObject[attributeName] === true
   ) {
@@ -796,7 +828,9 @@ GUI.prototype.drawTextures = function() {
         bounds[3] = tmp
       }
       this.drawTexture2d({
-        texture: item.texture,
+        texture: item.contextObject
+          ? item.contextObject[item.attributeName]
+          : item.texture,
         rect: bounds
       })
     }
@@ -835,7 +869,9 @@ GUI.prototype.drawTextures = function() {
         item.activeArea[0][1] * scale
       ]
       this.drawTextureCube({
-        texture: item.texture,
+        texture: item.contextObject
+          ? item.contextObject[item.attributeName]
+          : item.texture,
         rect: bounds,
         level: level,
         flipEnvMap: item.options.flipEnvMap

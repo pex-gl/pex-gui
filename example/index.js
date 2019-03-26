@@ -22,6 +22,8 @@ const State = {
   position: [2, 0],
   rgba: [0.92, 0.2, 0.2, 1.0],
   hsb: [0.2, 0.92, 0.2, 1.0],
+  textureParam: null,
+  cubeTextureParam: null,
   currentTexture: 0,
   textures: []
 }
@@ -117,14 +119,14 @@ function initGUI(res) {
   })
 
   gui.addColumn('Textures')
-  gui.addTexture2D('Single', State.textures[1])
+  gui.addParam('Single', State, 'textureParam') // or gui.addTexture2D('Single', State.textures[1])
   gui.addTexture2DList(
     'List',
     State,
     'currentTexture',
     State.textures.map((tex, index) => ({ texture: tex, value: index }))
   )
-  gui.addTextureCube('Cube', State.cubeTexture)
+  gui.addParam('Cube', State, 'cubeTextureParam') // or gui.addTextureCube('Cube', State.cubeTexture)
 
   gui.addColumn('Graphs')
   gui.addFPSMeeter()
@@ -224,6 +226,8 @@ load(resources, (err, res) => {
     width: 64,
     height: 64
   })
+  State.textureParam = State.textures[0]
+  State.cubeTextureParam = State.cubeTexture
 
   ctx.update(State.textures[0], {
     mipmap: true,
