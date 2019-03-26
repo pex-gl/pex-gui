@@ -23,7 +23,7 @@ const State = {
   rgba: [0.92, 0.2, 0.2, 1.0],
   hsb: [0.2, 0.92, 0.2, 1.0],
   currentTexture: 0,
-  textures: [],
+  textures: []
 }
 
 const ExampleState = {
@@ -325,3 +325,21 @@ ctx.frame(function frame() {
 
   gui.draw()
 })
+
+const onResize = () => {
+  const W = window.innerWidth
+  const H = window.innerHeight
+  ctx.set({
+    width: W,
+    height: H
+  })
+  camera.set({
+    aspect: W / H
+  })
+
+  gui.scale = Math.min(Math.min(W / 800, H / 500), 1)
+}
+
+window.addEventListener('resize', onResize)
+
+onResize()

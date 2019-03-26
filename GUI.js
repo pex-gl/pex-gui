@@ -141,9 +141,14 @@ GUI.prototype.onMouseDown = function(e) {
     if (parentTab && !parentTab.current && this.items[i].type !== 'tab') {
       continue
     }
-    if (Rect.containsPoint(this.items[i].activeArea, this.mousePos)) {
+    if (
+      Rect.containsPoint(
+        this.getScaledActiveArea(this.items[i].activeArea),
+        this.mousePos
+      )
+    ) {
       this.activeControl = this.items[i]
-      const aa = this.activeControl.activeArea
+      const aa = this.getScaledActiveArea(this.activeControl.activeArea)
       const aaWidth = aa[1][0] - aa[0][0]
       const aaHeight = aa[1][1] - aa[0][1]
       this.activeControl.active = true
@@ -184,7 +189,12 @@ GUI.prototype.onMouseDown = function(e) {
         let clickedItem = null
         this.activeControl.items.forEach(
           function(item) {
-            if (Rect.containsPoint(item.activeArea, this.mousePos)) {
+            if (
+              Rect.containsPoint(
+                this.getScaledActiveArea(item.activeArea),
+                this.mousePos
+              )
+            ) {
               clickedItem = item
             }
           }.bind(this)
@@ -257,7 +267,7 @@ GUI.prototype.onMouseDrag = function(e) {
   my = my - this.y
 
   if (this.activeControl) {
-    const aa = this.activeControl.activeArea
+    const aa = this.getScaledActiveArea(this.activeControl.activeArea)
     const aaWidth = aa[1][0] - aa[0][0]
     const aaHeight = aa[1][1] - aa[0][1]
     let val = 0
@@ -689,6 +699,10 @@ GUI.prototype.isAnyItemDirty = function(items) {
   return dirty
 }
 
+GUI.prototype.getScaledActiveArea = function(activeArea) {
+  return activeArea.map((a) => a.map((b) => b * this.scale))
+}
+
 GUI.prototype.update = function() {
   const now = Date.now() / 1000
   const delta = now - this._prev
@@ -741,8 +755,8 @@ GUI.prototype.draw = function() {
   }
 
   const tex = this.renderer.getTexture()
-  this._textureRect[2] = tex.width
-  this._textureRect[3] = tex.height
+  this._textureRect[2] = tex.width * this.scale
+  this._textureRect[3] = tex.height * this.scale
 
   this.drawTexture2d({
     texture: tex,
