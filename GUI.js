@@ -384,7 +384,7 @@ GUI.prototype.onKeyDown = function(e) {
           focusedItem.contextObject[focusedItem.attributeName]
         )
       }
-      e.stopPropagation()
+      e.stopImmediatePropagation()
       e.preventDefault()
       break
     }
@@ -397,7 +397,7 @@ GUI.prototype.onKeyDown = function(e) {
     if (focusedItem.onchange) {
       focusedItem.onchange(focusedItem.contextObject[focusedItem.attributeName])
     }
-    e.stopPropagation()
+    e.stopImmediatePropagation()
     e.preventDefault()
   }
 }
