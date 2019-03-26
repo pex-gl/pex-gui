@@ -34,7 +34,7 @@ ctx.frame(() => {
 #### gui = createGUI(ctx [, options])
 
 - `ctx`: Context - gl context from `pex-context`
-- `options.theme`: Object - optional theme customiser object. Colors defined by `rgba()` strings. See [theme file](https://github.com/pex-gl/pex-gui/theme.js) for all options.
+- `options.theme`: Object - optional theme customiser object. Colors defined by `rgba()` strings. See [theme file](https://github.com/pex-gl/pex-gui/blob/master/theme.js) for all options.
 
 ```js
 const createGUI = require('pex-gui')
@@ -124,7 +124,7 @@ gui.addButton('Button', () => {
 })
 ```
 
-#### `gui.addRadioList(title, object, propName, items, onChange)`
+#### `gui.addRadioList(title, object, index, items, onChange)`
 
 Add a radio list with options.
 
@@ -158,14 +158,9 @@ Add a texture visualiser (from pex-context).
 gui.addTexture2D('Single', State.textures[1])
 ```
 
-#### `gui.addTexture2DList(title, object, propName, items, itemsPerRow, onChange)`
+#### `gui.addTexture2DList(title, object, index, items, itemsPerRow, onChange)`
 
 Add a texture visualiser for multiple textures (from pex-context).
-
-| option    | info           | type      |
-| --------- | -------------- | --------- |
-| `title`   | Control title  | String    |
-| `texture` | Texture object | Texture2D |
 
 | option        | info                            | type                                          |
 | ------------- | ------------------------------- | --------------------------------------------- |
@@ -196,7 +191,7 @@ Add a cube texture visualiser (from pex-context).
 | `options.flipEnvMap` | should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped | Number    |
 
 ```js
-gui.addTextureCube('Single', State.textures[1])
+gui.addTextureCube('Cube', State.cubeTexture)
 ```
 
 #### `gui.addFPSMeeter()`
