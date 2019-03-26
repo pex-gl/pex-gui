@@ -237,6 +237,10 @@ Retrieve a serialized value of the current GUI's state.
 
 Deserialize a previously serialized data state GUI's state.
 
+#### `gui.dispose()`
+
+Remove events listeners, empty list of controls and dispose of the gui's resources.
+
 ## License
 
 MIT, see [LICENSE.md](http://github.com/pex-gl/pex-gui/blob/master/LICENSE.md) for details.
