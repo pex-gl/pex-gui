@@ -139,16 +139,20 @@ SkiaRenderer.prototype.draw = function(items) {
   dx = 10
   let maxWidth = 0
   let maxHeight = 0
+  let needInitialDy = true
   for (let i = 0; i < items.length; i++) {
     const e = items[i]
+
     if (e.px && e.px) {
       dx = e.px
       dy = e.py
     }
-    let eh = 20
+
+    let eh = 20 * scale
     if (e.type === 'tab') {
       continue
     }
+
     if (tabs.length > 0) {
       const prevTabs = items.filter((e, index) => {
         return index < i && e.type === 'tab'
@@ -156,7 +160,13 @@ SkiaRenderer.prototype.draw = function(items) {
       const parentTab = prevTabs[prevTabs.length - 1]
       if (parentTab && !parentTab.current) {
         continue
+      } else {
+        if (needInitialDy && e.type !== 'column') {
+          needInitialDy = false
+          dy += 30 * scale
+        }
       }
+      needInitialDy = false
     }
 
     if (e.options && e.options.palette && !e.options.paletteImage) {
