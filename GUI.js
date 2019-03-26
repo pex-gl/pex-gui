@@ -718,8 +718,6 @@ GUI.prototype.addFPSMeeter = function() {
   return ctrl
 }
 
-GUI.prototype.dispose = function() {}
-
 GUI.prototype.isAnyItemDirty = function(items) {
   let dirty = false
   items.forEach(function(item) {
@@ -908,6 +906,17 @@ GUI.prototype.isEnabled = function() {
 GUI.prototype.toggleEnabled = function() {
   this.enabled = !this.enabled
   return this.enabled
+}
+
+GUI.prototype.dispose = function() {
+  this._ctx.gl.canvas.removeEventListener('mousedown', this.onMouseDown)
+  this._ctx.gl.canvas.removeEventListener('mousemove', this.onMouseDrag)
+  this._ctx.gl.canvas.removeEventListener('mouseup', this.onMouseUp)
+  window.removeEventListener('keydown', this.onKeyDown)
+
+  this.items.length = 0
+
+  this.renderer.dispose()
 }
 
 module.exports = function createGUI(ctx, opts) {

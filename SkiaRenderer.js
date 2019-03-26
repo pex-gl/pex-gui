@@ -551,4 +551,6 @@ SkiaRenderer.prototype.updateTexture = function() {
   })
 }
 
+SkiaRenderer.prototype.dispose = function() {}
+
 module.exports = SkiaRenderer

@@ -430,4 +430,9 @@ HTMLCanvasRenderer.prototype.updateTexture = function() {
   })
 }
 
+HTMLCanvasRenderer.prototype.dispose = function() {
+  this._ctx.dispose(this.tex)
+  this.canvas.remove()
+}
+
 module.exports = HTMLCanvasRenderer
