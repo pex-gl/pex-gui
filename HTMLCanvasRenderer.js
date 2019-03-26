@@ -90,6 +90,7 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
 
   let maxWidth = 0
   let maxHeight = 0
+  let needInitialDy = true
   for (let i = 0; i < items.length; i++) {
     const e = items[i]
 
@@ -110,7 +111,13 @@ HTMLCanvasRenderer.prototype.draw = function(items) {
       const parentTab = prevTabs[prevTabs.length - 1]
       if (parentTab && !parentTab.current) {
         continue
+      } else {
+        if (needInitialDy && e.type !== 'column') {
+          needInitialDy = false
+          dy += 30 * scale
+        }
       }
+      needInitialDy = false
     }
 
     if (e.type === 'column') {
