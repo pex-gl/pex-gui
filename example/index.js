@@ -1,11 +1,9 @@
 const createGUI = require('../')
 
-const load = require('pex-io/load')
+const { load } = require('pex-io')
 const createContext = require('pex-context')
-const createCamera = require('pex-cam/perspective')
-const createOrbiter = require('pex-cam/orbiter')
-const mat4 = require('pex-math/mat4')
-const quat = require('pex-math/quat')
+const { perspective: createCamera, orbiter: createOrbiter } = require('pex-cam')
+const { mat4, quat } = require('pex-math')
 const createTorus = require('primitive-torus')
 const createCube = require('primitive-cube')
 const isBrowser = require('is-browser')
@@ -34,7 +32,7 @@ const ExampleState = {
   time: 0,
   size: [1, 0.2],
   rotation: [0, 0, 0],
-  bgColor: [0.92, 0.2, 0.2, 1.0],
+  bgColor: [0.2, 0.2, 0.2, 1.0],
   currentGeometry: 0,
   geometries: []
 }
