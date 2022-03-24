@@ -1,73 +1,52 @@
 {
   "name": "pex-gui",
   "version": "2.4.0",
-  "description": "GUI widgets for the pex library",
-  "main": "index.js",
-  "scripts": {
-    "lint": "npx eslint {example/*,*}.js",
-    "format": "npx prettier {example/*,*}.js --write",
-    "format:check": "npx prettier {example/*,*}.js --check"
-  },
+  "description": "GUI controls for PEX.",
   "keywords": [
-    "graphics",
+    "pex",
     "gui",
-    "webgl"
+    "webgl",
+    "3d",
+    "graphics",
+    "ui",
+    "controls"
   ],
-  "author": {
-    "name": "Marcin Ignac",
-    "email": "marcin.ignac@gmail.com",
-    "url": "http://marcinignac.com"
-  },
+  "homepage": "https://github.com/pex-gl/pex-gui",
+  "bugs": "https://github.com/pex-gl/pex-gui/issues",
+  "repository": "pex-gl/pex-gui",
+  "license": "MIT",
+  "author": "Marcin Ignac <marcin.ignac@gmail.com> (http://marcinignac.com)",
   "contributors": [
     "Damien Seguin (https://github.com/dmnsgn)"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/pex-gl/pex-gui.git"
+  "type": "module",
+  "exports": "./index.js",
+  "main": "index.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "build": "snowdev build",
+    "dev": "snowdev dev",
+    "release": "snowdev release"
   },
-  "license": "MIT",
-  "bugs": "https://github.com/pex-gl/pex-gui/issues",
-  "homepage": "https://github.com/pex-gl/pex-gui.git",
   "dependencies": {
-    "float-hsl2rgb": "^1.0.2",
-    "float-rgb2hsl": "^1.0.1",
-    "is-plask": "^1.1.1",
     "keyboardevent-key-polyfill": "^1.1.0",
-    "pex-geom": "^1.0.0-beta.2",
-    "pex-sys": "^1.7.0",
-    "rgb-hex": "^2.1.0"
+    "pex-color": "github:pex-gl/pex-color#v2",
+    "pex-geom": "github:pex-gl/pex-geom#v3",
+    "pex-math": "github:pex-gl/pex-math#v4"
   },
   "devDependencies": {
-    "eslint": "^5.15.3",
-    "eslint-config-prettier": "^4.1.0",
-    "eslint-plugin-markdown": "^1.0.0",
-    "eslint-plugin-prettier": "^3.0.1",
-    "prettier": "1.16.4"
+    "assert": "^2.0.0",
+    "es-module-shims": "^1.5.1",
+    "pex-cam": "github:pex-gl/pex-cam#v3",
+    "pex-context": "github:pex-gl/pex-context",
+    "pex-io": "github:pex-gl/pex-io#v3",
+    "primitive-geometry": "^2.2.0"
   },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "arrowParens": "always"
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
   },
-  "eslintConfig": {
-    "extends": [
-      "eslint:recommended",
-      "plugin:prettier/recommended"
-    ],
-    "plugins": [
-      "prettier",
-      "markdown"
-    ],
-    "rules": {
-      "prettier/prettier": "error"
-    },
-    "parserOptions": {
-      "ecmaVersion": 2019
-    },
-    "env": {
-      "es6": true,
-      "browser": true,
-      "node": true
-    }
+  "snowdev": {
+    "files": "{*.js,*(renderers|shaders)/**/*.js}"
   }
 }

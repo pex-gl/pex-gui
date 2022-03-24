@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>pex-gui by pex-gl (https://github.com/pex-gl)</title>
+    <style>
+      :root {
+        --color-dark: #404040;
+        --color-light: #f2f2f2;
+        --color-accent: #fd5e62;
+      }
+
+      body {
+        margin: 0;
+        overscroll-behavior: none;
+        font-family: sans-serif;
+        color: var(--color-dark);
+        background-color: var(--color-light);
+      }
+
+      main {
+        position: fixed;
+      }
+
+      aside {
+        position: fixed;
+        top: 0;
+        right: 0;
+        min-height: 100vh;
+        padding: 10px 40px 10px 20px;
+        background-color: var(--color-light);
+        transform: translate3d(90%, 0, 0);
+        transition: all 0.2s ease-in;
+      }
+      aside.active,
+      aside:hover {
+        transform: translate3d(0, 0, 0);
+        transition: all 0.2s ease-out;
+      }
+      ul {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        font-size: 14px;
+        list-style: none;
+        margin-bottom: 15px;
+      }
+      ul li {
+        display: flex;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <main></main>
+    <aside>
+      <h1><a href="/">pex-gui</a></h1>
+      <ul>
+        <li><a href="?id=pex-context">PEX Context</a></li>
+        <li><a href="?id=canvas-2d">Canvas 2D</a></li>
+        <li><a href="?id=theme">Theme</a></li>
+        <li><a href="?id=debug">Debug</a></li>
+      </ul>
+    </aside>
+    <script async src="web_modules/es-module-shims.js" type="module"></script>
+    <script src="web_modules/import-map.json" type="importmap-shim"></script>
+
+    <script type="module-shim">
+      (async () => {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        if (id) {
+          await importShim(`./examples/${id}.js`);
+        } else {
+          document.querySelector("aside").classList.add("active");
+        }
+      })();
+    </script>
+  </body>
+</html>

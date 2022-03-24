@@ -1,12 +1,10 @@
-const isPlask = require('is-plask')
+import GAMMA from "./chunks/gamma.glsl.js";
+import RGBM from "./chunks/rgbm.glsl.js";
+import DECODE_ENCODE from "./chunks/encode-decode.glsl.js";
 
-const GAMMA = require('./chunks/gamma.glsl.js')
-const RGBM = require('./chunks/rgbm.glsl.js')
-const DECODE_ENCODE = require('./chunks/encode-decode.glsl.js')
+export default /* glsl */ `#version 100
+precision highp float;
 
-module.exports = /* glsl */ `${
-  !isPlask ? '#version 100\nprecision highp float;' : ''
-}
 ${GAMMA}
 ${RGBM}
 ${DECODE_ENCODE}
@@ -23,4 +21,4 @@ void main() {
     color.rgb = color.rgb / (color.rgb + 1.0);
   }
   gl_FragColor = encode(color, 2); // to gamma
-}`
+}`;

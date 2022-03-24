@@ -1,4 +1,5 @@
-.DS_Store
 node_modules
-docs
-example/build/*
+.DS_Store
+types
+lib
+web_modules
