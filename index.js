@@ -182,9 +182,9 @@ class GUI {
       };
     }
 
-    this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
-    this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
-    this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
+    this.canvas.addEventListener("pointerdown", this.onPointerDown.bind(this));
+    this.canvas.addEventListener("pointermove", this.onPointerMove.bind(this));
+    this.canvas.addEventListener("pointerup", this.onPointerUp.bind(this));
     window.addEventListener("keydown", this.onKeyDown.bind(this));
   }
 
@@ -245,7 +245,7 @@ class GUI {
   }
 
   // Event handlers
-  onMouseDown(event) {
+  onPointerDown(event) {
     if (!this.enabled) return;
 
     this.items.forEach((item) => {
@@ -336,14 +336,13 @@ class GUI {
           this.activeControl.focus = true;
         }
         event.stopPropagation();
-        this.onMouseMove(event);
-        // event.preventDefault(); // FIXME: decide on how to mark event as handled
+        this.onPointerMove(event);
         break;
       }
     }
   }
 
-  onMouseMove(event) {
+  onPointerMove(event) {
     if (!this.enabled) return;
 
     const mx = event.offsetX - this.x;
@@ -418,7 +417,7 @@ class GUI {
     }
   }
 
-  onMouseUp() {
+  onPointerUp() {
     if (this.activeControl) {
       this.activeControl.active = false;
       this.activeControl.dirty = true;
@@ -1224,9 +1223,9 @@ class GUI {
    * Remove events listeners, empty list of controls and dispose of the gui's resources.
    */
   dispose() {
-    this.canvas.removeEventListener("mousedown", this.onMouseDown);
-    this.canvas.removeEventListener("mousemove", this.onMouseMove);
-    this.canvas.removeEventListener("mouseup", this.onMouseUp);
+    this.canvas.removeEventListener("pointerdown", this.onPointerDown);
+    this.canvas.removeEventListener("pointermove", this.onPointerMove);
+    this.canvas.removeEventListener("pointerup", this.onPointerUp);
     window.removeEventListener("keydown", this.onKeyDown);
 
     for (let i = 0; i < this.items.length; i++) {
