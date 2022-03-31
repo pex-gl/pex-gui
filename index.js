@@ -1,6 +1,5 @@
 import { rect } from "pex-geom";
 import { utils } from "pex-math";
-import keyboardPolyfill from "keyboardevent-key-polyfill";
 
 import { CanvasRenderer, PexContextRenderer } from "./renderers/index.js";
 
@@ -69,8 +68,6 @@ class GUI {
     this.responsive = 1;
     this.items = [];
     this.enabled = true;
-
-    keyboardPolyfill.polyfill();
 
     // Create renderer
     const isPexContext = this.ctx.gl;

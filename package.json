@@ -29,7 +29,6 @@
     "release": "snowdev release"
   },
   "dependencies": {
-    "keyboardevent-key-polyfill": "^1.1.0",
     "pex-color": "github:pex-gl/pex-color#v2",
     "pex-geom": "github:pex-gl/pex-geom#v3",
     "pex-math": "github:pex-gl/pex-math#v4"
