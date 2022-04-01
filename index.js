@@ -652,6 +652,7 @@ class GUI {
    */
   addParam(title, contextObject, attributeName, options = {}, onChange) {
     let ctrl = null;
+    options ??= {};
     if (options.min === undefined) options.min = 0;
     if (options.max === undefined) options.max = 1;
     // Check for class property
