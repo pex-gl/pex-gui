@@ -434,11 +434,11 @@ Notes: texture cannot be updated once created.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param   | Type                                        | Description                                                                                     |
-| ------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| title   | <code>string</code>                         |                                                                                                 |
-| texture | <code>module:pex-context~textureCube</code> |                                                                                                 |
-| options | <code>Object</code>                         | "flipEnvMap" should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped |
+| Param   | Type                                        |
+| ------- | ------------------------------------------- |
+| title   | <code>string</code>                         |
+| texture | <code>module:pex-context~textureCube</code> |
+| options | <code>Object</code>                         |
 
 **Example**
 
@@ -533,12 +533,15 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 **Kind**: global typedef
 **Properties**
 
-| Name      | Type                          | Default        | Description                                  |
-| --------- | ----------------------------- | -------------- | -------------------------------------------- |
-| [min]     | <code>number</code>           | <code>0</code> |                                              |
-| [max]     | <code>number</code>           | <code>0</code> |                                              |
-| [alpha]   | <code>boolean</code>          |                | Set to add a 4th slider for colors.          |
-| [palette] | <code>HTMLImageElement</code> |                | Set to draw a palette image as color picker. |
+| Name         | Type                           | Default        | Description                                                                         |
+| ------------ | ------------------------------ | -------------- | ----------------------------------------------------------------------------------- |
+| [min]        | <code>number</code>            | <code>0</code> |                                                                                     |
+| [max]        | <code>number</code>            | <code>0</code> |                                                                                     |
+| [type]       | <code>&quot;color&quot;</code> |                | Interpret an array as color.                                                        |
+| [alpha]      | <code>boolean</code>           |                | Add a 4th slider for colors.                                                        |
+| [palette]    | <code>HTMLImageElement</code>  |                | Draw a palette image as color picker.                                               |
+| [flipEnvMap] | <code>boolean</code>           |                | Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped. |
+| [level]      | <code>number</code>            |                | Level of detail for cube textures.                                                  |
 
 <a name="GUIOptions"></a>
 
@@ -550,7 +553,7 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 | Name         | Type                 | Default                              | Description                                                                             |
 | ------------ | -------------------- | ------------------------------------ | --------------------------------------------------------------------------------------- |
 | [pixelRatio] | <code>boolean</code> | <code>window.devicePixelRatio</code> |                                                                                         |
-| [theme]      | <code>boolean</code> |                                      | See [theme file](https://github.com/pex-gl/pex-gui/blob/main/theme.js) for all options. |
+| [theme]      | <code>boolean</code> | <code>{}</code>                      | See [theme file](https://github.com/pex-gl/pex-gui/blob/main/theme.js) for all options. |
 | [scale]      | <code>number</code>  | <code>1</code>                       |                                                                                         |
 | [responsive] | <code>boolean</code> | <code>true</code>                    | Adapts to canvas dimension.                                                             |
 
