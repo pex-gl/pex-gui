@@ -49,14 +49,24 @@ class GUI {
    */
   constructor(
     ctx,
-    { theme = {}, pixelRatio = devicePixelRatio, renderer } = {}
+    {
+      pixelRatio = devicePixelRatio,
+      theme = {},
+      scale = 1,
+      responsive = true,
+      renderer,
+    } = {}
   ) {
     this.ctx = ctx;
+
     this.pixelRatio = this.ctx.gl ? this.ctx.pixelRatio : pixelRatio;
     this.theme = {
       ...DEFAULT_THEME,
       ...theme,
     };
+    this.scale = scale;
+    this.responsive = responsive;
+    this.enabled = true;
 
     const [W, H] = this.size;
     this.viewport = [0, 0, W, H];
@@ -64,10 +74,7 @@ class GUI {
     this.x = 0;
     this.y = 0;
     this.mousePos = [0, 0];
-    this.scale = 1;
-    this.responsive = 1;
     this.items = [];
-    this.enabled = true;
 
     // Create renderer
     const isPexContext = this.ctx.gl;
