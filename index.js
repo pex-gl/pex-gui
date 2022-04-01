@@ -14,13 +14,16 @@ import TEXTURE_2D_FRAG from "./shaders/texture-2d.frag.js";
  * @typedef {Object} GUIControlOptions
  * @property {number} [min=0]
  * @property {number} [max=0]
- * @property {boolean} [alpha] Set to add a 4th slider for colors.
- * @property {HTMLImageElement} [palette] Set to draw a palette image as color picker.
+ * @property {"color"} [type] Interpret an array as color.
+ * @property {boolean} [alpha] Add a 4th slider for colors.
+ * @property {HTMLImageElement} [palette] Draw a palette image as color picker.
+ * @property {boolean} [flipEnvMap] Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped.
+ * @property {number} [level] Level of detail for cube textures.
  */
 /**
  * @typedef {Object} GUIOptions
  * @property {boolean} [pixelRatio=window.devicePixelRatio]
- * @property {boolean} [theme] See [theme file]{@link https://github.com/pex-gl/pex-gui/blob/main/theme.js} for all options.
+ * @property {boolean} [theme={}] See [theme file]{@link https://github.com/pex-gl/pex-gui/blob/main/theme.js} for all options.
  * @property {number} [scale=1]
  * @property {boolean} [responsive=true] Adapts to canvas dimension.
  */
@@ -927,7 +930,7 @@ class GUI {
    * Notes: texture cannot be updated once created.
    * @param {string} title
    * @param {import("pex-context").textureCube} texture
-   * @param {{ flipEnvMap: number, level: number }} options "flipEnvMap" should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped
+   * @param {{ flipEnvMap: number, level: number }} options
    * @returns {GUIControl}
    *
    * @example
