@@ -57,9 +57,9 @@ GUI controls for PEX.
 **Kind**: global class
 **Properties**
 
-| Name    | Type                | Default        |
-| ------- | ------------------- | -------------- |
-| [scale] | <code>number</code> | <code>1</code> |
+| Name      | Type                 | Default           | Description                                     |
+| --------- | -------------------- | ----------------- | ----------------------------------------------- |
+| [enabled] | <code>boolean</code> | <code>true</code> | Enable/disable pointer interaction and drawing. |
 
 - [GUI](#GUI)
   - [new GUI(ctx, opts)](#new_GUI_new)
@@ -421,6 +421,8 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 | ------------ | -------------------- | ------------------------------------ | --------------------------------------------------------------------------------------- |
 | [pixelRatio] | <code>boolean</code> | <code>window.devicePixelRatio</code> |                                                                                         |
 | [theme]      | <code>boolean</code> |                                      | See [theme file](https://github.com/pex-gl/pex-gui/blob/main/theme.js) for all options. |
+| [scale]      | <code>number</code>  | <code>1</code>                       |                                                                                         |
+| [responsive] | <code>boolean</code> | <code>true</code>                    | Adapts to canvas dimension.                                                             |
 
 <!-- api-end -->
 

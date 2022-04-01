@@ -21,6 +21,8 @@ import TEXTURE_2D_FRAG from "./shaders/texture-2d.frag.js";
  * @typedef {Object} GUIOptions
  * @property {boolean} [pixelRatio=window.devicePixelRatio]
  * @property {boolean} [theme] See [theme file]{@link https://github.com/pex-gl/pex-gui/blob/main/theme.js} for all options.
+ * @property {number} [scale=1]
+ * @property {boolean} [responsive=true] Adapts to canvas dimension.
  */
 
 const isArrayLike = (value) =>
@@ -28,8 +30,7 @@ const isArrayLike = (value) =>
 
 /**
  * GUI controls for PEX.
- *
- * @property {number} [scale=1]
+ * @property {boolean} [enabled=true] Enable/disable pointer interaction and drawing.
  */
 class GUI {
   get size() {
