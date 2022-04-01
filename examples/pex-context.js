@@ -152,7 +152,7 @@ const drawCmd = {
 };
 
 let frameNumber = 0;
-ctx.frame(function frame() {
+ctx.frame(() => {
   ctx.debug(frameNumber++ === 10);
   ctx.submit(clearCmd);
 

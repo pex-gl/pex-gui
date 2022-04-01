@@ -931,7 +931,7 @@ class GUI {
    *
    * @example
    * ```js
-   * gui.addParam("Cube", State, "cubeTextureParam", { level: 2 });
+   * gui.addTextureCube("Cube", State.cubeTexture, { level: 2 });
    * ```
    */
   addTextureCube(title, texture, options) {

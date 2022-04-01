@@ -1,74 +1,64 @@
 import { load } from "pex-io";
 
-const State = {
-  currentRadioListChoice: 0,
-  radioListChoices: ["Choice 1", "Choice 2", "Choice 3"].map((name, value) => ({
-    name,
-    value,
-  })),
-  checkboxValue: false,
-  message: "Message",
-  range: 0,
-  position: [2, 0],
-  rgb: [0.92, 0.2, 0.2],
-  rgba: [0.2, 0.92, 0.2, 1.0],
-  palette: Float32Array.of(0.2, 0.2, 0.92, 1.0),
-  paletteHsl: Float32Array.of(0.92, 0.2, 0.92, 1.0),
-  textureParam: null,
-  cubeTextureParam: null,
-  currentTexture: 0,
-  textures: [],
-};
-
-const resources = {
-  palette: { image: `examples/assets/palette.jpg` },
-  paletteHsl: { image: `examples/assets/palette-hsl.png` },
-  plask: { image: `examples/assets/plask.png` },
-  pex: { image: `examples/assets/pex.png` },
-  noise: { image: `examples/assets/noise.png` },
-  posx: { image: `examples/assets/pisa/pisa_posx.jpg` },
-  negx: { image: `examples/assets/pisa/pisa_negx.jpg` },
-  posy: { image: `examples/assets/pisa/pisa_posy.jpg` },
-  negy: { image: `examples/assets/pisa/pisa_negy.jpg` },
-  posz: { image: `examples/assets/pisa/pisa_posz.jpg` },
-  negz: { image: `examples/assets/pisa/pisa_negz.jpg` },
-};
-
 export default async function addAllControls(gui, ctx) {
-  const res = await load(resources);
+  const res = await load({
+    palette: { image: `examples/assets/palette.jpg` },
+    paletteHsl: { image: `examples/assets/palette-hsl.png` },
+    plask: { image: `examples/assets/plask.png` },
+    pex: { image: `examples/assets/pex.png` },
+    noise: { image: `examples/assets/noise.png` },
+    posx: { image: `examples/assets/pisa/pisa_posx.jpg` },
+    negx: { image: `examples/assets/pisa/pisa_negx.jpg` },
+    posy: { image: `examples/assets/pisa/pisa_posy.jpg` },
+    negy: { image: `examples/assets/pisa/pisa_negy.jpg` },
+    posz: { image: `examples/assets/pisa/pisa_posz.jpg` },
+    negz: { image: `examples/assets/pisa/pisa_negz.jpg` },
+  });
 
   const isPexGl = ctx.gl;
 
   const images = [res.plask, res.pex, res.noise];
-  // const images = Object.keys(resources).map((name) => res[name]);
 
-  if (isPexGl) {
-    // Set textures
-    State.textures = images.map((image) =>
-      ctx.texture2D({
-        data: image,
-        width: image.width,
-        height: image.height,
-        flipY: true,
-        wrap: ctx.Wrap.Repeat,
-        encoding: ctx.Encoding.SRGB,
+  const State = {
+    currentRadioListChoice: 0,
+    radioListChoices: ["Choice 1", "Choice 2", "Choice 3"].map(
+      (name, value) => ({
+        name,
+        value,
       })
-    );
-
-    State.cubeTexture = ctx.textureCube({
-      data: [res.posx, res.negx, res.posy, res.negy, res.posz, res.negz],
-      width: 64,
-      height: 64,
-    });
-    State.textureParam = State.textures[0];
-    State.cubeTextureParam = State.cubeTexture;
-
-    ctx.update(State.textures[0], {
-      mipmap: true,
-      min: ctx.Filter.LinearMipmapLinear,
-      aniso: 16,
-    });
-  }
+    ),
+    checkboxValue: false,
+    message: "Message",
+    range: 0,
+    position: [2, 0],
+    rgb: [0.92, 0.2, 0.2],
+    rgba: [0.2, 0.92, 0.2, 1.0],
+    palette: Float32Array.of(0.2, 0.2, 0.92, 1.0),
+    paletteHsl: Float32Array.of(0.92, 0.2, 0.92, 1.0),
+    cubeTexture: isPexGl
+      ? ctx.textureCube({
+          data: [res.posx, res.negx, res.posy, res.negy, res.posz, res.negz],
+          width: 64,
+          height: 64,
+        })
+      : null,
+    currentTexture: 0,
+    textures: isPexGl
+      ? images.map((image) =>
+          ctx.texture2D({
+            data: image,
+            width: image.width,
+            height: image.height,
+            flipY: true,
+            wrap: ctx.Wrap.Repeat,
+            encoding: ctx.Encoding.SRGB,
+            mipmap: true,
+            min: ctx.Filter.LinearMipmapLinear,
+            aniso: 16,
+          })
+        )
+      : images,
+  };
 
   // Controls
   gui.addTab("Controls");
@@ -118,17 +108,17 @@ export default async function addAllControls(gui, ctx) {
   });
 
   gui.addColumn("Textures");
-  gui.addTexture2D("Single", isPexGl ? State.textures[0] : images[0]); // or gui.addParam("Single", State, "textureParam");
+  gui.addTexture2D("Single", State.textures[0]); // or gui.addParam("Single", State, "texture");
   gui.addTexture2DList(
     "List",
     State,
     "currentTexture",
-    (isPexGl ? State.textures : images).map((texture, value) => ({
+    State.textures.map((texture, value) => ({
       texture,
       value,
     }))
   );
-  if (isPexGl) gui.addParam("Cube", State, "cubeTextureParam", { level: 2 }); // or gui.addTextureCube('Cube', State.cubeTexture)
+  if (isPexGl) gui.addTextureCube("Cube", State.cubeTexture, { level: 2 }); // gui.addParam("Cube", State, "cubeTexture", { level: 2 });
 
   gui.addColumn("Graphs");
   gui.addGraph("Sin", {
