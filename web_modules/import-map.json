@@ -1,0 +1,13 @@
+{
+  "imports": {
+    "assert": "./assert.js",
+    "es-module-shims": "./es-module-shims.js",
+    "pex-cam": "./pex-cam.js",
+    "pex-color": "./pex-color.js",
+    "pex-context": "./pex-context.js",
+    "pex-geom": "./pex-geom.js",
+    "pex-io": "./pex-io.js",
+    "pex-math": "./pex-math.js",
+    "primitive-geometry": "./primitive-geometry.js"
+  }
+}
