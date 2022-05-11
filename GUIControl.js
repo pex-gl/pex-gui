@@ -5,6 +5,11 @@ class GUIControl {
     Object.assign(this, options);
   }
 
+  setPosition(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
   getNormalizedValue(idx) {
     if (!this.contextObject) return 0;
 
