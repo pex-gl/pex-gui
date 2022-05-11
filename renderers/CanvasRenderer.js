@@ -123,10 +123,8 @@ class CanvasRenderer {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
 
-      if (item.px && item.px) {
-        dx = item.px;
-        dy = item.py;
-      }
+      if (Number.isFinite(item.x)) dx = item.x;
+      if (Number.isFinite(item.y)) dy = item.y;
 
       let eh = itemHeight;
       if (item.type === "tab") continue;
