@@ -1,11 +1,12 @@
-import { t as toString_1, f as functionApply } from './esnext.iterator.map-f17cc22a.js';
-import { a as anObject, b as global_1, n as fails, p as shared, d as functionUncurryThis, f as functionCall, h as objectCreate, q as internalState, _ as _export, w as wellKnownSymbol, r as redefine, m as createNonEnumerableProperty, t as requireObjectCoercible, u as toIntegerOrInfinity, v as toObject, i as isCallable, x as classofRaw, y as getMethod, z as toLength } from './set-to-string-tag-75893d8e.js';
+import { t as toString_1, a as functionApply } from './esnext.iterator.map-720452d0.js';
+import { b as anObject, a as global_1, n as fails, r as shared, d as functionUncurryThis, f as functionCall, h as objectCreate, t as internalState, _ as _export, w as wellKnownSymbol, u as redefine, m as createNonEnumerableProperty, v as requireObjectCoercible, x as toIntegerOrInfinity, y as toObject, i as isCallable, z as classofRaw, A as getMethod, B as toLength } from './set-to-string-tag-9ca80194.js';
 
 // `RegExp.prototype.flags` getter implementation
 // https://tc39.es/ecma262/#sec-get-regexp.prototype.flags
 var regexpFlags = function () {
   var that = anObject(this);
   var result = '';
+  if (that.hasIndices) result += 'd';
   if (that.global) result += 'g';
   if (that.ignoreCase) result += 'i';
   if (that.multiline) result += 'm';
@@ -472,3 +473,5 @@ fixRegexpWellKnownSymbolLogic('replace', function (_, nativeReplace, maybeCallNa
     }
   ];
 }, !REPLACE_SUPPORTS_NAMED_GROUPS || !REPLACE_KEEPS_$0 || REGEXP_REPLACE_SUBSTITUTES_UNDEFINED_CAPTURE);
+
+export { stringMultibyte as s };

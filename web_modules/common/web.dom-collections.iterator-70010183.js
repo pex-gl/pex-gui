@@ -1,4 +1,4 @@
-import { I as documentCreateElement, w as wellKnownSymbol, J as objectDefineProperty, h as objectCreate, j as createPropertyDescriptor, s as setToStringTag, D as iterators, F as iteratorsCore, l as objectGetPrototypeOf, o as objectSetPrototypeOf, i as isCallable, r as redefine, m as createNonEnumerableProperty, f as functionCall, _ as _export, K as functionName, q as internalState, L as descriptors, M as toIndexedObject, b as global_1 } from './set-to-string-tag-75893d8e.js';
+import { M as documentCreateElement, w as wellKnownSymbol, C as objectDefineProperty, h as objectCreate, j as createPropertyDescriptor, s as setToStringTag, G as iteratorsCore, K as iterators, l as objectGetPrototypeOf, o as objectSetPrototypeOf, i as isCallable, u as redefine, m as createNonEnumerableProperty, f as functionCall, _ as _export, N as functionName, t as internalState, F as descriptors, O as toIndexedObject, a as global_1 } from './set-to-string-tag-9ca80194.js';
 
 // iterable DOM collections
 // flag - `iterable` interface - 'entries', 'keys', 'values', 'forEach' methods
@@ -248,3 +248,5 @@ for (var COLLECTION_NAME in domIterables) {
 }
 
 handlePrototype(domTokenListPrototype, 'DOMTokenList');
+
+export { addToUnscopables as a, createIteratorConstructor as c, defineIterator as d };

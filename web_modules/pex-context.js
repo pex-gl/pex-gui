@@ -1,87 +1,15 @@
-import './common/es.typed-array.uint32-array-52346711.js';
-import { a as assert_1, p as process } from './common/assert-24cefdc3.js';
-import { a as asyncIteratorCreateProxy, f as functionApply, b as iteratorCreateProxy, d as callWithSafeIterationClosing } from './common/esnext.iterator.map-f17cc22a.js';
-import './common/get-iterator-74b96c4c.js';
-import { _ as _export, a as anObject, c as aCallable } from './common/set-to-string-tag-75893d8e.js';
-import { a as asyncIteratorIteration, i as iterate } from './common/iterate-8b5072a5.js';
-import './common/web.dom-collections.iterator-6b2d1033.js';
-import { c as createCommonjsModule, a as commonjsGlobal } from './common/_commonjsHelpers-eb5a497e.js';
-import './common/es.string.replace-4c4b8f7a.js';
-import './common/esnext.iterator.find-7eea1816.js';
-
-// https://github.com/tc39/proposal-iterator-helpers
-
-
-
-
-
-
-var AsyncIteratorProxy = asyncIteratorCreateProxy(function (Promise, args) {
-  var state = this;
-  var filterer = state.filterer;
-
-  return new Promise(function (resolve, reject) {
-    var loop = function () {
-      try {
-        Promise.resolve(anObject(functionApply(state.next, state.iterator, args))).then(function (step) {
-          try {
-            if (anObject(step).done) {
-              state.done = true;
-              resolve({ done: true, value: undefined });
-            } else {
-              var value = step.value;
-              Promise.resolve(filterer(value)).then(function (selected) {
-                selected ? resolve({ done: false, value: value }) : loop();
-              }, reject);
-            }
-          } catch (err) { reject(err); }
-        }, reject);
-      } catch (error) { reject(error); }
-    };
-
-    loop();
-  });
-});
-
-_export({ target: 'AsyncIterator', proto: true, real: true, forced: true }, {
-  filter: function filter(filterer) {
-    return new AsyncIteratorProxy({
-      iterator: anObject(this),
-      filterer: aCallable(filterer)
-    });
-  }
-});
-
-// https://github.com/tc39/proposal-iterator-helpers
-
-
-
-
-
-
-
-var IteratorProxy = iteratorCreateProxy(function (args) {
-  var iterator = this.iterator;
-  var filterer = this.filterer;
-  var next = this.next;
-  var result, done, value;
-  while (true) {
-    result = anObject(functionApply(next, iterator, args));
-    done = this.done = !!result.done;
-    if (done) return;
-    value = result.value;
-    if (callWithSafeIterationClosing(iterator, filterer, value)) return value;
-  }
-});
-
-_export({ target: 'Iterator', proto: true, real: true, forced: true }, {
-  filter: function filter(filterer) {
-    return new IteratorProxy({
-      iterator: anObject(this),
-      filterer: aCallable(filterer)
-    });
-  }
-});
+import './common/es.typed-array.uint32-array-5a56e0d0.js';
+import './common/es.typed-array.uint16-array-3746399f.js';
+import { a as assert_1, p as process } from './common/assert-59663279.js';
+import './common/esnext.iterator.map-720452d0.js';
+import './common/es.error.cause-de3fbc20.js';
+import './common/esnext.iterator.filter-43a3081f.js';
+import './common/iterate-82d063b8.js';
+import './common/web.dom-collections.iterator-70010183.js';
+import { p as createCommonjsModule, q as commonjsGlobal } from './common/set-to-string-tag-9ca80194.js';
+import './common/es.string.replace-534785d0.js';
+import './common/esnext.iterator.find-769aacda.js';
+import './common/esnext.iterator.for-each-b29c7922.js';
 
 function createGL(opts) {
   assert_1(!opts || typeof opts === 'object', 'pex-gl: createGL requires opts argument to be null or an object');
@@ -794,32 +722,6 @@ var browser = createCommonjsModule(function (module, exports) {
     try {
       return window.localStorage;
     } catch (e) {}
-  }
-});
-
-// https://github.com/tc39/proposal-iterator-helpers
-
-var $some = asyncIteratorIteration.some;
-
-_export({ target: 'AsyncIterator', proto: true, real: true, forced: true }, {
-  some: function some(fn) {
-    return $some(this, fn);
-  }
-});
-
-// https://github.com/tc39/proposal-iterator-helpers
-
-
-
-
-
-_export({ target: 'Iterator', proto: true, real: true, forced: true }, {
-  some: function some(fn) {
-    anObject(this);
-    aCallable(fn);
-    return iterate(this, function (value, stop) {
-      if (fn(value)) return stop();
-    }, { IS_ITERATOR: true, INTERRUPTED: true }).stopped;
   }
 });
 

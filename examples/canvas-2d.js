@@ -1,4 +1,4 @@
-import { getHex } from "pex-color";
+import { toHex } from "pex-color";
 import createGUI from "../index.js";
 import addAllControls from "./all-controls.js";
 
@@ -22,7 +22,7 @@ requestAnimationFrame(function frame() {
   ctx.fillStyle = "#333";
   ctx.fillRect(0, 0, W, H);
 
-  ctx.fillStyle = getHex(State.rgb);
+  ctx.fillStyle = toHex(State.rgb);
   ctx.fillRect(W * 0.5 - 100, H * 0.5 - 100, 200, 200);
   gui.draw();
   requestAnimationFrame(frame);

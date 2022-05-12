@@ -1,5 +1,15 @@
-import { o as objectSetPrototypeOf, i as isCallable, A as isObject, m as createNonEnumerableProperty, d as functionUncurryThis, n as fails, j as createPropertyDescriptor, g as getBuiltIn, B as hasOwnProperty_1, k as objectIsPrototypeOf, e as copyConstructorProperties, b as global_1, _ as _export, C as functionBindNative, c as aCallable, w as wellKnownSymbol, D as iterators, y as getMethod, a as anObject, f as functionCall, E as tryToString } from './set-to-string-tag-75893d8e.js';
-import { t as toString_1, f as functionApply, c as classof } from './esnext.iterator.map-f17cc22a.js';
+import { C as objectDefineProperty, o as objectSetPrototypeOf, i as isCallable, D as isObject, m as createNonEnumerableProperty, d as functionUncurryThis, n as fails, j as createPropertyDescriptor, g as getBuiltIn, E as hasOwnProperty_1, k as objectIsPrototypeOf, e as copyConstructorProperties, F as descriptors, a as global_1, _ as _export } from './set-to-string-tag-9ca80194.js';
+import { t as toString_1, a as functionApply } from './esnext.iterator.map-720452d0.js';
+
+var defineProperty = objectDefineProperty.f;
+
+var proxyAccessor = function (Target, Source, key) {
+  key in Target || defineProperty(Target, key, {
+    configurable: true,
+    get: function () { return Source[key]; },
+    set: function (it) { Source[key] = it; }
+  });
+};
 
 // makes subclassing work correct for wrapped built-ins
 var inheritIfRequired = function ($this, dummy, Wrapper) {
@@ -28,14 +38,15 @@ var installErrorCause = function (O, options) {
   }
 };
 
+var $Error = Error;
 var replace = functionUncurryThis(''.replace);
 
-var TEST = (function (arg) { return String(Error(arg).stack); })('zxcasd');
+var TEST = (function (arg) { return String($Error(arg).stack); })('zxcasd');
 var V8_OR_CHAKRA_STACK_ENTRY = /\n\s*at [^:]*:[^\n]*/;
 var IS_V8_OR_CHAKRA_STACK = V8_OR_CHAKRA_STACK_ENTRY.test(TEST);
 
 var clearErrorStack = function (stack, dropEntries) {
-  if (IS_V8_OR_CHAKRA_STACK && typeof stack == 'string') {
+  if (IS_V8_OR_CHAKRA_STACK && typeof stack == 'string' && !$Error.prepareStackTrace) {
     while (dropEntries--) stack = replace(stack, V8_OR_CHAKRA_STACK_ENTRY, '');
   } return stack;
 };
@@ -43,12 +54,13 @@ var clearErrorStack = function (stack, dropEntries) {
 var errorStackInstallable = !fails(function () {
   var error = Error('a');
   if (!('stack' in error)) return true;
-  // eslint-disable-next-line es/no-object-defineproperty -- safe
+  // eslint-disable-next-line es-x/no-object-defineproperty -- safe
   Object.defineProperty(error, 'stack', createPropertyDescriptor(1, 7));
   return error.stack !== 7;
 });
 
 var wrapErrorConstructorWithCause = function (FULL_NAME, wrapper, FORCED, IS_AGGREGATE_ERROR) {
+  var STACK_TRACE_LIMIT = 'stackTraceLimit';
   var OPTIONS_POSITION = IS_AGGREGATE_ERROR ? 2 : 1;
   var path = FULL_NAME.split('.');
   var ERROR_NAME = path[path.length - 1];
@@ -80,6 +92,9 @@ var wrapErrorConstructorWithCause = function (FULL_NAME, wrapper, FORCED, IS_AGG
   if (ERROR_NAME !== 'Error') {
     if (objectSetPrototypeOf) objectSetPrototypeOf(WrappedError, BaseError);
     else copyConstructorProperties(WrappedError, BaseError, { name: true });
+  } else if (descriptors && STACK_TRACE_LIMIT in OriginalError) {
+    proxyAccessor(WrappedError, OriginalError, STACK_TRACE_LIMIT);
+    proxyAccessor(WrappedError, OriginalError, 'prepareStackTrace');
   }
 
   copyConstructorProperties(WrappedError, OriginalError);
@@ -152,45 +167,4 @@ exportWebAssemblyErrorCauseWrapper('RuntimeError', function (init) {
   return function RuntimeError(message) { return functionApply(init, this, arguments); };
 });
 
-var TypeError = global_1.TypeError;
-
-var anInstance = function (it, Prototype) {
-  if (objectIsPrototypeOf(Prototype, it)) return it;
-  throw TypeError('Incorrect invocation');
-};
-
-var bind = functionUncurryThis(functionUncurryThis.bind);
-
-// optional / simple context binding
-var functionBindContext = function (fn, that) {
-  aCallable(fn);
-  return that === undefined ? fn : functionBindNative ? bind(fn, that) : function (/* ...args */) {
-    return fn.apply(that, arguments);
-  };
-};
-
-var ITERATOR = wellKnownSymbol('iterator');
-var ArrayPrototype = Array.prototype;
-
-// check on default Array iterator
-var isArrayIteratorMethod = function (it) {
-  return it !== undefined && (iterators.Array === it || ArrayPrototype[ITERATOR] === it);
-};
-
-var ITERATOR$1 = wellKnownSymbol('iterator');
-
-var getIteratorMethod = function (it) {
-  if (it != undefined) return getMethod(it, ITERATOR$1)
-    || getMethod(it, '@@iterator')
-    || iterators[classof(it)];
-};
-
-var TypeError$1 = global_1.TypeError;
-
-var getIterator = function (argument, usingIterator) {
-  var iteratorMethod = arguments.length < 2 ? getIteratorMethod(argument) : usingIterator;
-  if (aCallable(iteratorMethod)) return anObject(functionCall(iteratorMethod, argument));
-  throw TypeError$1(tryToString(argument) + ' is not iterable');
-};
-
-export { anInstance as a, getIteratorMethod as b, clearErrorStack as c, isArrayIteratorMethod as d, errorStackInstallable as e, functionBindContext as f, getIterator as g, inheritIfRequired as h, installErrorCause as i, normalizeStringArgument as n, wrapErrorConstructorWithCause as w };
+export { inheritIfRequired as a, clearErrorStack as c, errorStackInstallable as e, installErrorCause as i, normalizeStringArgument as n, wrapErrorConstructorWithCause as w };

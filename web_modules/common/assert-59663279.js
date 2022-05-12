@@ -1,11 +1,12 @@
-import { c as createCommonjsModule, a as commonjsGlobal } from './_commonjsHelpers-eb5a497e.js';
-import './es.string.replace-4c4b8f7a.js';
-import { f as functionBindContext, g as getIterator, n as normalizeStringArgument, e as errorStackInstallable, c as clearErrorStack, i as installErrorCause, w as wrapErrorConstructorWithCause } from './get-iterator-74b96c4c.js';
-import { _ as _export, a as anObject, g as getBuiltIn, b as global_1, c as aCallable, f as functionCall, i as isCallable, d as functionUncurryThis, w as wellKnownSymbol, o as objectSetPrototypeOf, e as copyConstructorProperties, h as objectCreate, j as createPropertyDescriptor, k as objectIsPrototypeOf, l as objectGetPrototypeOf, m as createNonEnumerableProperty, n as fails, s as setToStringTag } from './set-to-string-tag-75893d8e.js';
-import { a as asyncIteratorIteration, i as iterate } from './iterate-8b5072a5.js';
-import { t as toString_1, f as functionApply } from './esnext.iterator.map-f17cc22a.js';
-import { s as speciesConstructor, t as typedArrayConstructor } from './es.typed-array.uint32-array-52346711.js';
-import './web.dom-collections.iterator-6b2d1033.js';
+import { g as getBuiltIn, a as global_1, _ as _export, b as anObject, c as aCallable, f as functionCall, i as isCallable, d as functionUncurryThis, w as wellKnownSymbol, o as objectSetPrototypeOf, e as copyConstructorProperties, h as objectCreate, j as createPropertyDescriptor, k as objectIsPrototypeOf, l as objectGetPrototypeOf, m as createNonEnumerableProperty, n as fails, s as setToStringTag, p as createCommonjsModule, q as commonjsGlobal } from './set-to-string-tag-9ca80194.js';
+import './es.string.replace-534785d0.js';
+import { n as normalizeStringArgument, e as errorStackInstallable, c as clearErrorStack, i as installErrorCause, w as wrapErrorConstructorWithCause } from './es.error.cause-de3fbc20.js';
+import './esnext.iterator.for-each-b29c7922.js';
+import { i as iterate } from './iterate-82d063b8.js';
+import { f as functionBindContext, g as getIterator, t as toString_1, a as functionApply } from './esnext.iterator.map-720452d0.js';
+import { s as speciesConstructor, t as typedArrayConstructor } from './es.typed-array.uint16-array-3746399f.js';
+import './web.dom-collections.iterator-70010183.js';
+import './es.typed-array.uint32-array-5a56e0d0.js';
 
 /* SNOWPACK PROCESS POLYFILL (based on https://github.com/calvinmetcalf/node-process-es6) */
 function defaultSetTimout() {
@@ -236,27 +237,6 @@ var process = {
 
 // https://github.com/tc39/proposal-iterator-helpers
 
-var $forEach = asyncIteratorIteration.forEach;
-
-_export({ target: 'AsyncIterator', proto: true, real: true, forced: true }, {
-  forEach: function forEach(fn) {
-    return $forEach(this, fn);
-  }
-});
-
-// https://github.com/tc39/proposal-iterator-helpers
-
-
-
-
-_export({ target: 'Iterator', proto: true, real: true, forced: true }, {
-  forEach: function forEach(fn) {
-    iterate(anObject(this), fn, { IS_ITERATOR: true });
-  }
-});
-
-// https://github.com/tc39/proposal-iterator-helpers
-
 
 
 
@@ -372,7 +352,7 @@ _export({ target: 'Map', proto: true, real: true, forced: true }, {
 });
 
 var getMapIterator = function (it) {
-  // eslint-disable-next-line es/no-map -- safe
+  // eslint-disable-next-line es-x/no-map -- safe
   return functionCall(Map.prototype.entries, it);
 };
 
@@ -602,7 +582,7 @@ _export({ target: 'Set', proto: true, real: true, forced: true }, {
 });
 
 var getSetIterator = function (it) {
-  // eslint-disable-next-line es/no-set -- safe
+  // eslint-disable-next-line es-x/no-set -- safe
   return functionCall(Set.prototype.values, it);
 };
 

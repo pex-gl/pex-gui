@@ -1,10 +1,10 @@
-import { C as functionBindNative, w as wellKnownSymbol, b as global_1, x as classofRaw, i as isCallable, a as anObject, y as getMethod, f as functionCall, r as redefine, H as sharedStore, l as objectGetPrototypeOf, g as getBuiltIn, q as internalState, c as aCallable, h as objectCreate, m as createNonEnumerableProperty, _ as _export, F as iteratorsCore } from './set-to-string-tag-75893d8e.js';
+import { J as functionBindNative, w as wellKnownSymbol, a as global_1, z as classofRaw, i as isCallable, k as objectIsPrototypeOf, d as functionUncurryThis, c as aCallable, K as iterators, A as getMethod, b as anObject, f as functionCall, H as tryToString, u as redefine, L as sharedStore, l as objectGetPrototypeOf, g as getBuiltIn, t as internalState, h as objectCreate, m as createNonEnumerableProperty, _ as _export, G as iteratorsCore } from './set-to-string-tag-9ca80194.js';
 
 var FunctionPrototype = Function.prototype;
 var apply = FunctionPrototype.apply;
 var call = FunctionPrototype.call;
 
-// eslint-disable-next-line es/no-reflect -- safe
+// eslint-disable-next-line es-x/no-reflect -- safe
 var functionApply = typeof Reflect == 'object' && Reflect.apply || (functionBindNative ? call.bind(apply) : function () {
   return call.apply(apply, arguments);
 });
@@ -46,6 +46,47 @@ var String$1 = global_1.String;
 var toString_1 = function (argument) {
   if (classof(argument) === 'Symbol') throw TypeError('Cannot convert a Symbol value to a string');
   return String$1(argument);
+};
+
+var TypeError$1 = global_1.TypeError;
+
+var anInstance = function (it, Prototype) {
+  if (objectIsPrototypeOf(Prototype, it)) return it;
+  throw TypeError$1('Incorrect invocation');
+};
+
+var bind = functionUncurryThis(functionUncurryThis.bind);
+
+// optional / simple context binding
+var functionBindContext = function (fn, that) {
+  aCallable(fn);
+  return that === undefined ? fn : functionBindNative ? bind(fn, that) : function (/* ...args */) {
+    return fn.apply(that, arguments);
+  };
+};
+
+var ITERATOR = wellKnownSymbol('iterator');
+var ArrayPrototype = Array.prototype;
+
+// check on default Array iterator
+var isArrayIteratorMethod = function (it) {
+  return it !== undefined && (iterators.Array === it || ArrayPrototype[ITERATOR] === it);
+};
+
+var ITERATOR$1 = wellKnownSymbol('iterator');
+
+var getIteratorMethod = function (it) {
+  if (it != undefined) return getMethod(it, ITERATOR$1)
+    || getMethod(it, '@@iterator')
+    || iterators[classof(it)];
+};
+
+var TypeError$2 = global_1.TypeError;
+
+var getIterator = function (argument, usingIterator) {
+  var iteratorMethod = arguments.length < 2 ? getIteratorMethod(argument) : usingIterator;
+  if (aCallable(iteratorMethod)) return anObject(functionCall(iteratorMethod, argument));
+  throw TypeError$2(tryToString(argument) + ' is not iterable');
 };
 
 var iteratorClose = function (iterator, kind, value) {
@@ -276,4 +317,4 @@ _export({ target: 'Iterator', proto: true, real: true, forced: true }, {
   }
 });
 
-export { asyncIteratorCreateProxy as a, iteratorCreateProxy as b, classof as c, callWithSafeIterationClosing as d, functionApply as f, iteratorClose as i, redefineAll as r, toString_1 as t };
+export { functionApply as a, anInstance as b, getIteratorMethod as c, iteratorClose as d, classof as e, functionBindContext as f, getIterator as g, callWithSafeIterationClosing as h, isArrayIteratorMethod as i, asyncIteratorCreateProxy as j, iteratorCreateProxy as k, redefineAll as r, toString_1 as t };

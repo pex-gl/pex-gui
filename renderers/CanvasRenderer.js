@@ -1,4 +1,4 @@
-import { getHex } from "pex-color";
+import { toHex } from "pex-color";
 import { utils } from "pex-math";
 
 function rectSet4(a, x, y, w, h) {
@@ -264,7 +264,7 @@ class CanvasRenderer {
         if (isColor) {
           const sqSize = titleHeight * 0.6;
 
-          ctx.fillStyle = getHex(item.contextObject[item.attributeName]);
+          ctx.fillStyle = toHex(item.contextObject[item.attributeName]);
           ctx.fillRect(
             dx + w - sqSize - padding,
             dy + titleHeight * 0.2,

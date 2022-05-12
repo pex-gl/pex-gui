@@ -1,9 +1,8 @@
 import { c as create, l as lookAt, s as set, i as invert, f as frustum, p as perspective$1, o as ortho, d as distance$1 } from './common/vec2-9a8191f5.js';
 import { n as normalize, m as multMat4, s as sub, c as copy, d as distance, a as scale, b as add, l as length, e as set$1, u as utils } from './common/vec3-49e7f9a4.js';
-import { h as hitTestPlane } from './common/ray-80a8ac06.js';
-import './common/web.dom-collections.iterator-6b2d1033.js';
-import './common/set-to-string-tag-75893d8e.js';
-import './common/_commonjsHelpers-eb5a497e.js';
+import { h as hitTestPlane } from './common/ray-8673e8ad.js';
+import './common/web.dom-collections.iterator-70010183.js';
+import './common/set-to-string-tag-9ca80194.js';
 
 /**
  * An interface for cameras to extend
@@ -555,17 +554,13 @@ class OrbiterControls {
       this.handleZoom(event.deltaY);
     };
 
-    this.element.addEventListener("mousedown", this.onPointerDown);
+    this.element.addEventListener("pointerdown", this.onPointerDown);
     this.element.addEventListener("wheel", this.onWheel, {
       passive: false
     });
-    this.element.addEventListener("touchstart", this.onTouchStart);
-    this.element.addEventListener("touchmove", this.onTouchMove, {
-      passive: false
-    });
-    this.element.addEventListener("touchend", this.onPointerUp);
-    document.addEventListener("mousemove", this.onPointerMove);
-    document.addEventListener("mouseup", this.onPointerUp);
+    document.addEventListener("pointermove", this.onPointerMove);
+    document.addEventListener("pointerup", this.onPointerUp);
+    this.domElement.style.touchAction = "none";
   }
   /**
    * Remove all event listeners
@@ -574,13 +569,10 @@ class OrbiterControls {
 
   dispose() {
     if (this.rafHandle) cancelAnimationFrame(this.rafHandle);
-    this.element.removeEventListener("mousedown", this.onPointerDown);
+    this.element.removeEventListener("pointerdown", this.onPointerDown);
     this.element.removeEventListener("wheel", this.onWheel);
-    this.element.removeEventListener("touchstart", this.onTouchStart);
-    this.element.removeEventListener("touchmove", this.onPointerMove);
-    this.element.removeEventListener("touchend", this.onPointerUp);
-    document.removeEventListener("mousemove", this.onPointerMove);
-    document.removeEventListener("mouseup", this.onPointerUp);
+    document.removeEventListener("pointermove", this.onPointerMove);
+    document.removeEventListener("pointerup", this.onPointerUp);
   }
 
 }

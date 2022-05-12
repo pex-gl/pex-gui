@@ -1,4 +1,4 @@
-import { fromHSL, getHSL } from "pex-color";
+import { fromHSL, toHSL } from "pex-color";
 
 class GUIControl {
   constructor(options) {
@@ -23,7 +23,7 @@ class GUIControl {
         val =
           (val[idx] - this.options.min) / (this.options.max - this.options.min);
       } else if (this.type === "color") {
-        const hsl = getHSL(val);
+        const hsl = toHSL(val);
         if (idx === 0) val = hsl[0];
         if (idx === 1) val = hsl[1];
         if (idx === 2) val = hsl[2];
@@ -55,7 +55,7 @@ class GUIControl {
         if (idx === 3) {
           c[3] = val;
         } else {
-          const hsl = getHSL(c);
+          const hsl = toHSL(c);
           if (idx === 0) hsl[0] = val;
           if (idx === 1) hsl[1] = val;
           if (idx === 2) hsl[2] = val;

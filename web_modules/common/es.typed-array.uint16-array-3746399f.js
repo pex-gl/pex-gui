@@ -1,7 +1,6 @@
-import { g as getBuiltIn, d as functionUncurryThis, n as fails, i as isCallable, N as inspectSource, b as global_1, E as tryToString, w as wellKnownSymbol, a as anObject, l as objectGetPrototypeOf, O as uid, o as objectSetPrototypeOf, m as createNonEnumerableProperty, L as descriptors, B as hasOwnProperty_1, A as isObject, J as objectDefineProperty, k as objectIsPrototypeOf, r as redefine, u as toIntegerOrInfinity, z as toLength, v as toObject, G as lengthOfArrayLike, P as toAbsoluteIndex, Q as toPropertyKey, j as createPropertyDescriptor, s as setToStringTag, R as objectGetOwnPropertyNames, K as functionName, q as internalState, f as functionCall, x as classofRaw, S as indexedObject, _ as _export, h as objectCreate, T as isSymbol, U as objectGetOwnPropertyDescriptor, V as engineUserAgent, c as aCallable, W as engineV8Version } from './set-to-string-tag-75893d8e.js';
-import { a as anInstance, b as getIteratorMethod, d as isArrayIteratorMethod, g as getIterator, f as functionBindContext, h as inheritIfRequired } from './get-iterator-74b96c4c.js';
-import { c as createCommonjsModule } from './_commonjsHelpers-eb5a497e.js';
-import { c as classof, r as redefineAll } from './esnext.iterator.map-f17cc22a.js';
+import { g as getBuiltIn, d as functionUncurryThis, n as fails, i as isCallable, P as inspectSource, a as global_1, H as tryToString, w as wellKnownSymbol, b as anObject, l as objectGetPrototypeOf, Q as uid, o as objectSetPrototypeOf, m as createNonEnumerableProperty, F as descriptors, E as hasOwnProperty_1, D as isObject, C as objectDefineProperty, k as objectIsPrototypeOf, u as redefine, x as toIntegerOrInfinity, B as toLength, y as toObject, I as lengthOfArrayLike, R as toAbsoluteIndex, S as toPropertyKey, j as createPropertyDescriptor, s as setToStringTag, T as objectGetOwnPropertyNames, N as functionName, t as internalState, f as functionCall, z as classofRaw, U as indexedObject, p as createCommonjsModule, _ as _export, h as objectCreate, V as isSymbol, W as objectGetOwnPropertyDescriptor, X as engineUserAgent, c as aCallable, Y as engineV8Version } from './set-to-string-tag-9ca80194.js';
+import { e as classof, b as anInstance, r as redefineAll, c as getIteratorMethod, i as isArrayIteratorMethod, g as getIterator, f as functionBindContext } from './esnext.iterator.map-720452d0.js';
+import { a as inheritIfRequired } from './es.error.cause-de3fbc20.js';
 
 var noop = function () { /* empty */ };
 var empty = [];
@@ -49,12 +48,12 @@ var isConstructor = !construct || fails(function () {
     || called;
 }) ? isConstructorLegacy : isConstructorModern;
 
-var TypeError = global_1.TypeError;
+var TypeError$1 = global_1.TypeError;
 
 // `Assert: IsConstructor(argument) is true`
 var aConstructor = function (argument) {
   if (isConstructor(argument)) return argument;
-  throw TypeError(tryToString(argument) + ' is not a constructor');
+  throw TypeError$1(tryToString(argument) + ' is not a constructor');
 };
 
 var SPECIES = wellKnownSymbol('species');
@@ -83,7 +82,7 @@ try {
   iteratorWithReturn[ITERATOR] = function () {
     return this;
   };
-  // eslint-disable-next-line es/no-array-from, no-throw-literal -- required for testing
+  // eslint-disable-next-line es-x/no-array-from, no-throw-literal -- required for testing
   Array.from(iteratorWithReturn, function () { throw 2; });
 } catch (error) { /* empty */ }
 
@@ -104,7 +103,7 @@ var checkCorrectnessOfIteration = function (exec, SKIP_CLOSING) {
   return ITERATION_SUPPORT;
 };
 
-// eslint-disable-next-line es/no-typed-arrays -- safe
+// eslint-disable-next-line es-x/no-typed-arrays -- safe
 var arrayBufferNative = typeof ArrayBuffer != 'undefined' && typeof DataView != 'undefined';
 
 var defineProperty = objectDefineProperty.f;
@@ -121,7 +120,7 @@ var Uint8ClampedArrayPrototype = Uint8ClampedArray$1 && Uint8ClampedArray$1.prot
 var TypedArray = Int8Array && objectGetPrototypeOf(Int8Array);
 var TypedArrayPrototype = Int8ArrayPrototype && objectGetPrototypeOf(Int8ArrayPrototype);
 var ObjectPrototype = Object.prototype;
-var TypeError$1 = global_1.TypeError;
+var TypeError$2 = global_1.TypeError;
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
 var TYPED_ARRAY_TAG = uid('TYPED_ARRAY_TAG');
@@ -165,12 +164,12 @@ var isTypedArray = function (it) {
 
 var aTypedArray = function (it) {
   if (isTypedArray(it)) return it;
-  throw TypeError$1('Target is not a typed array');
+  throw TypeError$2('Target is not a typed array');
 };
 
 var aTypedArrayConstructor = function (C) {
   if (isCallable(C) && (!objectSetPrototypeOf || objectIsPrototypeOf(TypedArray, C))) return C;
-  throw TypeError$1(tryToString(C) + ' is not a typed array constructor');
+  throw TypeError$2(tryToString(C) + ' is not a typed array constructor');
 };
 
 var exportTypedArrayMethod = function (KEY, property, forced, options) {
@@ -234,7 +233,7 @@ for (NAME in BigIntArrayConstructorsList) {
 if (!NATIVE_ARRAY_BUFFER_VIEWS || !isCallable(TypedArray) || TypedArray === Function.prototype) {
   // eslint-disable-next-line no-shadow -- safe
   TypedArray = function TypedArray() {
-    throw TypeError$1('Incorrect invocation');
+    throw TypeError$2('Incorrect invocation');
   };
   if (NATIVE_ARRAY_BUFFER_VIEWS) for (NAME in TypedArrayConstructorsList) {
     if (global_1[NAME]) objectSetPrototypeOf(global_1[NAME], TypedArray);
@@ -685,7 +684,7 @@ var floor$1 = Math.floor;
 
 // `IsIntegralNumber` abstract operation
 // https://tc39.es/ecma262/#sec-isintegralnumber
-// eslint-disable-next-line es/no-number-isinteger -- safe
+// eslint-disable-next-line es-x/no-number-isinteger -- safe
 var isIntegralNumber = Number.isInteger || function isInteger(it) {
   return !isObject(it) && isFinite(it) && floor$1(it) === it;
 };
@@ -737,7 +736,7 @@ var typedArrayFrom = function from(source /* , mapfn, thisArg */) {
 
 // `IsArray` abstract operation
 // https://tc39.es/ecma262/#sec-isarray
-// eslint-disable-next-line es/no-array-isarray -- safe
+// eslint-disable-next-line es-x/no-array-isarray -- safe
 var isArray = Array.isArray || function isArray(argument) {
   return classofRaw(argument) == 'Array';
 };
@@ -1120,7 +1119,7 @@ var aTypedArray$2 = arrayBufferViewCore.aTypedArray;
 var exportTypedArrayMethod$2 = arrayBufferViewCore.exportTypedArrayMethod;
 
 var WORKS_WITH_OBJECTS_AND_GEERIC_ON_TYPED_ARRAYS = !fails(function () {
-  // eslint-disable-next-line es/no-typed-arrays -- required for testing
+  // eslint-disable-next-line es-x/no-typed-arrays -- required for testing
   var array = new Uint8ClampedArray(2);
   functionCall($set, array, { length: 1, 0: 3 }, 1);
   return array[1] !== 3;
@@ -1201,7 +1200,6 @@ var webkit = engineUserAgent.match(/AppleWebKit\/(\d+)\./);
 
 var engineWebkitVersion = !!webkit && +webkit[1];
 
-var Array$5 = global_1.Array;
 var aTypedArray$3 = arrayBufferViewCore.aTypedArray;
 var exportTypedArrayMethod$3 = arrayBufferViewCore.exportTypedArrayMethod;
 var Uint16Array = global_1.Uint16Array;
@@ -1222,7 +1220,7 @@ var STABLE_SORT = !!un$Sort && !fails(function () {
   if (engineWebkitVersion) return engineWebkitVersion < 602;
 
   var array = new Uint16Array(516);
-  var expected = Array$5(516);
+  var expected = Array(516);
   var index, mod;
 
   for (index = 0; index < 516; index++) {
@@ -1347,7 +1345,7 @@ exportTypedArrayMethod$6('findLastIndex', function findLastIndex(predicate /* , 
   return $findLastIndex(aTypedArray$6(this), predicate, arguments.length > 1 ? arguments[1] : undefined);
 });
 
-var Array$6 = global_1.Array;
+var Array$5 = global_1.Array;
 var push$1 = functionUncurryThis([].push);
 
 var arrayGroupBy = function ($this, callbackfn, that, specificConstructor) {
@@ -1369,7 +1367,7 @@ var arrayGroupBy = function ($this, callbackfn, that, specificConstructor) {
   // TODO: Remove this block from `core-js@4`
   if (specificConstructor) {
     Constructor = specificConstructor(O);
-    if (Constructor !== Array$6) {
+    if (Constructor !== Array$5) {
       for (key in target) target[key] = arrayFromConstructorAndList(Constructor, target[key]);
     }
   } return target;
@@ -1408,7 +1406,7 @@ var TYPED_ARRAY_CONSTRUCTOR$2 = arrayBufferViewCore.TYPED_ARRAY_CONSTRUCTOR;
 // https://tc39.es/proposal-change-array-by-copy/#sec-%typedarray%.prototype.toReversed
 exportTypedArrayMethod$8('toReversed', function toReversed() {
   return arrayToReversed(aTypedArray$8(this), this[TYPED_ARRAY_CONSTRUCTOR$2]);
-}, true);
+});
 
 var aTypedArray$9 = arrayBufferViewCore.aTypedArray;
 var exportTypedArrayMethod$9 = arrayBufferViewCore.exportTypedArrayMethod;
@@ -1422,12 +1420,14 @@ exportTypedArrayMethod$9('toSorted', function toSorted(compareFn) {
   var O = aTypedArray$9(this);
   var A = arrayFromConstructorAndList(O[TYPED_ARRAY_CONSTRUCTOR$3], O);
   return sort(A, compareFn);
-}, true);
+});
 
 var arraySlice = functionUncurryThis([].slice);
 
+var $TypeError = TypeError;
 var max$1 = Math.max;
 var min = Math.min;
+var MAX_SAFE_INTEGER = 0x1FFFFFFFFFFFFF;
 
 // https://tc39.es/proposal-change-array-by-copy/#sec-array.prototype.toSpliced
 // https://tc39.es/proposal-change-array-by-copy/#sec-%typedarray%.prototype.toSpliced
@@ -1449,6 +1449,7 @@ var arrayToSpliced = function (O, C, args) {
     actualDeleteCount = min(max$1(toIntegerOrInfinity(deleteCount), 0), len - actualStart);
   }
   newLen = len + insertCount - actualDeleteCount;
+  if (newLen > MAX_SAFE_INTEGER) throw $TypeError('Maximum allowed length exceeded');
   A = new C(newLen);
 
   for (; k < actualStart; k++) A[k] = O[k];
@@ -1467,7 +1468,7 @@ var TYPED_ARRAY_CONSTRUCTOR$4 = arrayBufferViewCore.TYPED_ARRAY_CONSTRUCTOR;
 // eslint-disable-next-line no-unused-vars -- required for .length
 exportTypedArrayMethod$a('toSpliced', function toSpliced(start, deleteCount /* , ...items */) {
   return arrayToSpliced(aTypedArray$a(this), this[TYPED_ARRAY_CONSTRUCTOR$4], arraySlice(arguments));
-}, true);
+});
 
 var Map = getBuiltIn('Map');
 var MapPrototype = Map.prototype;
@@ -1531,23 +1532,7 @@ var TYPED_ARRAY_CONSTRUCTOR$5 = arrayBufferViewCore.TYPED_ARRAY_CONSTRUCTOR;
 // https://tc39.es/proposal-change-array-by-copy/#sec-%typedarray%.prototype.with
 exportTypedArrayMethod$c('with', { 'with': function (index, value) {
   return arrayWith(aTypedArray$c(this), this[TYPED_ARRAY_CONSTRUCTOR$5], index, value);
-} }['with'], true);
-
-// `Float32Array` constructor
-// https://tc39.es/ecma262/#sec-typedarray-objects
-typedArrayConstructor('Float32', function (init) {
-  return function Float32Array(data, byteOffset, length) {
-    return init(this, data, byteOffset, length);
-  };
-});
-
-// `Int8Array` constructor
-// https://tc39.es/ecma262/#sec-typedarray-objects
-typedArrayConstructor('Int8', function (init) {
-  return function Int8Array(data, byteOffset, length) {
-    return init(this, data, byteOffset, length);
-  };
-});
+} }['with']);
 
 // `Uint16Array` constructor
 // https://tc39.es/ecma262/#sec-typedarray-objects
@@ -1557,12 +1542,4 @@ typedArrayConstructor('Uint16', function (init) {
   };
 });
 
-// `Uint32Array` constructor
-// https://tc39.es/ecma262/#sec-typedarray-objects
-typedArrayConstructor('Uint32', function (init) {
-  return function Uint32Array(data, byteOffset, length) {
-    return init(this, data, byteOffset, length);
-  };
-});
-
-export { typedArrayConstructorsRequireWrappers as a, arrayBufferViewCore as b, speciesConstructor as s, typedArrayConstructor as t };
+export { arraySort as a, arraySliceSimple as b, createProperty as c, typedArrayConstructorsRequireWrappers as d, arrayBufferViewCore as e, isConstructor as i, speciesConstructor as s, typedArrayConstructor as t };
