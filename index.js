@@ -36,6 +36,8 @@ const isArrayLike = (value) =>
  * @property {boolean} [enabled=true] Enable/disable pointer interaction and drawing.
  */
 class GUI {
+  #pixelRatio;
+
   get size() {
     return this.ctx.gl
       ? [this.ctx.gl.drawingBufferWidth, this.ctx.gl.drawingBufferHeight]
@@ -44,6 +46,11 @@ class GUI {
 
   get canvas() {
     return this.ctx.gl ? this.ctx.gl.canvas : this.ctx.canvas;
+  }
+
+  set pixelRatio(ratio) {
+    if (this.renderer) this.renderer.pixelRatio = ratio;
+    this.#pixelRatio = ratio;
   }
 
   /**
@@ -63,7 +70,7 @@ class GUI {
   ) {
     this.ctx = ctx;
 
-    this.pixelRatio = this.ctx.gl ? this.ctx.pixelRatio : pixelRatio;
+    this.#pixelRatio = this.ctx.gl ? this.ctx.pixelRatio : pixelRatio;
     this.theme = {
       ...DEFAULT_THEME,
       ...theme,
@@ -90,7 +97,7 @@ class GUI {
         ctx: this.ctx,
         width: rendererWidth,
         height: rendererHeight,
-        pixelRatio: this.pixelRatio,
+        pixelRatio: this.#pixelRatio,
         theme: this.theme,
       });
 
@@ -1163,7 +1170,7 @@ class GUI {
           continue;
         }
       }
-      const scale = this.scale * this.pixelRatio;
+      const scale = this.scale * this.#pixelRatio;
       let bounds = [];
 
       const drawTexture = ({ activeArea, texture }) => {
