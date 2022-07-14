@@ -109,6 +109,7 @@ export default async function addAllControls(gui, ctx) {
 
   gui.addColumn("Textures");
   gui.addTexture2D("Single", State.textures[0]); // or gui.addParam("Single", State, "texture");
+  gui.addTexture2D("Single flipped", State.textures[0], { flipY: true });
   gui.addTexture2DList(
     "List",
     State,

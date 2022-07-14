@@ -30,16 +30,16 @@
   },
   "dependencies": {
     "pex-color": "github:pex-gl/pex-color#v2",
-    "pex-geom": "github:pex-gl/pex-geom#v3",
-    "pex-math": "github:pex-gl/pex-math#v4"
+    "pex-geom": "^3.0.0-alpha.2",
+    "pex-math": "^4.0.0-alpha.2"
   },
   "devDependencies": {
     "assert": "^2.0.0",
-    "es-module-shims": "^1.5.1",
-    "pex-cam": "github:pex-gl/pex-cam#v3",
-    "pex-context": "github:pex-gl/pex-context",
+    "es-module-shims": "^1.5.9",
+    "pex-cam": "^3.0.0-alpha.1",
+    "pex-context": "^3.0.0-alpha.0",
     "pex-io": "github:pex-gl/pex-io#v3",
-    "primitive-geometry": "^2.2.0"
+    "primitive-geometry": "^2.7.0"
   },
   "engines": {
     "node": ">=16.0.0",

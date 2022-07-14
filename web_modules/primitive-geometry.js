@@ -1,8 +1,8 @@
-import { d as typedArrayConstructorsRequireWrappers, e as arrayBufferViewCore } from './common/es.typed-array.uint16-array-3746399f.js';
-import './common/es.typed-array.uint32-array-5a56e0d0.js';
-import './common/es.error.cause-de3fbc20.js';
-import './common/esnext.iterator.map-720452d0.js';
-import './common/set-to-string-tag-9ca80194.js';
+import { d as typedArrayConstructorsRequireWrappers, e as arrayBufferViewCore } from './common/es.typed-array.uint16-array-9fc0c3ad.js';
+import './common/es.typed-array.uint32-array-523b7495.js';
+import './common/web.dom-collections.iterator-e8ac2628.js';
+import './common/es.error.cause-e924eb93.js';
+import './common/esnext.iterator.map-5c21472a.js';
 
 var aTypedArrayConstructor = arrayBufferViewCore.aTypedArrayConstructor;
 var exportTypedArrayStaticMethod = arrayBufferViewCore.exportTypedArrayStaticMethod;
@@ -73,6 +73,72 @@ function setTypedArrayType(type) {
  */
 
 const getCellsTypedArray = size => TYPED_ARRAY_TYPE || (size <= 255 ? Uint8Array : size <= 65535 ? Uint16Array : Uint32Array);
+/**
+ * @private
+ */
+
+const TMP = [0, 0, 0];
+/**
+ * @private
+ */
+
+const PLANE_DIRECTIONS = {
+  z: [0, 1, 2, 1, -1, 1],
+  "-z": [0, 1, 2, -1, -1, -1],
+  "-x": [2, 1, 0, 1, -1, -1],
+  x: [2, 1, 0, -1, -1, 1],
+  y: [0, 2, 1, 1, 1, 1],
+  "-y": [0, 2, 1, 1, -1, -1]
+};
+/**
+ * @private
+ */
+
+function computePlane(geometry, indices, su, sv, nu, nv, direction = "z", pw = 0, quads = false, uvScale = [1, 1], uvOffset = [0, 0], center = [0, 0, 0]) {
+  const {
+    positions,
+    normals,
+    uvs,
+    cells
+  } = geometry;
+  const [u, v, w, flipU, flipV, normal] = PLANE_DIRECTIONS[direction];
+  const vertexOffset = indices.vertex;
+
+  for (let j = 0; j <= nv; j++) {
+    for (let i = 0; i <= nu; i++) {
+      positions[indices.vertex * 3 + u] = (-su / 2 + i * su / nu) * flipU + center[u];
+      positions[indices.vertex * 3 + v] = (-sv / 2 + j * sv / nv) * flipV + center[v];
+      positions[indices.vertex * 3 + w] = pw + center[w];
+      normals[indices.vertex * 3 + w] = normal;
+      uvs[indices.vertex * 2] = i / nu * uvScale[0] + uvOffset[0];
+      uvs[indices.vertex * 2 + 1] = (1 - j / nv) * uvScale[1] + uvOffset[1];
+      indices.vertex++;
+
+      if (j < nv && i < nu) {
+        const n = vertexOffset + j * (nu + 1) + i;
+
+        if (quads) {
+          const o = vertexOffset + (j + 1) * (nu + 1) + i;
+          cells[indices.cell] = n;
+          cells[indices.cell + 1] = o;
+          cells[indices.cell + 2] = o + 1;
+          cells[indices.cell + 3] = n + 1;
+        } else {
+          cells[indices.cell] = n;
+          cells[indices.cell + 1] = n + nu + 1;
+          cells[indices.cell + 2] = n + nu + 2;
+          cells[indices.cell + 3] = n;
+          cells[indices.cell + 4] = n + nu + 2;
+          cells[indices.cell + 5] = n + 1;
+        }
+
+        indices.cell += quads ? 4 : 6;
+      }
+    }
+  }
+
+  return geometry;
+}
 
 var utils = /*#__PURE__*/Object.freeze({
   __proto__: null,
@@ -80,7 +146,9 @@ var utils = /*#__PURE__*/Object.freeze({
   normalize: normalize,
   checkArguments: checkArguments,
   setTypedArrayType: setTypedArrayType,
-  getCellsTypedArray: getCellsTypedArray
+  getCellsTypedArray: getCellsTypedArray,
+  TMP: TMP,
+  computePlane: computePlane
 });
 
 /**
@@ -102,7 +170,7 @@ function quad({
     // prettier-ignore
     positions: Float32Array.of(-scale, -scale, 0, scale, -scale, 0, scale, scale, 0, -scale, scale, 0),
     // prettier-ignore
-    normals: Int8Array.of(0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1),
+    normals: Int8Array.of(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1),
     // prettier-ignore
     uvs: Uint8Array.of(0, 0, 1, 0, 1, 1, 0, 1),
     // prettier-ignore
@@ -116,6 +184,12 @@ function quad({
  * @property {number} [sy=sx]
  * @property {number} [nx=1]
  * @property {number} [ny=nx]
+ * @property {PlaneDirection} [direction="z"]
+ * @property {boolean} [quads=false]
+ */
+
+/**
+ * @typedef {"x" | "-x" | "y" | "-y" | "z" | "-z"} PlaneDirection
  */
 
 /**
@@ -128,54 +202,21 @@ function plane({
   sx = 1,
   sy = sx,
   nx = 1,
-  ny = nx
+  ny = nx,
+  direction = "z",
+  quads = false
 } = {}) {
   checkArguments(arguments);
   const size = (nx + 1) * (ny + 1);
-  const positions = new Float32Array(size * 3);
-  const normals = new Float32Array(size * 3);
-  const uvs = new Float32Array(size * 2);
-  const cells = new (getCellsTypedArray(size))(nx * ny * 6);
-  let vertexIndex = 0;
-  const halfSX = sx * 0.5;
-  const halfSY = sy * 0.5;
-
-  for (let y = 0; y <= ny; y++) {
-    for (let x = 0; x <= nx; x++) {
-      const u = x / nx;
-      const v = y / ny;
-      positions[vertexIndex * 3] = -halfSX + u * sx;
-      positions[vertexIndex * 3 + 1] = halfSY - v * sy;
-      positions[vertexIndex * 3 + 2] = 0;
-      normals[vertexIndex * 3] = 0;
-      normals[vertexIndex * 3 + 1] = 0;
-      normals[vertexIndex * 3 + 2] = 1;
-      uvs[vertexIndex * 2] = u;
-      uvs[vertexIndex * 2 + 1] = 1 - v;
-
-      if (y < ny && x < nx) {
-        const a = y * (nx + 1) + x;
-        const b = (y + 1) * (nx + 1) + x + 1;
-        const c = y * (nx + 1) + x + 1;
-        const d = (y + 1) * (nx + 1) + x;
-        cells[vertexIndex * 6] = a;
-        cells[vertexIndex * 6 + 1] = b;
-        cells[vertexIndex * 6 + 2] = c;
-        cells[vertexIndex * 6 + 3] = b;
-        cells[vertexIndex * 6 + 4] = a;
-        cells[vertexIndex * 6 + 5] = d;
-      }
-
-      vertexIndex++;
-    }
-  }
-
-  return {
-    positions,
-    normals,
-    uvs,
-    cells
-  };
+  return computePlane({
+    positions: new Float32Array(size * 3),
+    normals: new Float32Array(size * 3),
+    uvs: new Float32Array(size * 2),
+    cells: new (getCellsTypedArray(size))(nx * ny * (quads ? 4 : 6))
+  }, {
+    vertex: 0,
+    cell: 0
+  }, sx, sy, nx, ny, direction, 0, quads);
 }
 
 /**
@@ -204,78 +245,39 @@ function cube({
 } = {}) {
   checkArguments(arguments);
   const size = (nx + 1) * (ny + 1) * 2 + (nx + 1) * (nz + 1) * 2 + (nz + 1) * (ny + 1) * 2;
-  const positions = new Float32Array(size * 3);
-  const normals = new Float32Array(size * 3);
-  const uvs = new Float32Array(size * 2);
-  const cells = new (getCellsTypedArray(size))((nx * ny * 2 + nx * nz * 2 + nz * ny * 2) * 6);
-  let vertexIndex = 0;
-  let cellIndex = 0;
-
-  function computePlane(u, v, w, su, sv, nu, nv, pw, flipU, flipV) {
-    const vertexOffset = vertexIndex;
-
-    for (let j = 0; j <= nv; j++) {
-      for (let i = 0; i <= nu; i++) {
-        positions[vertexIndex * 3 + u] = (-su / 2 + i * su / nu) * flipU;
-        positions[vertexIndex * 3 + v] = (-sv / 2 + j * sv / nv) * flipV;
-        positions[vertexIndex * 3 + w] = pw;
-        normals[vertexIndex * 3 + u] = 0;
-        normals[vertexIndex * 3 + v] = 0;
-        normals[vertexIndex * 3 + w] = pw / Math.abs(pw);
-        uvs[vertexIndex * 2] = i / nu;
-        uvs[vertexIndex * 2 + 1] = 1 - j / nv;
-        vertexIndex++;
-
-        if (j < nv && i < nu) {
-          const n = vertexOffset + j * (nu + 1) + i;
-          cells[cellIndex] = n;
-          cells[cellIndex + 1] = n + nu + 1;
-          cells[cellIndex + 2] = n + nu + 2;
-          cells[cellIndex + 3] = n;
-          cells[cellIndex + 4] = n + nu + 2;
-          cells[cellIndex + 5] = n + 1;
-          cellIndex += 6;
-        }
-      }
-    }
-  }
-
+  const geometry = {
+    positions: new Float32Array(size * 3),
+    normals: new Float32Array(size * 3),
+    uvs: new Float32Array(size * 2),
+    cells: new (getCellsTypedArray(size))((nx * ny * 2 + nx * nz * 2 + nz * ny * 2) * 6)
+  };
   const halfSX = sx * 0.5;
   const halfSY = sy * 0.5;
   const halfSZ = sz * 0.5;
-  computePlane(0, 1, 2, sx, sy, nx, ny, halfSZ, 1, -1); // front
-
-  computePlane(0, 1, 2, sx, sy, nx, ny, -halfSZ, -1, -1); // back
-
-  computePlane(2, 1, 0, sz, sy, nz, ny, -halfSX, 1, -1); // left
-
-  computePlane(2, 1, 0, sz, sy, nz, ny, halfSX, -1, -1); // right
-
-  computePlane(0, 2, 1, sx, sz, nx, nz, halfSY, 1, 1); // top
-
-  computePlane(0, 2, 1, sx, sz, nx, nz, -halfSY, 1, -1); // bottom
-
-  return {
-    positions,
-    normals,
-    uvs,
-    cells
+  const indices = {
+    vertex: 0,
+    cell: 0
   };
+  computePlane(geometry, indices, sx, sy, nx, ny, "z", halfSZ);
+  computePlane(geometry, indices, sx, sy, nx, ny, "-z", -halfSZ);
+  computePlane(geometry, indices, sz, sy, nz, ny, "-x", -halfSX);
+  computePlane(geometry, indices, sz, sy, nz, ny, "x", halfSX);
+  computePlane(geometry, indices, sx, sz, nx, nz, "y", halfSY);
+  computePlane(geometry, indices, sx, sz, nx, nz, "-y", -halfSY);
+  return geometry;
 }
 
-/**
- * @module rounded-cube
- */
-const TMP = [0, 0, 0];
 /**
  * @typedef {Object} RoundedCubeOptions
  * @property {number} [sx=1]
  * @property {number} [sy=sx]
  * @property {number} [sz=sx]
- * @property {number} [nx=16]
+ * @property {number} [nx=1]
  * @property {number} [ny=nx]
  * @property {number} [nz=nx]
  * @property {number} [radius=sx * 0.25]
+ * @property {number} [roundSegments=8]
+ * @property {number} [edgeSegments=1]
  */
 
 /**
@@ -288,23 +290,74 @@ function roundedCube({
   sx = 1,
   sy = sx,
   sz = sx,
-  nx = 16,
+  nx = 1,
   ny = nx,
   nz = nx,
-  radius = sx * 0.25
+  radius = sx * 0.25,
+  roundSegments = 8,
+  edgeSegments = 1
 } = {}) {
   checkArguments(arguments);
-  const geometry = cube({
-    sx,
-    sy,
-    sz,
-    nx,
-    ny,
-    nz
-  });
-  const rx = sx * 0.5;
-  const ry = sy * 0.5;
-  const rz = sz * 0.5;
+  const size = (nx + 1) * (ny + 1) * 2 + (nx + 1) * (nz + 1) * 2 + (nz + 1) * (ny + 1) * 2 + (roundSegments + 1) * (roundSegments + 1) * 24 + (roundSegments + 1) * (edgeSegments + 1) * 24;
+  const geometry = {
+    positions: new Float32Array(size * 3),
+    normals: new Float32Array(size * 3),
+    uvs: new Float32Array(size * 2),
+    cells: new (getCellsTypedArray(size))((nx * ny * 2 + nx * nz * 2 + nz * ny * 2 + roundSegments * roundSegments * 24 + roundSegments * edgeSegments * 24) * 6)
+  };
+  const halfSX = sx * 0.5;
+  const halfSY = sy * 0.5;
+  const halfSZ = sz * 0.5;
+  const r2 = radius * 2;
+  const widthX = sx - r2;
+  const widthY = sy - r2;
+  const widthZ = sz - r2;
+  const faceSX = widthX / sx;
+  const faceSY = widthY / sy;
+  const faceSZ = widthZ / sz;
+  const radiusSX = radius / sx;
+  const radiusSY = radius / sy;
+  const radiusSZ = radius / sz;
+  const indices = {
+    vertex: 0,
+    cell: 0
+  };
+  const PLANES = [[widthX, widthY, nx, ny, "z", halfSZ, [faceSX, faceSY], [radiusSX, radiusSY], (x, y) => [x, y, 0]], [widthX, widthY, nx, ny, "-z", -halfSZ, [faceSX, faceSY], [radiusSX, radiusSY], (x, y) => [-x, y, 0]], [widthZ, widthY, nz, ny, "-x", -halfSX, [faceSZ, faceSY], [radiusSZ, radiusSY], (x, y) => [0, y, x]], [widthZ, widthY, nz, ny, "x", halfSX, [faceSZ, faceSY], [radiusSZ, radiusSY], (x, y) => [0, y, -x]], [widthX, widthZ, nx, nz, "y", halfSY, [faceSX, faceSZ], [radiusSX, radiusSZ], (x, y) => [x, 0, -y]], [widthX, widthZ, nx, nz, "-y", -halfSY, [faceSX, faceSZ], [radiusSX, radiusSZ], (x, y) => [x, 0, y]]];
+
+  const uvOffsetCorner = (su, sv) => [[0, 0], [1 - radius / (su + r2), 0], [1 - radius / (su + r2), 1 - radius / (sv + r2)], [0, 1 - radius / (sv + r2)]];
+
+  const uvOffsetStart = (_, sv) => [0, radius / (sv + r2)];
+
+  const uvOffsetEnd = (su, sv) => [1 - radius / (su + r2), radius / (sv + r2)];
+
+  for (let j = 0; j < PLANES.length; j++) {
+    const [su, sv, nu, nv, direction, pw, uvScale, uvOffset, center] = PLANES[j]; // Cube faces
+
+    computePlane(geometry, indices, su, sv, nu, nv, direction, pw, false, uvScale, uvOffset); // Corner order: ccw uv-like order and L/B (0) R/T (2)
+    // 0,1 -- 1,1
+    //  |  --  |
+    // 0,0 -- 1,0
+
+    for (let i = 0; i < 4; i++) {
+      const ceil = Math.ceil(i / 2) % 2;
+      const floor = Math.floor(i / 2) % 2;
+      const x = (ceil === 0 ? -1 : 1) * (su + radius) * 0.5;
+      const y = (floor === 0 ? -1 : 1) * (sv + radius) * 0.5; // Corners
+
+      computePlane(geometry, indices, radius, radius, roundSegments, roundSegments, direction, pw, false, [radius / (su + r2), radius / (sv + r2)], uvOffsetCorner(su, sv)[i], center(x, y)); // Edges
+
+      if (i === 0 || i === 2) {
+        // Left / Right
+        computePlane(geometry, indices, radius, sv, roundSegments, edgeSegments, direction, pw, false, [uvOffset[0], uvScale[1]], ceil === 0 ? uvOffsetStart(su, sv) : uvOffsetEnd(su, sv), center(x, 0)); // Bottom/Top
+
+        computePlane(geometry, indices, su, radius, edgeSegments, roundSegments, direction, pw, false, [uvScale[0], uvOffset[1]], floor === 0 ? [...uvOffsetStart(sv, su)].reverse() : [...uvOffsetEnd(sv, su)].reverse(), center(0, y));
+      }
+    }
+  }
+
+  const rx = widthX * 0.5;
+  const ry = widthY * 0.5;
+  const rz = widthZ * 0.5;
 
   for (let i = 0; i < geometry.positions.length; i += 3) {
     const position = [geometry.positions[i], geometry.positions[i + 1], geometry.positions[i + 2]];
@@ -312,22 +365,22 @@ function roundedCube({
     TMP[1] = position[1];
     TMP[2] = position[2];
 
-    if (position[0] < -rx + radius) {
-      position[0] = -rx + radius;
-    } else if (position[0] > rx - radius) {
-      position[0] = rx - radius;
+    if (position[0] < -rx) {
+      position[0] = -rx;
+    } else if (position[0] > rx) {
+      position[0] = rx;
     }
 
-    if (position[1] < -ry + radius) {
-      position[1] = -ry + radius;
-    } else if (position[1] > ry - radius) {
-      position[1] = ry - radius;
+    if (position[1] < -ry) {
+      position[1] = -ry;
+    } else if (position[1] > ry) {
+      position[1] = ry;
     }
 
-    if (position[2] < -rz + radius) {
-      position[2] = -rz + radius;
-    } else if (position[2] > rz - radius) {
-      position[2] = rz - radius;
+    if (position[2] < -rz) {
+      position[2] = -rz;
+    } else if (position[2] > rz) {
+      position[2] = rz;
     }
 
     TMP[0] -= position[0];
@@ -345,7 +398,6 @@ function roundedCube({
   return geometry;
 }
 
-const TMP$1 = [0, 0, 0];
 /**
  * @typedef {Object} CylinderOptions
  * @property {number} [height=1]
@@ -356,6 +408,7 @@ const TMP$1 = [0, 0, 0];
  * @property {number} [capSegments=1]
  * @property {boolean} [capApex=true]
  * @property {boolean} [capBase=true]
+ * @property {number} [phi=TAU]
  */
 
 /**
@@ -372,19 +425,21 @@ function cylinder({
   radiusApex = radius,
   capSegments = 1,
   capApex = true,
-  capBase = true
+  capBase = true,
+  capBaseSegments = capSegments,
+  phi = TAU
 } = {}) {
   checkArguments(arguments);
   let capCount = 0;
-  if (capApex) capCount++;
-  if (capBase) capCount++;
+  if (capApex) capCount += capSegments;
+  if (capBase) capCount += capBaseSegments;
   const segments = nx + 1;
   const slices = ny + 1;
-  const size = segments * slices + segments * capSegments * 2 * capCount;
+  const size = segments * slices + segments * 2 * capCount;
   const positions = new Float32Array(size * 3);
   const normals = new Float32Array(size * 3);
   const uvs = new Float32Array(size * 2);
-  const cells = new (getCellsTypedArray(size))((nx * ny + nx * capSegments * capCount) * 6);
+  const cells = new (getCellsTypedArray(size))((nx * ny + nx * capCount) * 6);
   let vertexIndex = 0;
   let cellIndex = 0;
   const halfHeight = height / 2;
@@ -396,20 +451,20 @@ function cylinder({
 
     for (let j = 0; j < slices; j++) {
       const v = j * ringIncrement;
-      const phi = u * TAU;
-      const cosPhi = -Math.cos(phi);
-      const sinPhi = Math.sin(phi);
+      const p = u * phi;
+      const cosPhi = -Math.cos(p);
+      const sinPhi = Math.sin(p);
       const r = radius * (1 - v) + radiusApex * v;
       positions[vertexIndex * 3] = r * cosPhi;
       positions[vertexIndex * 3 + 1] = height * v - halfHeight;
       positions[vertexIndex * 3 + 2] = r * sinPhi;
-      TMP$1[0] = height * cosPhi;
-      TMP$1[1] = radius - radiusApex;
-      TMP$1[2] = height * sinPhi;
-      normalize(TMP$1);
-      normals[vertexIndex * 3] = TMP$1[0];
-      normals[vertexIndex * 3 + 1] = TMP$1[1];
-      normals[vertexIndex * 3 + 2] = TMP$1[2];
+      TMP[0] = height * cosPhi;
+      TMP[1] = radius - radiusApex;
+      TMP[2] = height * sinPhi;
+      normalize(TMP);
+      normals[vertexIndex * 3] = TMP[0];
+      normals[vertexIndex * 3 + 1] = TMP[1];
+      normals[vertexIndex * 3 + 2] = TMP[2];
       uvs[vertexIndex * 2] = u;
       uvs[vertexIndex * 2 + 1] = v;
       vertexIndex++;
@@ -428,21 +483,20 @@ function cylinder({
     }
   }
 
-  function computeCap(flip, height, radius) {
+  function computeCap(flip, height, radius, capSegments) {
     const index = vertexIndex;
     const segmentIncrement = 1 / (segments - 1);
 
     for (let r = 0; r < capSegments; r++) {
       for (let i = 0; i < segments; i++) {
-        const cosPhi = -Math.cos(i * segmentIncrement * TAU);
-        const sinPhi = Math.sin(i * segmentIncrement * TAU); // inner point
+        const p = i * segmentIncrement * phi;
+        const cosPhi = -Math.cos(p);
+        const sinPhi = Math.sin(p); // inner point
 
         positions[vertexIndex * 3] = radius * cosPhi * r / capSegments;
         positions[vertexIndex * 3 + 1] = height;
         positions[vertexIndex * 3 + 2] = radius * sinPhi * r / capSegments;
-        normals[vertexIndex * 3] = 0;
         normals[vertexIndex * 3 + 1] = -flip;
-        normals[vertexIndex * 3 + 2] = 0;
         uvs[vertexIndex * 2] = 0.5 * cosPhi * r / capSegments + 0.5;
         uvs[vertexIndex * 2 + 1] = 0.5 * sinPhi * r / capSegments + 0.5;
         vertexIndex++; // outer point
@@ -450,9 +504,7 @@ function cylinder({
         positions[vertexIndex * 3] = radius * cosPhi * (r + 1) / capSegments;
         positions[vertexIndex * 3 + 1] = height;
         positions[vertexIndex * 3 + 2] = radius * sinPhi * (r + 1) / capSegments;
-        normals[vertexIndex * 3] = 0;
         normals[vertexIndex * 3 + 1] = -flip;
-        normals[vertexIndex * 3 + 2] = 0;
         uvs[vertexIndex * 2] = 0.5 * (cosPhi * (r + 1)) / capSegments + 0.5;
         uvs[vertexIndex * 2 + 1] = 0.5 * (sinPhi * (r + 1)) / capSegments + 0.5;
         vertexIndex++;
@@ -488,8 +540,8 @@ function cylinder({
     }
   }
 
-  if (capBase) computeCap(1, -halfHeight, radius);
-  if (capApex) computeCap(-1, halfHeight, radiusApex);
+  if (capBase) computeCap(1, -halfHeight, radius, capBaseSegments);
+  if (capApex) computeCap(-1, halfHeight, radiusApex, capSegments);
   return {
     positions,
     normals,
@@ -509,6 +561,7 @@ function cylinder({
  * @property {number} [ny=1]
  * @property {number} [capSegments=1]
  * @property {boolean} [capBase=true]
+ * @property {number} [phi=TAU]
  */
 
 /**
@@ -523,7 +576,8 @@ function cone({
   nx,
   ny,
   capSegments,
-  capBase
+  capBase,
+  phi
 } = {}) {
   checkArguments(arguments);
   return cylinder({
@@ -533,6 +587,7 @@ function cone({
     ny,
     capSegments,
     capBase,
+    phi,
     radiusApex: 0,
     capApex: false
   });
@@ -540,10 +595,12 @@ function cone({
 
 /**
  * @typedef {Object} CapsuleOptions
- * @property {number} [height=1]
+ * @property {number} [height=0.5]
  * @property {number} [radius=0.25]
  * @property {number} [nx=16]
- * @property {number} [ny=32]
+ * @property {number} [ny=1]
+ * @property {number} [roundSegments=32]
+ * @property {number} [phi=TAU]
  */
 
 /**
@@ -556,11 +613,14 @@ function capsule({
   height = 0.5,
   radius = 0.25,
   nx = 16,
-  ny = 32
+  ny = 1,
+  roundSegments = 16,
+  phi = TAU
 } = {}) {
   checkArguments(arguments);
   const ringsBody = ny + 1;
-  const ringsTotal = ny + ringsBody;
+  const ringsCap = roundSegments * 2;
+  const ringsTotal = ringsCap + ringsBody;
   const size = ringsTotal * nx;
   const positions = new Float32Array(size * 3);
   const normals = new Float32Array(size * 3);
@@ -569,13 +629,13 @@ function capsule({
   let vertexIndex = 0;
   let cellIndex = 0;
   const segmentIncrement = 1 / (nx - 1);
-  const ringIncrement = 1 / (ny - 1);
+  const ringIncrement = 1 / (ringsCap - 1);
   const bodyIncrement = 1 / (ringsBody - 1);
 
   function computeRing(r, y, dy) {
-    for (let s = 0; s < nx; s++) {
-      const x = -Math.cos(s * segmentIncrement * TAU) * r;
-      const z = Math.sin(s * segmentIncrement * TAU) * r;
+    for (let s = 0; s < nx; s++, vertexIndex++) {
+      const x = -Math.cos(s * segmentIncrement * phi) * r;
+      const z = Math.sin(s * segmentIncrement * phi) * r;
       const py = radius * y + height * dy;
       positions[vertexIndex * 3] = radius * x;
       positions[vertexIndex * 3 + 1] = py;
@@ -585,20 +645,19 @@ function capsule({
       normals[vertexIndex * 3 + 2] = z;
       uvs[vertexIndex * 2] = s * segmentIncrement;
       uvs[vertexIndex * 2 + 1] = 1 - (0.5 - py / (2 * radius + height));
-      vertexIndex++;
     }
+  }
+
+  for (let r = 0; r < roundSegments; r++) {
+    computeRing(Math.sin(Math.PI * r * ringIncrement), Math.sin(Math.PI * (r * ringIncrement - 0.5)), -0.5);
   }
 
   for (let r = 0; r < ringsBody; r++) {
     computeRing(1, 0, r * bodyIncrement - 0.5);
   }
 
-  for (let r = 0; r < ny; r++) {
-    if (r < ny * 0.5) {
-      computeRing(Math.sin(Math.PI * r * ringIncrement), Math.sin(Math.PI * (r * ringIncrement - 0.5)), -0.5);
-    } else {
-      computeRing(Math.sin(Math.PI * r * ringIncrement), Math.sin(Math.PI * (r * ringIncrement - 0.5)), 0.5);
-    }
+  for (let r = roundSegments; r < ringsCap; r++) {
+    computeRing(Math.sin(Math.PI * r * ringIncrement), Math.sin(Math.PI * (r * ringIncrement - 0.5)), 0.5);
   }
 
   for (let r = 0; r < ringsTotal - 1; r++) {
@@ -624,7 +683,6 @@ function capsule({
   };
 }
 
-const TMP$2 = [0, 0, 0];
 /**
  * @typedef {Object} EllipsoidOptions
  * @property {number} [radius=0.5]
@@ -633,6 +691,8 @@ const TMP$2 = [0, 0, 0];
  * @property {number} [rx=1]
  * @property {number} [rx=0.5]
  * @property {number} [rz=ry]
+ * @property {number} [theta=Math.PI]
+ * @property {number} [phi=TAU]
  */
 
 /**
@@ -648,7 +708,9 @@ function ellipsoid({
   ny = 16,
   rx = 0.5,
   ry = 0.25,
-  rz = ry
+  rz = ry,
+  theta = Math.PI,
+  phi = TAU
 } = {}) {
   checkArguments(arguments);
   const size = (ny + 1) * (nx + 1);
@@ -661,25 +723,25 @@ function ellipsoid({
 
   for (let y = 0; y <= ny; y++) {
     const v = y / ny;
-    const theta = v * Math.PI;
-    const cosTheta = Math.cos(theta);
-    const sinTheta = Math.sin(theta);
+    const t = v * theta;
+    const cosTheta = Math.cos(t);
+    const sinTheta = Math.sin(t);
 
     for (let x = 0; x <= nx; x++) {
       const u = x / nx;
-      const phi = u * TAU;
-      const cosPhi = Math.cos(phi);
-      const sinPhi = Math.sin(phi);
-      TMP$2[0] = -rx * cosPhi * sinTheta;
-      TMP$2[1] = -ry * cosTheta;
-      TMP$2[2] = rz * sinPhi * sinTheta;
-      positions[vertexIndex * 3] = radius * TMP$2[0];
-      positions[vertexIndex * 3 + 1] = radius * TMP$2[1];
-      positions[vertexIndex * 3 + 2] = radius * TMP$2[2];
-      normalize(TMP$2);
-      normals[vertexIndex * 3] = TMP$2[0];
-      normals[vertexIndex * 3 + 1] = TMP$2[1];
-      normals[vertexIndex * 3 + 2] = TMP$2[2];
+      const p = u * phi;
+      const cosPhi = Math.cos(p);
+      const sinPhi = Math.sin(p);
+      TMP[0] = -rx * cosPhi * sinTheta;
+      TMP[1] = -ry * cosTheta;
+      TMP[2] = rz * sinPhi * sinTheta;
+      positions[vertexIndex * 3] = radius * TMP[0];
+      positions[vertexIndex * 3 + 1] = radius * TMP[1];
+      positions[vertexIndex * 3 + 2] = radius * TMP[2];
+      normalize(TMP);
+      normals[vertexIndex * 3] = TMP[0];
+      normals[vertexIndex * 3 + 1] = TMP[1];
+      normals[vertexIndex * 3 + 2] = TMP[2];
       uvs[vertexIndex * 2] = u;
       uvs[vertexIndex * 2 + 1] = v;
       vertexIndex++;
@@ -718,6 +780,8 @@ function ellipsoid({
  * @property {number} [radius=0.5]
  * @property {number} [nx=32]
  * @property {number} [ny=16]
+ * @property {number} [theta=Math.PI]
+ * @property {number} [phi=TAU]
  */
 
 /**
@@ -729,13 +793,17 @@ function ellipsoid({
 function sphere({
   radius = 0.5,
   nx = 32,
-  ny = 16
+  ny = 16,
+  theta,
+  phi
 } = {}) {
   checkArguments(arguments);
   return ellipsoid({
     radius,
     nx,
     ny,
+    theta,
+    phi,
     rx: 1,
     ry: 1
   });
@@ -921,14 +989,14 @@ function icosphere({
   };
 }
 
-const TMP$3 = [0, 0, 0];
 /**
  * @typedef {Object} TorusOptions
- * @property {number} [radius=0.5]
+ * @property {number} [radius=0.4]
  * @property {number} [segments=64]
  * @property {number} [minorRadius=0.1]
- * @property {number} [minorSegments=16]
- * @property {number} [arc=2 * Math.PI]
+ * @property {number} [minorSegments=32]
+ * @property {number} [theta=TAU]
+ * @property {number} [phi=TAU]
  */
 
 /**
@@ -938,11 +1006,12 @@ const TMP$3 = [0, 0, 0];
  */
 
 function torus({
-  radius = 0.3,
+  radius = 0.4,
   segments = 64,
   minorRadius = 0.1,
   minorSegments = 32,
-  arc = TAU
+  theta = TAU,
+  phi = TAU
 } = {}) {
   checkArguments(arguments);
   const size = (minorSegments + 1) * (segments + 1);
@@ -956,35 +1025,202 @@ function torus({
   for (let j = 0; j <= minorSegments; j++) {
     const v = j / minorSegments;
 
-    for (let i = 0; i <= segments; i++) {
+    for (let i = 0; i <= segments; i++, vertexIndex++) {
       const u = i / segments;
-      const phi = u * arc;
-      const cosPhi = -Math.cos(phi);
-      const sinPhi = Math.sin(phi);
-      const theta = v * TAU;
-      const cosTheta = -Math.cos(theta);
-      const sinTheta = Math.sin(theta);
-      TMP$3[0] = (radius + minorRadius * cosTheta) * cosPhi;
-      TMP$3[1] = (radius + minorRadius * cosTheta) * sinPhi;
-      TMP$3[2] = minorRadius * sinTheta;
-      positions[vertexIndex * 3] = TMP$3[0];
-      positions[vertexIndex * 3 + 1] = TMP$3[1];
-      positions[vertexIndex * 3 + 2] = TMP$3[2];
-      TMP$3[0] -= radius * cosPhi;
-      TMP$3[1] -= radius * sinPhi;
-      normalize(TMP$3);
-      normals[vertexIndex * 3] = TMP$3[0];
-      normals[vertexIndex * 3 + 1] = TMP$3[1];
-      normals[vertexIndex * 3 + 2] = TMP$3[2];
+      const p = u * phi;
+      const cosPhi = -Math.cos(p);
+      const sinPhi = Math.sin(p);
+      const t = v * theta;
+      const cosTheta = -Math.cos(t);
+      const sinTheta = Math.sin(t);
+      TMP[0] = (radius + minorRadius * cosTheta) * cosPhi;
+      TMP[1] = (radius + minorRadius * cosTheta) * sinPhi;
+      TMP[2] = minorRadius * sinTheta;
+      positions[vertexIndex * 3] = TMP[0];
+      positions[vertexIndex * 3 + 1] = TMP[1];
+      positions[vertexIndex * 3 + 2] = TMP[2];
+      TMP[0] -= radius * cosPhi;
+      TMP[1] -= radius * sinPhi;
+      normalize(TMP);
+      normals[vertexIndex * 3] = TMP[0];
+      normals[vertexIndex * 3 + 1] = TMP[1];
+      normals[vertexIndex * 3 + 2] = TMP[2];
       uvs[vertexIndex * 2] = u;
       uvs[vertexIndex * 2 + 1] = v;
-      vertexIndex++;
 
       if (j > 0 && i > 0) {
         const a = (segments + 1) * j + i - 1;
         const b = (segments + 1) * (j - 1) + i - 1;
         const c = (segments + 1) * (j - 1) + i;
         const d = (segments + 1) * j + i;
+        cells[cellIndex] = a;
+        cells[cellIndex + 1] = b;
+        cells[cellIndex + 2] = d;
+        cells[cellIndex + 3] = b;
+        cells[cellIndex + 4] = c;
+        cells[cellIndex + 5] = d;
+        cellIndex += 6;
+      }
+    }
+  }
+
+  return {
+    positions,
+    normals,
+    uvs,
+    cells
+  };
+}
+
+/**
+ * @module tetrahedron
+ */
+/**
+ * @typedef {Object} TetrahedronOptions
+ * @property {number} [radius=0.5]
+ */
+
+/**
+ * @alias module:tetrahedron
+ * @param {TetrahedronOptions} [options={}]
+ * @returns {import("../types.js").SimplicialComplex}
+ */
+
+function tetrahedron({
+  radius = 0.5
+} = {}) {
+  checkArguments(arguments);
+  return cylinder({
+    height: radius * 1.5,
+    radius,
+    nx: 3,
+    ny: 1,
+    radiusApex: 0,
+    capSegments: 0,
+    capApex: false,
+    capBaseSegments: 1
+  });
+}
+
+/**
+ * @module icosahedron
+ */
+/**
+ * @typedef {Object} IcosahedronOptions
+ * @property {number} [radius=0.5]
+ */
+
+/**
+ * @alias module:icosahedron
+ * @param {IcosahedronOptions} [options={}]
+ * @returns {import("../types.js").SimplicialComplex}
+ */
+
+function icosahedron({
+  radius
+} = {}) {
+  checkArguments(arguments);
+  return icosphere({
+    subdivisions: 0,
+    radius
+  });
+}
+
+/**
+ * @typedef {Object} DiscOptions
+ * @property {number} [radius=0.5]
+ * @property {number} [segments=32]
+ * @property {number} [theta=TAU]
+ */
+
+/**
+ * @alias module:disc
+ * @param {DiscOptions} [options={}]
+ * @returns {import("../types.js").BasicSimplicialComplex}
+ */
+
+function disc({
+  radius = 0.5,
+  segments = 32,
+  theta = TAU
+} = {}) {
+  checkArguments(arguments);
+  const size = segments + 2;
+  const positions = new Float32Array(size * 3);
+  const normals = new Float32Array(size * 3);
+  const uvs = new Float32Array(size * 2);
+  const cells = new (getCellsTypedArray(size))((size + 2) * 3); // Center
+
+  normals[2] = 1;
+  uvs[0] = 0.5;
+  uvs[1] = 0.5;
+
+  for (let i = 0; i <= segments; i++) {
+    const t = i / segments * theta;
+    positions[(i + 1) * 3] = radius * Math.cos(t);
+    positions[(i + 1) * 3 + 1] = radius * Math.sin(t);
+    normals[(i + 1) * 3 + 2] = 1;
+    uvs[(i + 1) * 2] = (positions[(i + 1) * 3] / radius + 1) / 2;
+    uvs[(i + 1) * 2 + 1] = (positions[(i + 1) * 3 + 1] / radius + 1) / 2;
+    cells[(i + 1) * 3] = i;
+    cells[(i + 1) * 3 + 1] = i + 1;
+  }
+
+  return {
+    positions,
+    normals,
+    uvs,
+    cells
+  };
+}
+
+/**
+ * @typedef {Object} AnnulusOptions
+ * @property {number} [radius=0.5]
+ * @property {number} [segments=32]
+ * @property {number} [theta=TAU]
+ * @property {number} [innerRadius=radius * 0.5]
+ * @property {number} [innerSegments=1]
+ */
+
+/**
+ * @alias module:annulus
+ * @param {AnnulusOptions} [options={}]
+ * @returns {import("../types.js").BasicSimplicialComplex}
+ */
+
+function annulus({
+  radius = 0.5,
+  segments = 32,
+  theta = TAU,
+  innerRadius = radius * 0.5,
+  innerSegments = 1
+} = {}) {
+  checkArguments(arguments);
+  const size = (segments + 1) * (innerSegments + 1);
+  const positions = new Float32Array(size * 3);
+  const normals = new Float32Array(size * 3);
+  const uvs = new Float32Array(size * 2);
+  const cells = new (getCellsTypedArray(size))(size * 6);
+  let vertexIndex = 0;
+  let cellIndex = 0;
+
+  for (let j = 0; j <= innerSegments; j++) {
+    const r = innerRadius + (radius - innerRadius) * (j / innerSegments);
+
+    for (let i = 0; i <= segments; i++, vertexIndex++) {
+      const t = i / segments * theta;
+      positions[vertexIndex * 3] = r * Math.cos(t);
+      positions[vertexIndex * 3 + 1] = r * Math.sin(t);
+      normals[vertexIndex * 3 + 2] = 1;
+      uvs[vertexIndex * 2] = (positions[vertexIndex * 3] / radius + 1) / 2;
+      uvs[vertexIndex * 2 + 1] = (positions[vertexIndex * 3 + 1] / radius + 1) / 2;
+
+      if (i < segments && j < innerSegments) {
+        const a = j * (segments + 1) + i;
+        const b = a + segments + 1;
+        const c = a + segments + 2;
+        const d = a + 1;
         cells[cellIndex] = a;
         cells[cellIndex + 1] = b;
         cells[cellIndex + 2] = d;
@@ -1042,28 +1278,33 @@ function box({
 }
 
 /**
- * @typedef {Object} BoxOptions
+ * @typedef {Object} CircleOptions
  * @property {number} [radius=0.5]
  * @property {number} [segments=32]
+ * @property {number} [theta=TAU]
+ * @property {boolean} [closed=false]
  */
 
 /**
  * @alias module:circle
- * @param {BoxOptions} [options={}]
+ * @param {CircleOptions} [options={}]
  * @returns {import("../types.js").BasicSimplicialComplex}
  */
 
 function circle({
   radius = 0.5,
-  segments = 32
+  segments = 32,
+  theta = TAU,
+  closed = false
 } = {}) {
   checkArguments(arguments);
   const positions = new Float32Array(segments * 2);
-  const cells = new (getCellsTypedArray(segments))((segments - 1) * 2);
+  const cells = new (getCellsTypedArray(segments))((segments - (closed ? 0 : 1)) * 2);
 
   for (let i = 0; i < segments; i++) {
-    positions[i * 2] = radius * Math.cos(i / segments * TAU);
-    positions[i * 2 + 1] = radius * Math.sin(i / segments * TAU);
+    const t = i / segments * theta;
+    positions[i * 2] = radius * Math.cos(t);
+    positions[i * 2 + 1] = radius * Math.sin(t);
 
     if (i > 0) {
       cells[(i - 1) * 2] = i - 1;
@@ -1071,10 +1312,15 @@ function circle({
     }
   }
 
+  if (closed) {
+    cells[(segments - 1) * 2] = segments - 1;
+    cells[(segments - 1) * 2 + 1] = 0;
+  }
+
   return {
-    positions: positions,
-    cells: cells
+    positions,
+    cells
   };
 }
 
-export { box, capsule, circle, cone, cube, cylinder, ellipsoid, icosphere, plane, quad, roundedCube, sphere, torus, utils };
+export { annulus, box, capsule, circle, cone, cube, cylinder, disc, ellipsoid, icosahedron, icosphere, plane, quad, roundedCube, sphere, tetrahedron, torus, utils };

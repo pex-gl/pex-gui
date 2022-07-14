@@ -1,8 +1,7 @@
-import { c as create, l as lookAt, s as set, i as invert, f as frustum, p as perspective$1, o as ortho, d as distance$1 } from './common/vec2-9a8191f5.js';
-import { n as normalize, m as multMat4, s as sub, c as copy, d as distance, a as scale, b as add, l as length, e as set$1, u as utils } from './common/vec3-49e7f9a4.js';
-import { h as hitTestPlane } from './common/ray-8673e8ad.js';
-import './common/web.dom-collections.iterator-70010183.js';
-import './common/set-to-string-tag-9ca80194.js';
+import { c as create, l as lookAt, s as set, i as invert, f as frustum, p as perspective$1, o as ortho, a as clamp, t as toDegrees, b as toRadians, d as lerp$1 } from './common/mat4-4dca89f7.js';
+import { n as normalize, m as multMat4, s as sub, c as copy, d as distance, a as scale, b as add, l as length, e as distance$1, f as set$1 } from './common/vec3-0fe60268.js';
+import './common/web.dom-collections.iterator-e8ac2628.js';
+import { h as hitTestPlane } from './common/ray-099e5964.js';
 
 /**
  * An interface for cameras to extend
@@ -102,7 +101,7 @@ class PerspectiveCamera extends Camera {
    * @param {number} y mouse y
    * @param {number} windowWidth
    * @param {number} windowHeight
-   * @returns {ray}
+   * @returns {import("pex-geom").ray}
    */
 
 
@@ -129,7 +128,7 @@ class PerspectiveCamera extends Camera {
    * @param {number} y
    * @param {number} windowWidth
    * @param {number} windowHeight
-   * @returns {ray}
+   * @returns {import("pex-geom").ray}
    */
 
 
@@ -302,12 +301,6 @@ function getBoundingClientOffset(element) {
   }
 }
 
-const {
-  clamp,
-  lerp: lerp$1,
-  toRadians,
-  toDegrees
-} = utils;
 /**
  * Camera controls to orbit around a target
  */
@@ -320,8 +313,8 @@ class OrbiterControls {
       zoom: true,
       pan: true,
       drag: true,
-      minDistance: 0.1,
-      maxDistance: 10,
+      minDistance: 0.01,
+      maxDistance: Infinity,
       minLat: -89.5,
       maxLat: 89.5,
       minLon: -Infinity,
@@ -463,7 +456,7 @@ class OrbiterControls {
       set$1(this.clickTarget, camera.target);
       const targetInViewSpace = multMat4(copy(this.clickTarget), camera.viewMatrix);
       this.panPlane = [targetInViewSpace, [0, 0, 1]];
-      hitTestPlane(camera.getViewRay(clickPosWindow[0], clickPosWindow[1], this.width, this.height), this.panPlane[0], this.panPlane[1], this.clickPosPlane);
+      hitTestPlane(camera.getViewRay(clickPosWindow[0], clickPosWindow[1], this.width, this.height), this.panPlane, this.clickPosPlane);
     }
   }
 
@@ -486,7 +479,7 @@ class OrbiterControls {
 
     if (this.pan && camera && this.panPlane) {
       const dragPosWindow = touch1 ? [(touch0[0] + touch1[0]) * 0.5, (touch0[1] + touch1[1]) * 0.5] : touch0;
-      hitTestPlane(camera.getViewRay(dragPosWindow[0], dragPosWindow[1], this.width, this.height), this.panPlane[0], this.panPlane[1], this.dragPosPlane);
+      hitTestPlane(camera.getViewRay(dragPosWindow[0], dragPosWindow[1], this.width, this.height), this.panPlane, this.dragPosPlane);
       multMat4(set$1(this.clickPosWorld, this.clickPosPlane), camera.invViewMatrix);
       multMat4(set$1(this.dragPosWorld, this.dragPosPlane), camera.invViewMatrix);
       const diffWorld = sub(copy(this.dragPosWorld), this.clickPosWorld);

@@ -1,11 +1,10 @@
-import './common/esnext.iterator.filter-43a3081f.js';
-import { d as defineIterator, c as createIteratorConstructor } from './common/web.dom-collections.iterator-70010183.js';
-import { s as stringMultibyte } from './common/es.string.replace-534785d0.js';
-import { t as toString_1, f as functionBindContext, c as getIteratorMethod, i as isArrayIteratorMethod, g as getIterator, h as callWithSafeIterationClosing, r as redefineAll, b as anInstance, e as classof } from './common/esnext.iterator.map-720452d0.js';
-import { t as internalState, w as wellKnownSymbol, n as fails, d as functionUncurryThis, y as toObject, U as indexedObject, Z as objectKeys, F as descriptors, f as functionCall, $ as objectGetOwnPropertySymbols, a0 as objectPropertyIsEnumerable, a as global_1, I as lengthOfArrayLike, u as redefine, s as setToStringTag, _ as _export, i as isCallable, D as isObject, h as objectCreate, j as createPropertyDescriptor, b as anObject, E as hasOwnProperty_1, a1 as objectDefineProperties, q as commonjsGlobal } from './common/set-to-string-tag-9ca80194.js';
-import { i as isConstructor, c as createProperty, a as arraySort, b as arraySliceSimple } from './common/es.typed-array.uint16-array-3746399f.js';
-import './common/es.error.cause-de3fbc20.js';
-import './common/iterate-82d063b8.js';
+import './common/esnext.iterator.filter-b8839f58.js';
+import { t as internalState, X as defineIterator, w as wellKnownSymbol, n as fails, d as functionUncurryThis, y as toObject, S as indexedObject, Y as objectKeys, F as descriptors, f as functionCall, Z as objectGetOwnPropertySymbols, $ as objectPropertyIsEnumerable, a as global_1, I as lengthOfArrayLike, a0 as createIteratorConstructor, u as redefine, s as setToStringTag, _ as _export, i as isCallable, D as isObject, h as objectCreate, j as createPropertyDescriptor, b as anObject, E as hasOwnProperty_1, a1 as objectDefineProperties, q as commonjsGlobal } from './common/web.dom-collections.iterator-e8ac2628.js';
+import { s as stringMultibyte } from './common/es.string.replace-794ee76c.js';
+import { t as toString_1, f as functionBindContext, c as getIteratorMethod, i as isArrayIteratorMethod, g as getIterator, h as callWithSafeIterationClosing, r as redefineAll, b as anInstance, e as classof } from './common/esnext.iterator.map-5c21472a.js';
+import { i as isConstructor, c as createProperty, a as arraySort, b as arraySliceSimple } from './common/es.typed-array.uint16-array-9fc0c3ad.js';
+import './common/es.error.cause-e924eb93.js';
+import './common/iterate-f07d9ec5.js';
 
 var isPure = false;
 
@@ -1777,30 +1776,35 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
   URL: URLConstructor
 });
 
-/* ES Module Shims 1.5.2 */
+/* ES Module Shims 1.5.9 */
 
 (function () {
+  const hasWindow = typeof window !== 'undefined';
+  const hasDocument = typeof document !== 'undefined';
+
   const noop = () => {};
 
-  const optionsScript = document.querySelector('script[type=esms-options]');
+  const optionsScript = hasDocument ? document.querySelector('script[type=esms-options]') : undefined;
   const esmsInitOptions = optionsScript ? JSON.parse(optionsScript.innerHTML) : {};
   Object.assign(esmsInitOptions, self.esmsInitOptions || {});
-  let shimMode = !!esmsInitOptions.shimMode;
+  let shimMode = hasDocument ? !!esmsInitOptions.shimMode : true;
   const importHook = globalHook(shimMode && esmsInitOptions.onimport);
   const resolveHook = globalHook(shimMode && esmsInitOptions.resolve);
   let fetchHook = esmsInitOptions.fetch ? globalHook(esmsInitOptions.fetch) : fetch;
-  const metaHook = esmsInitOptions.meta ? globalHook(shimModule && esmsInitOptions.meta) : noop;
+  const metaHook = esmsInitOptions.meta ? globalHook(shimMode && esmsInitOptions.meta) : noop;
   const skip = esmsInitOptions.skip ? new RegExp(esmsInitOptions.skip) : null;
-  let nonce = esmsInitOptions.nonce;
   const mapOverrides = esmsInitOptions.mapOverrides;
+  let nonce = esmsInitOptions.nonce;
 
-  if (!nonce) {
+  if (!nonce && hasDocument) {
     const nonceElement = document.querySelector('script[nonce]');
     if (nonceElement) nonce = nonceElement.nonce || nonceElement.getAttribute('nonce');
   }
 
   const onerror = globalHook(esmsInitOptions.onerror || noop);
-  const onpolyfill = esmsInitOptions.onpolyfill ? globalHook(esmsInitOptions.onpolyfill) : () => console.log('%c^^ Module TypeError above is polyfilled and can be ignored ^^', 'font-weight:900;color:#391');
+  const onpolyfill = esmsInitOptions.onpolyfill ? globalHook(esmsInitOptions.onpolyfill) : () => {
+    console.log('%c^^ Module TypeError above is polyfilled and can be ignored ^^', 'font-weight:900;color:#391');
+  };
   const {
     revokeBlobURLs,
     noLoadEventRetriggers,
@@ -1814,13 +1818,8 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
   const enable = Array.isArray(esmsInitOptions.polyfillEnable) ? esmsInitOptions.polyfillEnable : [];
   const cssModulesEnabled = enable.includes('css-modules');
   const jsonModulesEnabled = enable.includes('json-modules');
-
-  function setShimMode() {
-    shimMode = true;
-  }
-
-  const edge = !!navigator.userAgent.match(/Edge\/\d+\.\d+/);
-  const baseUrl = document.baseURI;
+  const edge = !navigator.userAgentData && !!navigator.userAgent.match(/Edge\/\d+\.\d+/);
+  const baseUrl = hasDocument ? document.baseURI : `${location.protocol}//${location.host}${location.pathname.includes('/') ? location.pathname.slice(0, location.pathname.lastIndexOf('/') + 1) : location.pathname}`;
 
   function createBlob(source, type = 'text/javascript') {
     return URL.createObjectURL(new Blob([source], {
@@ -1833,11 +1832,35 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
   });
 
   const throwError = err => {
-    (window.reportError || window.safari && console.error || eoop)(err), void onerror(err);
+    (self.reportError || hasWindow && window.safari && console.error || eoop)(err), void onerror(err);
   };
 
   function fromParent(parent) {
     return parent ? ` imported from ${parent}` : '';
+  }
+
+  let importMapSrcOrLazy = false;
+
+  function setImportMapSrcOrLazy() {
+    importMapSrcOrLazy = true;
+  } // shim mode is determined on initialization, no late shim mode
+
+
+  if (!shimMode) {
+    if (document.querySelectorAll('script[type=module-shim],script[type=importmap-shim],link[rel=modulepreload-shim]').length) {
+      shimMode = true;
+    } else {
+      let seenScript = false;
+
+      for (const script of document.querySelectorAll('script[type=module],script[type=importmap]')) {
+        if (!seenScript) {
+          if (script.type === 'module' && !script.ep) seenScript = true;
+        } else if (script.type === 'importmap' && seenScript) {
+          importMapSrcOrLazy = true;
+          break;
+        }
+      }
+    }
   }
 
   const backslashRegEx = /\\/g;
@@ -2015,7 +2038,8 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
     const src = createBlob(`import*as m from'${url}';self._esmsi=m`);
     const s = Object.assign(document.createElement('script'), {
       type: 'module',
-      src
+      src,
+      ep: true
     });
     s.setAttribute('nonce', nonce);
     s.setAttribute('noshim', '');
@@ -2048,32 +2072,42 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
 
   let supportsJsonAssertions = false;
   let supportsCssAssertions = false;
-  let supportsImportMeta = false;
-  let supportsImportMaps = false;
+  let supportsImportMaps = hasDocument && HTMLScriptElement.supports ? HTMLScriptElement.supports('importmap') : false;
+  let supportsImportMeta = supportsImportMaps;
   let supportsDynamicImport = false;
-  const featureDetectionPromise = Promise.resolve(supportsDynamicImportCheck).then(_supportsDynamicImport => {
+  const featureDetectionPromise = Promise.resolve(supportsImportMaps || supportsDynamicImportCheck).then(_supportsDynamicImport => {
     if (!_supportsDynamicImport) return;
     supportsDynamicImport = true;
-    return Promise.all([dynamicImport(createBlob('import.meta')).then(() => supportsImportMeta = true, noop), cssModulesEnabled && dynamicImport(createBlob('import"data:text/css,{}"assert{type:"css"}')).then(() => supportsCssAssertions = true, noop), jsonModulesEnabled && dynamicImport(createBlob('import"data:text/json,{}"assert{type:"json"}')).then(() => supportsJsonAssertions = true, noop), new Promise(resolve => {
-      self._$s = v => {
-        document.head.removeChild(iframe);
-        if (v) supportsImportMaps = true;
-        delete self._$s;
-        resolve();
-      };
-
+    return Promise.all([supportsImportMaps || dynamicImport(createBlob('import.meta')).then(() => supportsImportMeta = true, noop), cssModulesEnabled && dynamicImport(createBlob(`import"${createBlob('', 'text/css')}"assert{type:"css"}`)).then(() => supportsCssAssertions = true, noop), jsonModulesEnabled && dynamicImport(createBlob(`import"${createBlob('{}', 'text/json')}"assert{type:"json"}`)).then(() => supportsJsonAssertions = true, noop), supportsImportMaps || hasDocument && (HTMLScriptElement.supports || new Promise(resolve => {
       const iframe = document.createElement('iframe');
       iframe.style.display = 'none';
-      iframe.srcdoc = `<script type=importmap nonce="${nonce}">{"imports":{"x":"data:text/javascript,"}}<${''}/script><script nonce="${nonce}">import('x').then(()=>1,()=>0).then(v=>parent._$s(v))<${''}/script>`;
+      iframe.setAttribute('nonce', nonce); // setting src to a blob URL results in a navigation event in webviews
+      // setting srcdoc is not supported in React native webviews on iOS
+      // therefore, we need to first feature detect srcdoc support
+
+      iframe.srcdoc = `<!doctype html><script nonce="${nonce}"><${''}/script>`;
       document.head.appendChild(iframe);
-    })]);
+
+      iframe.onload = () => {
+        self._$s = v => {
+          document.head.removeChild(iframe);
+          supportsImportMaps = v;
+          delete self._$s;
+          resolve();
+        };
+
+        const supportsSrcDoc = iframe.contentDocument.head.childNodes.length > 0;
+        const importMapTest = `<!doctype html><script type=importmap nonce="${nonce}">{"imports":{"x":"${createBlob('')}"}<${''}/script><script nonce="${nonce}">import('x').catch(() => {}).then(v=>parent._$s(!!v))<${''}/script>`;
+        if (supportsSrcDoc) iframe.srcdoc = importMapTest;else iframe.contentDocument.write(importMapTest);
+      };
+    }))]);
   });
-  /* es-module-lexer 0.10.4 */
+  /* es-module-lexer 0.10.5 */
 
   let e,
       a,
       r,
-      s = 2 << 18;
+      s = 2 << 19;
   const i = 1 === new Uint8Array(new Uint16Array([1]).buffer)[0] ? function (e, a) {
     const r = e.length;
     let s = 0;
@@ -4064,7 +4098,7 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
           ses: Y,
           ss: Q
         };
-      }("undefined" != typeof self ? self : commonjsGlobal, {}, a), r = e.su(2 * c$1.length + (2 << 17));
+      }("undefined" != typeof self ? self : commonjsGlobal, {}, a), r = e.su(s - (2 << 17));
     }
 
     const h = c$1.length + 1;
@@ -4231,7 +4265,7 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
     if (importHook) await importHook(id, typeof args[1] !== 'string' ? args[1] : {}, parentUrl);
 
     if (acceptingImportMaps || shimMode || !baselinePassthrough) {
-      processImportMaps();
+      if (hasDocument) processImportMaps();
       if (!shimMode) acceptingImportMaps = false;
     }
 
@@ -4265,6 +4299,11 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
 
   importShim.getImportMap = () => JSON.parse(JSON.stringify(importMap));
 
+  importShim.addImportMap = importMapIn => {
+    if (!shimMode) throw new Error('Unsupported in polyfill mode.');
+    importMap = resolveAndComposeImportMap(importMapIn, baseUrl, importMap);
+  };
+
   const registry = importShim._r = {};
 
   async function loadAll(load, seen) {
@@ -4279,49 +4318,55 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
     imports: {},
     scopes: {}
   };
-  let importMapSrcOrLazy = false;
   let baselinePassthrough;
   const initPromise = featureDetectionPromise.then(() => {
-    // shim mode is determined on initialization, no late shim mode
-    if (!shimMode) {
-      if (document.querySelectorAll('script[type=module-shim],script[type=importmap-shim],link[rel=modulepreload-shim]').length) {
-        setShimMode();
-      } else {
-        let seenScript = false;
+    baselinePassthrough = esmsInitOptions.polyfillEnable !== true && supportsDynamicImport && supportsImportMeta && supportsImportMaps && (!jsonModulesEnabled || supportsJsonAssertions) && (!cssModulesEnabled || supportsCssAssertions) && !importMapSrcOrLazy && !false;
 
-        for (const script of document.querySelectorAll('script[type=module],script[type=importmap]')) {
-          if (!seenScript) {
-            if (script.type === 'module') seenScript = true;
-          } else if (script.type === 'importmap') {
-            importMapSrcOrLazy = true;
-            break;
+    if (hasDocument) {
+      if (!supportsImportMaps) {
+        const supports = HTMLScriptElement.supports || (type => type === 'classic' || type === 'module');
+
+        HTMLScriptElement.supports = type => type === 'importmap' || supports(type);
+      }
+
+      if (shimMode || !baselinePassthrough) {
+        new MutationObserver(mutations => {
+          for (const mutation of mutations) {
+            if (mutation.type !== 'childList') continue;
+
+            for (const node of mutation.addedNodes) {
+              if (node.tagName === 'SCRIPT') {
+                if (node.type === (shimMode ? 'module-shim' : 'module')) processScript(node);
+                if (node.type === (shimMode ? 'importmap-shim' : 'importmap')) processImportMap(node);
+              } else if (node.tagName === 'LINK' && node.rel === (shimMode ? 'modulepreload-shim' : 'modulepreload')) processPreload(node);
+            }
           }
+        }).observe(document, {
+          childList: true,
+          subtree: true
+        });
+        processImportMaps();
+        processScriptsAndPreloads();
+
+        if (document.readyState === 'complete') {
+          readyStateCompleteCheck();
+        } else {
+          async function readyListener() {
+            await initPromise;
+            processImportMaps();
+
+            if (document.readyState === 'complete') {
+              readyStateCompleteCheck();
+              document.removeEventListener('readystatechange', readyListener);
+            }
+          }
+
+          document.addEventListener('readystatechange', readyListener);
         }
       }
     }
 
-    baselinePassthrough = esmsInitOptions.polyfillEnable !== true && supportsDynamicImport && supportsImportMeta && supportsImportMaps && (!jsonModulesEnabled || supportsJsonAssertions) && (!cssModulesEnabled || supportsCssAssertions) && !importMapSrcOrLazy && !false;
-
-    if (shimMode || !baselinePassthrough) {
-      new MutationObserver(mutations => {
-        for (const mutation of mutations) {
-          if (mutation.type !== 'childList') continue;
-
-          for (const node of mutation.addedNodes) {
-            if (node.tagName === 'SCRIPT') {
-              if (node.type === (shimMode ? 'module-shim' : 'module')) processScript(node);
-              if (node.type === (shimMode ? 'importmap-shim' : 'importmap')) processImportMap(node);
-            } else if (node.tagName === 'LINK' && node.rel === (shimMode ? 'modulepreload-shim' : 'modulepreload')) processPreload(node);
-          }
-        }
-      }).observe(document, {
-        childList: true,
-        subtree: true
-      });
-      processImportMaps();
-      processScriptsAndPreloads();
-      return undefined;
-    }
+    return undefined;
   });
   let importMapPromise = initPromise;
   let firstPolyfillLoad = true;
@@ -4330,7 +4375,7 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
   async function topLevelLoad(url, fetchOpts, source, nativelyLoaded, lastStaticLoadPromise) {
     if (!shimMode) acceptingImportMaps = false;
     await importMapPromise;
-    if (importHook) await importHook(id, typeof args[1] !== 'string' ? args[1] : {}, parentUrl); // early analysis opt-out - no need to even fetch if we have feature support
+    if (importHook) await importHook(url, typeof fetchOpts !== 'string' ? fetchOpts : {}, ''); // early analysis opt-out - no need to even fetch if we have feature support
 
     if (!shimMode && baselinePassthrough) {
       // for polyfill case, only dynamic import needs a return value here, and dynamic import will never pass nativelyLoaded
@@ -4618,14 +4663,13 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
         n,
         d
       }) => {
-        if (d >= 0 && !supportsDynamicImport || d === 2 && !supportsImportMeta) load.n = true;
-        if (!n) return;
+        if (d >= 0 && !supportsDynamicImport || d === -2 && !supportsImportMeta) load.n = true;
+        if (d !== -1 || !n) return;
         const {
           r,
           b
         } = await resolve(n, load.r || load.u);
         if (b && (!supportsImportMaps || importMapSrcOrLazy)) load.n = true;
-        if (d !== -1) return;
         if (skip && skip.test(r)) return {
           b: r
         };
@@ -4664,26 +4708,19 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
   } // this should always trigger because we assume es-module-shims is itself a domcontentloaded requirement
 
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    await initPromise;
-    domContentLoadedCheck();
-
-    if (shimMode || !baselinePassthrough) {
-      processImportMaps();
-      processScriptsAndPreloads();
-    }
-  });
-  let readyStateCompleteCnt = 1;
-
-  if (document.readyState === 'complete') {
-    readyStateCompleteCheck();
-  } else {
-    document.addEventListener('readystatechange', async () => {
-      processImportMaps();
+  if (hasDocument) {
+    document.addEventListener('DOMContentLoaded', async () => {
       await initPromise;
-      readyStateCompleteCheck();
+      domContentLoadedCheck();
+
+      if (shimMode || !baselinePassthrough) {
+        processImportMaps();
+        processScriptsAndPreloads();
+      }
     });
   }
+
+  let readyStateCompleteCnt = 1;
 
   function readyStateCompleteCheck() {
     if (--readyStateCompleteCnt === 0 && !noLoadEventRetriggers) document.dispatchEvent(new Event('readystatechange'));
@@ -4698,7 +4735,7 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
 
     if (script.src) {
       if (!shimMode) return;
-      importMapSrcOrLazy = true;
+      setImportMapSrcOrLazy();
     }
 
     if (acceptingImportMaps) {
@@ -4717,14 +4754,13 @@ _export({ global: true, forced: !nativeUrl, sham: !descriptors }, {
     if (!script.src && !script.innerHTML) return;
     script.ep = true; // does this load block readystate complete
 
-    const isReadyScript = readyStateCompleteCnt > 0; // does this load block DOMContentLoaded
+    const isBlockingReadyScript = script.getAttribute('async') === null && readyStateCompleteCnt > 0; // does this load block DOMContentLoaded
 
     const isDomContentLoadedScript = domContentLoadedCnt > 0;
-    if (isReadyScript) readyStateCompleteCnt++;
+    if (isBlockingReadyScript) readyStateCompleteCnt++;
     if (isDomContentLoadedScript) domContentLoadedCnt++;
-    const blocks = script.getAttribute('async') === null && isReadyScript;
-    const loadPromise = topLevelLoad(script.src || baseUrl, getFetchOpts(script), !script.src && script.innerHTML, !shimMode, blocks && lastStaticLoadPromise).catch(throwError);
-    if (blocks) lastStaticLoadPromise = loadPromise.then(readyStateCompleteCheck);
+    const loadPromise = topLevelLoad(script.src || baseUrl, getFetchOpts(script), !script.src && script.innerHTML, !shimMode, isBlockingReadyScript && lastStaticLoadPromise).catch(throwError);
+    if (isBlockingReadyScript) lastStaticLoadPromise = loadPromise.then(readyStateCompleteCheck);
     if (isDomContentLoadedScript) loadPromise.then(domContentLoadedCheck);
   }
 
