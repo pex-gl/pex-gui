@@ -18,6 +18,7 @@ import TEXTURE_2D_FRAG from "./shaders/texture-2d.frag.js";
  * @property {boolean} [alpha] Add a 4th slider for colors.
  * @property {HTMLImageElement} [palette] Draw a palette image as color picker.
  * @property {boolean} [flipEnvMap] Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped.
+ * @property {boolean} [flipY] Flip texture 2D vertically.
  * @property {number} [level] Level of detail for cube textures.
  */
 /**
@@ -163,7 +164,8 @@ class GUI {
         },
       };
 
-      this.drawTexture2d = ({ texture, rect }) => {
+      this.drawTexture2d = ({ texture, rect, flipY }) => {
+        if (flipY) [rect[1], rect[3]] = [rect[3], rect[1]];
         ctx.submit(drawTexture2dCmd, {
           viewport: this.viewport,
           uniforms: {
@@ -189,14 +191,17 @@ class GUI {
         });
       };
     } else {
-      this.drawTexture2d = ({ texture, rect }) => {
-        ctx.drawImage(
-          texture,
-          rect[0] + this.x * pixelRatio,
-          rect[1] + this.y * pixelRatio,
-          rect[2] - rect[0],
-          rect[3] - rect[1]
-        );
+      this.drawTexture2d = ({ texture, rect, flipY }) => {
+        const x = rect[0] + this.x * pixelRatio;
+        const y = rect[1] + this.y * pixelRatio;
+        const width = rect[2] - rect[0];
+        const height = rect[3] - rect[1];
+
+        ctx.save();
+        ctx.translate(x + width / 2, y + height / 2);
+        if (flipY) ctx.scale(1, -1);
+        ctx.drawImage(texture, -width / 2, -height / 2, width, height);
+        ctx.restore();
       };
     }
 
@@ -1181,12 +1186,14 @@ class GUI {
           activeArea[1][0] * scale,
           activeArea[0][1] * scale,
         ];
+        const flipY = item.options?.flipY;
         if (texture.flipY) {
           [bounds[1], bounds[3]] = [bounds[3], bounds[1]];
         }
         this.drawTexture2d({
           texture,
           rect: bounds,
+          flipY,
         });
       };
       if (item.type === "texture2D") {
