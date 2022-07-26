@@ -541,6 +541,7 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 | [alpha]      | <code>boolean</code>           |                | Add a 4th slider for colors.                                                        |
 | [palette]    | <code>HTMLImageElement</code>  |                | Draw a palette image as color picker.                                               |
 | [flipEnvMap] | <code>boolean</code>           |                | Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped. |
+| [flipY]      | <code>boolean</code>           |                | Flip texture 2D vertically.                                                         |
 | [level]      | <code>number</code>            |                | Level of detail for cube textures.                                                  |
 
 <a name="GUIOptions"></a>
