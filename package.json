@@ -1,6 +1,6 @@
 {
   "name": "pex-gui",
-  "version": "3.0.0-alpha.0",
+  "version": "3.0.0-alpha.1",
   "description": "GUI controls for PEX.",
   "keywords": [
     "pex",
@@ -29,7 +29,7 @@
     "release": "snowdev release"
   },
   "dependencies": {
-    "pex-color": "^2.0.0-alpha.0",
+    "pex-color": "^2.0.0-alpha.1",
     "pex-geom": "^3.0.0-alpha.2",
     "pex-math": "^4.0.0-alpha.2"
   },
