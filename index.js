@@ -71,7 +71,7 @@ class GUI {
   ) {
     this.ctx = ctx;
 
-    this.#pixelRatio = this.ctx.gl ? this.ctx.pixelRatio : pixelRatio;
+    this.#pixelRatio = pixelRatio;
     this.theme = {
       ...DEFAULT_THEME,
       ...theme,
