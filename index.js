@@ -38,6 +38,7 @@ const isArrayLike = (value) =>
  */
 class GUI {
   #pixelRatio;
+  #scale;
 
   get size() {
     return this.ctx.gl
@@ -77,6 +78,7 @@ class GUI {
       ...theme,
     };
     this.scale = scale;
+    this.#scale = scale;
     this.responsive = responsive;
     this.enabled = true;
 
@@ -1092,7 +1094,7 @@ class GUI {
   }
 
   getScaledActiveArea(activeArea) {
-    return activeArea.map((a) => a.map((b) => b * this.scale));
+    return activeArea.map((a) => a.map((b) => b * this.#scale));
   }
 
   update() {
@@ -1114,6 +1116,10 @@ class GUI {
   }
 
   // Draw
+  getScale() {
+    return this.canvas.height / this.canvas.clientHeight;
+  }
+
   /**
    * Renders the GUI. Should be called at the end of the frame.
    */
@@ -1132,29 +1138,34 @@ class GUI {
       resized = true;
     }
 
+    const texture = this.renderer.getTexture();
+    const canvasScale = this.getScale();
+    const rendererWidth = texture.width / this.renderer.pixelRatio;
+    const rendererHeight = texture.height / this.renderer.pixelRatio;
+
     if (this.isAnyItemDirty(this.items) || resized || this.renderer.dirty) {
       this.renderer.draw(this.items);
 
       if (this.responsive) {
-        this.scale = Math.min(
+        this.#scale = Math.min(
           Math.min(
-            W / this.renderer.canvas.width,
-            H / this.renderer.canvas.height
+            this.canvas.clientWidth / rendererWidth,
+            this.canvas.clientHeight / rendererHeight
           ),
-          1
+          this.scale
         );
+      } else {
+        this.#scale = this.scale;
       }
     }
-
-    const texture = this.renderer.getTexture();
 
     this.drawTexture2d({
       texture,
       rect: [
         0,
         0,
-        texture.width * this.scale || 2,
-        texture.height * this.scale || 2,
+        canvasScale * this.#scale * rendererWidth || 2,
+        canvasScale * this.#scale * rendererHeight || 2,
       ],
     });
 
@@ -1175,7 +1186,7 @@ class GUI {
           continue;
         }
       }
-      const scale = this.scale * this.#pixelRatio;
+      const scale = this.#scale * this.getScale();
       let bounds = [];
 
       const drawTexture = ({ activeArea, texture }) => {

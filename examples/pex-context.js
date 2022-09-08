@@ -43,7 +43,7 @@ void main() {
   gl_FragColor = texture2D(uTexture, vTexCoord * uRepeat);
 }`;
 
-const ctx = createContext({ pixelRatio: 2 });
+const ctx = createContext({ pixelRatio: devicePixelRatio });
 
 const gui = createGUI(ctx);
 

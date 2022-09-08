@@ -32,8 +32,8 @@ class CanvasRenderer {
     this.theme = theme;
 
     this.canvas = document.createElement("canvas");
-    this.canvas.width = width;
-    this.canvas.height = height;
+    this.canvas.width = width * this.pixelRatio;
+    this.canvas.height = height * this.pixelRatio;
     this.ctx = this.canvas.getContext("2d");
     this.dirty = true;
   }

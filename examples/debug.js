@@ -2,10 +2,6 @@ import createGUI, { DEFAULT_THEME, Renderers } from "../index.js";
 import addAllControls from "./all-controls.js";
 
 const canvas = document.createElement("canvas");
-canvas.width = window.innerWidth * devicePixelRatio;
-canvas.height = window.innerHeight * devicePixelRatio;
-canvas.style.width = `${window.innerWidth}px`;
-canvas.style.height = `${window.innerHeight}px`;
 
 const ctx = canvas.getContext("2d");
 document.querySelector("main").appendChild(canvas);
@@ -27,3 +23,16 @@ requestAnimationFrame(function frame() {
   gui.draw();
   requestAnimationFrame(frame);
 });
+
+const onResize = () => {
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  canvas.width = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width = `${W}px`;
+  canvas.style.height = `${H}px`;
+};
+
+window.addEventListener("resize", onResize);
+
+onResize();
