@@ -1,8 +1,10 @@
-import { c as aCallable, _ as _export, f as functionCall } from './common/web.dom-collections.iterator-e8ac2628.js';
-import { i as iterate } from './common/iterate-f07d9ec5.js';
-import './common/esnext.iterator.map-5c21472a.js';
-import './common/esnext.iterator.find-066cac9b.js';
-import './common/es.error.cause-e924eb93.js';
+import './common/es.error.cause-2b0e1203.js';
+import { d as aCallable, _ as _export, g as functionCall } from './common/web.dom-collections.iterator-24f03f52.js';
+import './common/web.url.constructor-5ae60b9a.js';
+import { p as perform } from './common/esnext.iterator.map-7321cf9a.js';
+import { i as iterate } from './common/iterate-92e3ab69.js';
+import './common/esnext.iterator.find-a91c64fe.js';
+import './common/string-multibyte-964969b7.js';
 
 var PromiseCapability = function (C) {
   var resolve, reject;
@@ -23,14 +25,6 @@ var f = function (C) {
 
 var newPromiseCapability = {
 	f: f
-};
-
-var perform = function (exec) {
-  try {
-    return { error: false, value: exec() };
-  } catch (error) {
-    return { error: true, value: error };
-  }
 };
 
 // `Promise.allSettled` method
@@ -69,86 +63,44 @@ _export({ target: 'Promise', stat: true }, {
   }
 });
 
-function xhrGet(url, type = "", done) {
-  const request = new XMLHttpRequest();
-  request.open("GET", url, true);
-  request.responseType = type;
-
-  request.onreadystatechange = () => {
-    if (request.readyState === XMLHttpRequest.DONE) done(request);
-  };
-
-  request.send(null);
-}
-
-function promisify(fn) {
-  return function (file, cb) {
-    if (cb) {
-      return fn(file, cb);
-    } else {
-      return new Promise((resolve, reject) => {
-        fn(file, (err, data) => {
-          if (err) return reject(err);else resolve(data);
-        });
-      });
-    }
-  };
-}
-
+const ok = async response => response.ok ? response : Promise.reject(new Error(`GET ${response.url} ${response.status} (${response.statusText})`));
 /**
- * @callback textCallback
- * @param {Error} err
- * @param {string} text
+ * Load an item and parse the Response as text.
+ * @function
+ * @param {RequestInfo} url
+ * @param {RequestInit} options
+ * @returns {Promise<string>}
  */
 
+
+const loadText = async (url, options = {}) => await (await ok(await fetch(url, options))).text();
 /**
- * Loads a text file
- * @param {string} url
- * @param {textCallback} [callback]
+ * Load an item and parse the Response as json.
+ * @function
+ * @param {RequestInfo} url
+ * @param {RequestInit} options
+ * @returns {Promise<JSON>}
  */
 
-function loadText(url, callback) {
-  xhrGet(url, "", request => {
-    if (request.status === 200) {
-      if (callback) callback(null, request.responseText);
-    } else {
-      callback(new Error(`io.loadText: ${request.statusText} "${url}"`), null);
-    }
-  });
-}
-
-var loadText$1 = promisify(loadText);
-
+const loadJson = async (url, options = {}) => await (await ok(await fetch(url, options))).json();
 /**
- * @callback jsonCallback
- * @param {Error} err
- * @param {string} json
+ * Load an item and parse the Response as arrayBuffer.
+ * @function
+ * @param {RequestInfo} url
+ * @param {RequestInit} options
+ * @returns {Promise<ArrayBuffer>}
  */
 
+const loadArrayBuffer = async (url, options = {}) => await (await ok(await fetch(url, options))).arrayBuffer();
 /**
- * Loads JSON data
- * @param {string} url
- * @param {jsonCallback} [callback]
+ * Load an item and parse the Response as blob.
+ * @function
+ * @param {RequestInfo} url
+ * @param {RequestInit} options
+ * @returns {Promise<Blob>}
  */
 
-function loadJSON(url, callback) {
-  xhrGet(url, "json", request => {
-    if (request.status === 200) {
-      if (callback) callback(null, request.response);
-    } else {
-      callback(new Error(`io.loadJSON: ${request.statusText} "${url}"`), null);
-    }
-  });
-}
-
-var loadJSON$1 = promisify(loadJSON);
-
-/**
- * @callback imageCallback
- * @param {Error} err
- * @param {HTMLImageElement} image
- */
-
+const loadBlob = async (url, options = {}) => await (await ok(await fetch(url, options))).blob();
 /**
  * @typedef {Object} ImageOptions
  * @param {string} url
@@ -156,12 +108,14 @@ var loadJSON$1 = promisify(loadJSON);
  */
 
 /**
- * Loads a HTML Image
+ * Load an item, parse the Response as blob and create a HTML Image.
+ * @function
  * @param {string | ImageOptions} urlOrOpts
- * @param {imageCallback} [callback]
+ * @param {RequestInit} options
+ * @returns {Promise<HTMLImageElement>}
  */
 
-function loadImage(urlOrOpts, callback) {
+const loadImage = async (urlOrOpts, options = {}) => {
   const img = new Image();
   let src = urlOrOpts;
 
@@ -175,56 +129,33 @@ function loadImage(urlOrOpts, callback) {
     try {
       Object.assign(img, rest);
     } catch (error) {
-      return callback(new Error(error), null);
+      return Promise.reject(new Error(error));
     }
   }
 
-  img.onerror = () => {
-    callback(new Error(`io.loadImage: Load Error "${src}"`), null);
-  };
-
-  img.onload = () => {
-    callback(null, img);
-  };
-
-  img.src = src;
-}
-
-var loadImage$1 = promisify(loadImage);
-
-/**
- * @callback binaryCallback
- * @param {Error} err
- * @param {ArrayBuffer} data
- */
-
-/**
- * Loads binary data
- * @param {string} file
- * @param {binaryCallback} [callback]
- */
-
-function loadBinary(url, callback) {
-  xhrGet(url, "arraybuffer", request => {
-    if (request.status === 200) {
-      if (callback) callback(null, request.response);
-    } else {
-      callback(new Error(`io.loadBinary: ${request.statusText} "${url}"`), null);
-    }
+  const data = await loadBlob(src, options);
+  return await new Promise((resolve, reject) => {
+    img.addEventListener("load", function load() {
+      img.removeEventListener("load", load);
+      resolve(img);
+    });
+    img.addEventListener("error", function error() {
+      img.removeEventListener("error", error);
+      reject(img);
+    });
+    img.src = URL.createObjectURL(data);
   });
-}
-
-var loadBinary$1 = promisify(loadBinary);
-
+};
 /**
  * @private
  */
 
 const LOADERS_MAP = {
-  text: loadText$1,
-  json: loadJSON$1,
-  image: loadImage$1,
-  binary: loadBinary$1
+  text: loadText,
+  json: loadJson,
+  image: loadImage,
+  blob: loadBlob,
+  arrayBuffer: loadArrayBuffer
 };
 const LOADERS_MAP_KEYS = Object.keys(LOADERS_MAP);
 /**
@@ -233,50 +164,45 @@ const LOADERS_MAP_KEYS = Object.keys(LOADERS_MAP);
  * @property {string} [json]
  * @property {string} [image]
  * @property {string} [binary]
+ * @property {RequestInit} [options] {@link https://developer.mozilla.org/en-US/docs/Web/API/Request/Request#parameters|Request#parameters}
  */
 
 /**
- * @callback resourceCallback
- * @param {Error} err
- * @param {Object.<string, string | Object | HTMLImageElement | ArrayBuffer>} res
+ * @typedef {DOMString | Object | HTMLImageElement | Blob | ArrayBuffer} LoadedResource
  */
 
 /**
- * Loads resources from a named map
+ * Loads resources from a named map.
+ * @function
  * @param {Object.<string, Resource>} resources
- * @param {resourceCallback} callback
+ * @returns {Promise<Object.<string, LoadedResource>>}
  *
  * @example
  * const resources = {
  *   hello: { text: "assets/hello.txt" },
  *   data: { json: "assets/data.json" },
  *   img: { image: "assets/tex.jpg" },
- *   hdrImg: { binary: "assets/tex.hdr" },
+ *   blob: { blob: "assets/blob" },
+ *   hdrImg: { arrayBuffer: "assets/tex.hdr", options: { mode: "no-cors" } },
  * };
  *
- * io.load(resources, (err, res) => {
- *   res.hello; // => String
- *   res.data; // => Object
- *   res.img; // => HTMLImageElement
- *   res.hdrImg; // => ArrayBuffer
- *   if (err) return console.log(err);
- * });
+ * const res = await io.load(resources);
+ * res.hello; // => DOMString
+ * res.data; // => Object
+ * res.img; // => HTMLImageElement
+ * res.blob; // => Blob
+ * res.hdrImg; // => ArrayBuffer
  */
 
-function load(resources, callback) {
+const load = resources => {
   const names = Object.keys(resources);
-  Promise.allSettled(names.map(async name => {
+  return Promise.allSettled(names.map(async name => {
     const res = resources[name];
     const loader = LOADERS_MAP_KEYS.find(loader => res[loader]);
-    if (loader) return await LOADERS_MAP[loader](res[loader]);
+    if (loader) return await LOADERS_MAP[loader](res[loader], res.options);
     return Promise.reject(new Error(`io.load: unknown resource type "${Object.keys(res)}".
 Resource needs one of ${LOADERS_MAP_KEYS.join("|")} set to an url.`));
-  })).then(values => {
-    const results = Object.fromEntries(Array.from(values.map(v => v.value || v.reason), (v, i) => [names[i], v]));
-    callback(values.find(v => v.status === "rejected") ? results : null, results);
-  });
-}
+  })).then(values => Object.fromEntries(Array.from(values.map(v => v.value || v.reason), (v, i) => [names[i], v])));
+};
 
-var load$1 = promisify(load);
-
-export { load$1 as load, loadBinary$1 as loadBinary, loadImage$1 as loadImage, loadJSON$1 as loadJSON, loadText$1 as loadText };
+export { load, loadArrayBuffer, loadBlob, loadImage, loadJson, loadText };

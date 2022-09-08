@@ -1,5 +1,6 @@
-import { t as toString_1, a as functionApply } from './esnext.iterator.map-5c21472a.js';
-import { b as anObject, a as global_1, n as fails, r as shared, d as functionUncurryThis, f as functionCall, h as objectCreate, t as internalState, _ as _export, w as wellKnownSymbol, u as redefine, m as createNonEnumerableProperty, v as requireObjectCoercible, x as toIntegerOrInfinity, y as toObject, i as isCallable, z as classofRaw, A as getMethod, B as toLength } from './web.dom-collections.iterator-e8ac2628.js';
+import { t as toString_1, m as functionApply } from './esnext.iterator.map-7321cf9a.js';
+import { e as anObject, s as global_1, f as fails, D as shared, j as functionUncurryThis, g as functionCall, A as objectCreate, i as internalState, _ as _export, w as wellKnownSymbol, v as defineBuiltIn, E as createNonEnumerableProperty, t as toObject, y as isCallable, F as classofRaw, G as requireObjectCoercible, H as getMethod, I as toLength, J as toIntegerOrInfinity } from './web.dom-collections.iterator-24f03f52.js';
+import { s as stringMultibyte } from './string-multibyte-964969b7.js';
 
 // `RegExp.prototype.flags` getter implementation
 // https://tc39.es/ecma262/#sec-get-regexp.prototype.flags
@@ -12,6 +13,7 @@ var regexpFlags = function () {
   if (that.multiline) result += 'm';
   if (that.dotAll) result += 's';
   if (that.unicode) result += 'u';
+  if (that.unicodeSets) result += 'v';
   if (that.sticky) result += 'y';
   return result;
 };
@@ -156,7 +158,7 @@ if (PATCH) {
     }
     if (NPCG_INCLUDED && match && match.length > 1) {
       // Fix browsers whose `exec` methods don't consistently return `undefined`
-      // for NPCG, like IE8. NOTE: This doesn' work for /(.?)?/
+      // for NPCG, like IE8. NOTE: This doesn't work for /(.?)?/
       functionCall(nativeReplace, match[0], reCopy, function () {
         for (i = 1; i < arguments.length - 2; i++) {
           if (arguments[i] === undefined) match[i] = undefined;
@@ -251,57 +253,25 @@ var fixRegexpWellKnownSymbolLogic = function (KEY, exec, FORCED, SHAM) {
       return { done: false };
     });
 
-    redefine(String.prototype, KEY, methods[0]);
-    redefine(RegExpPrototype, SYMBOL, methods[1]);
+    defineBuiltIn(String.prototype, KEY, methods[0]);
+    defineBuiltIn(RegExpPrototype, SYMBOL, methods[1]);
   }
 
   if (SHAM) createNonEnumerableProperty(RegExpPrototype[SYMBOL], 'sham', true);
 };
 
-var charAt$1 = functionUncurryThis(''.charAt);
-var charCodeAt = functionUncurryThis(''.charCodeAt);
-var stringSlice$1 = functionUncurryThis(''.slice);
-
-var createMethod = function (CONVERT_TO_STRING) {
-  return function ($this, pos) {
-    var S = toString_1(requireObjectCoercible($this));
-    var position = toIntegerOrInfinity(pos);
-    var size = S.length;
-    var first, second;
-    if (position < 0 || position >= size) return CONVERT_TO_STRING ? '' : undefined;
-    first = charCodeAt(S, position);
-    return first < 0xD800 || first > 0xDBFF || position + 1 === size
-      || (second = charCodeAt(S, position + 1)) < 0xDC00 || second > 0xDFFF
-        ? CONVERT_TO_STRING
-          ? charAt$1(S, position)
-          : first
-        : CONVERT_TO_STRING
-          ? stringSlice$1(S, position, position + 2)
-          : (first - 0xD800 << 10) + (second - 0xDC00) + 0x10000;
-  };
-};
-
-var stringMultibyte = {
-  // `String.prototype.codePointAt` method
-  // https://tc39.es/ecma262/#sec-string.prototype.codepointat
-  codeAt: createMethod(false),
-  // `String.prototype.at` method
-  // https://github.com/mathiasbynens/String.prototype.at
-  charAt: createMethod(true)
-};
-
-var charAt$2 = stringMultibyte.charAt;
+var charAt$1 = stringMultibyte.charAt;
 
 // `AdvanceStringIndex` abstract operation
 // https://tc39.es/ecma262/#sec-advancestringindex
 var advanceStringIndex = function (S, index, unicode) {
-  return index + (unicode ? charAt$2(S, index).length : 1);
+  return index + (unicode ? charAt$1(S, index).length : 1);
 };
 
 var floor = Math.floor;
-var charAt$3 = functionUncurryThis(''.charAt);
+var charAt$2 = functionUncurryThis(''.charAt);
 var replace$1 = functionUncurryThis(''.replace);
-var stringSlice$2 = functionUncurryThis(''.slice);
+var stringSlice$1 = functionUncurryThis(''.slice);
 var SUBSTITUTION_SYMBOLS = /\$([$&'`]|\d{1,2}|<[^>]*>)/g;
 var SUBSTITUTION_SYMBOLS_NO_NAMED = /\$([$&'`]|\d{1,2})/g;
 
@@ -317,13 +287,13 @@ var getSubstitution = function (matched, str, position, captures, namedCaptures,
   }
   return replace$1(replacement, symbols, function (match, ch) {
     var capture;
-    switch (charAt$3(ch, 0)) {
+    switch (charAt$2(ch, 0)) {
       case '$': return '$';
       case '&': return matched;
-      case '`': return stringSlice$2(str, 0, position);
-      case "'": return stringSlice$2(str, tailPos);
+      case '`': return stringSlice$1(str, 0, position);
+      case "'": return stringSlice$1(str, tailPos);
       case '<':
-        capture = namedCaptures[stringSlice$2(ch, 1, -1)];
+        capture = namedCaptures[stringSlice$1(ch, 1, -1)];
         break;
       default: // \d\d?
         var n = +ch;
@@ -331,7 +301,7 @@ var getSubstitution = function (matched, str, position, captures, namedCaptures,
         if (n > m) {
           var f = floor(n / 10);
           if (f === 0) return match;
-          if (f <= m) return captures[f - 1] === undefined ? charAt$3(ch, 1) : captures[f - 1] + charAt$3(ch, 1);
+          if (f <= m) return captures[f - 1] === undefined ? charAt$2(ch, 1) : captures[f - 1] + charAt$2(ch, 1);
           return match;
         }
         capture = captures[n - 1];
@@ -340,7 +310,7 @@ var getSubstitution = function (matched, str, position, captures, namedCaptures,
   });
 };
 
-var TypeError = global_1.TypeError;
+var $TypeError = TypeError;
 
 // `RegExpExec` abstract operation
 // https://tc39.es/ecma262/#sec-regexpexec
@@ -352,7 +322,7 @@ var regexpExecAbstract = function (R, S) {
     return result;
   }
   if (classofRaw(R) === 'RegExp') return functionCall(regexpExec, R, S);
-  throw TypeError('RegExp#exec called on incompatible receiver');
+  throw $TypeError('RegExp#exec called on incompatible receiver');
 };
 
 var REPLACE = wellKnownSymbol('replace');
@@ -361,7 +331,7 @@ var min = Math.min;
 var concat = functionUncurryThis([].concat);
 var push = functionUncurryThis([].push);
 var stringIndexOf = functionUncurryThis(''.indexOf);
-var stringSlice$3 = functionUncurryThis(''.slice);
+var stringSlice$2 = functionUncurryThis(''.slice);
 
 var maybeToString = function (it) {
   return it === undefined ? it : String(it);
@@ -465,13 +435,11 @@ fixRegexpWellKnownSymbolLogic('replace', function (_, nativeReplace, maybeCallNa
           replacement = getSubstitution(matched, S, position, captures, namedCaptures, replaceValue);
         }
         if (position >= nextSourcePosition) {
-          accumulatedResult += stringSlice$3(S, nextSourcePosition, position) + replacement;
+          accumulatedResult += stringSlice$2(S, nextSourcePosition, position) + replacement;
           nextSourcePosition = position + matched.length;
         }
       }
-      return accumulatedResult + stringSlice$3(S, nextSourcePosition);
+      return accumulatedResult + stringSlice$2(S, nextSourcePosition);
     }
   ];
 }, !REPLACE_SUPPORTS_NAMED_GROUPS || !REPLACE_KEEPS_$0 || REGEXP_REPLACE_SUBSTITUTES_UNDEFINED_CAPTURE);
-
-export { stringMultibyte as s };

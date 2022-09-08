@@ -1,6 +1,5 @@
 {
   "imports": {
-    "assert": "./assert.js",
     "es-module-shims": "./es-module-shims.js",
     "pex-cam": "./pex-cam.js",
     "pex-color": "./pex-color.js",

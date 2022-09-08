@@ -1,5 +1,13 @@
-import { a as global_1, b as anObject, g as getBuiltIn, c as aCallable, f as functionCall, A as getMethod, w as wellKnownSymbol, i as isCallable, n as fails, E as hasOwnProperty_1, m as createNonEnumerableProperty, _ as _export, G as iteratorsCore, H as tryToString, I as lengthOfArrayLike, k as objectIsPrototypeOf } from './web.dom-collections.iterator-e8ac2628.js';
-import { b as anInstance, f as functionBindContext, c as getIteratorMethod, i as isArrayIteratorMethod, g as getIterator, d as iteratorClose } from './esnext.iterator.map-5c21472a.js';
+import { K as getBuiltIn, d as aCallable, e as anObject, g as functionCall, w as wellKnownSymbol, s as global_1, y as isCallable, f as fails, C as hasOwnProperty_1, E as createNonEnumerableProperty, _ as _export, a4 as iteratorsCore, T as tryToString, r as lengthOfArrayLike, P as objectIsPrototypeOf } from './web.dom-collections.iterator-24f03f52.js';
+import { g as getIteratorDirect, b as asyncIteratorClose, k as anInstance, f as functionBindContext, d as getIteratorMethod, e as isArrayIteratorMethod, h as getIterator, n as iteratorClose } from './esnext.iterator.map-7321cf9a.js';
+
+var $TypeError = TypeError;
+var MAX_SAFE_INTEGER = 0x1FFFFFFFFFFFFF; // 2 ** 53 - 1 == 9007199254740991
+
+var doesNotExceedSafeInteger = function (it) {
+  if (it > MAX_SAFE_INTEGER) throw $TypeError('Maximum allowed index exceeded');
+  return it;
+};
 
 // https://github.com/tc39/proposal-iterator-helpers
 // https://github.com/tc39/proposal-array-from-async
@@ -10,47 +18,31 @@ import { b as anInstance, f as functionBindContext, c as getIteratorMethod, i as
 
 
 
-var MAX_SAFE_INTEGER = 0x1FFFFFFFFFFFFF;
-var TypeError = global_1.TypeError;
 
 var createMethod = function (TYPE) {
   var IS_TO_ARRAY = TYPE == 0;
   var IS_FOR_EACH = TYPE == 1;
   var IS_EVERY = TYPE == 2;
   var IS_SOME = TYPE == 3;
-  return function (iterator, fn, target) {
-    anObject(iterator);
+  return function (object, fn, target) {
+    var record = getIteratorDirect(object);
     var Promise = getBuiltIn('Promise');
-    var next = aCallable(iterator.next);
+    var iterator = record.iterator;
+    var next = record.next;
     var index = 0;
     var MAPPING = fn !== undefined;
     if (MAPPING || !IS_TO_ARRAY) aCallable(fn);
 
     return new Promise(function (resolve, reject) {
-      var closeIteration = function (method, argument) {
-        try {
-          var returnMethod = getMethod(iterator, 'return');
-          if (returnMethod) {
-            return Promise.resolve(functionCall(returnMethod, iterator)).then(function () {
-              method(argument);
-            }, function (error) {
-              reject(error);
-            });
-          }
-        } catch (error2) {
-          return reject(error2);
-        } method(argument);
-      };
-
-      var onError = function (error) {
-        closeIteration(reject, error);
+      var ifAbruptCloseAsyncIterator = function (error) {
+        asyncIteratorClose(iterator, reject, error, reject);
       };
 
       var loop = function () {
         try {
-          if (IS_TO_ARRAY && (index > MAX_SAFE_INTEGER) && MAPPING) {
-            throw TypeError('The allowed number of iterations has been exceeded');
-          }
+          if (IS_TO_ARRAY && MAPPING) try {
+            doesNotExceedSafeInteger(index);
+          } catch (error5) { ifAbruptCloseAsyncIterator(error5); }
           Promise.resolve(anObject(functionCall(next, iterator))).then(function (step) {
             try {
               if (anObject(step).done) {
@@ -60,27 +52,31 @@ var createMethod = function (TYPE) {
                 } else resolve(IS_SOME ? false : IS_EVERY || undefined);
               } else {
                 var value = step.value;
-                if (MAPPING) {
-                  Promise.resolve(IS_TO_ARRAY ? fn(value, index) : fn(value)).then(function (result) {
-                    if (IS_FOR_EACH) {
-                      loop();
-                    } else if (IS_EVERY) {
-                      result ? loop() : closeIteration(resolve, false);
-                    } else if (IS_TO_ARRAY) {
-                      target[index++] = result;
-                      loop();
-                    } else {
-                      result ? closeIteration(resolve, IS_SOME || value) : loop();
-                    }
-                  }, onError);
-                } else {
-                  target[index++] = value;
-                  loop();
-                }
+                try {
+                  if (MAPPING) {
+                    Promise.resolve(IS_TO_ARRAY ? fn(value, index) : fn(value)).then(function (result) {
+                      if (IS_FOR_EACH) {
+                        loop();
+                      } else if (IS_EVERY) {
+                        result ? loop() : asyncIteratorClose(iterator, resolve, false, reject);
+                      } else if (IS_TO_ARRAY) {
+                        try {
+                          target[index++] = result;
+                          loop();
+                        } catch (error4) { ifAbruptCloseAsyncIterator(error4); }
+                      } else {
+                        result ? asyncIteratorClose(iterator, resolve, IS_SOME || value, reject) : loop();
+                      }
+                    }, ifAbruptCloseAsyncIterator);
+                  } else {
+                    target[index++] = value;
+                    loop();
+                  }
+                } catch (error3) { ifAbruptCloseAsyncIterator(error3); }
               }
-            } catch (error) { onError(error); }
-          }, onError);
-        } catch (error2) { onError(error2); }
+            } catch (error2) { reject(error2); }
+          }, reject);
+        } catch (error) { reject(error); }
       };
 
       loop();
@@ -132,11 +128,11 @@ if (FORCED || !hasOwnProperty_1(IteratorPrototype, 'constructor') || IteratorPro
 
 IteratorConstructor.prototype = IteratorPrototype;
 
-_export({ global: true, forced: FORCED }, {
+_export({ global: true, constructor: true, forced: FORCED }, {
   Iterator: IteratorConstructor
 });
 
-var TypeError$1 = global_1.TypeError;
+var $TypeError$1 = TypeError;
 
 var Result = function (stopped, result) {
   this.stopped = stopped;
@@ -148,6 +144,7 @@ var ResultPrototype = Result.prototype;
 var iterate = function (iterable, unboundFunction, options) {
   var that = options && options.that;
   var AS_ENTRIES = !!(options && options.AS_ENTRIES);
+  var IS_RECORD = !!(options && options.IS_RECORD);
   var IS_ITERATOR = !!(options && options.IS_ITERATOR);
   var INTERRUPTED = !!(options && options.INTERRUPTED);
   var fn = functionBindContext(unboundFunction, that);
@@ -165,11 +162,13 @@ var iterate = function (iterable, unboundFunction, options) {
     } return INTERRUPTED ? fn(value, stop) : fn(value);
   };
 
-  if (IS_ITERATOR) {
+  if (IS_RECORD) {
+    iterator = iterable.iterator;
+  } else if (IS_ITERATOR) {
     iterator = iterable;
   } else {
     iterFn = getIteratorMethod(iterable);
-    if (!iterFn) throw TypeError$1(tryToString(iterable) + ' is not iterable');
+    if (!iterFn) throw $TypeError$1(tryToString(iterable) + ' is not iterable');
     // optimisation for array iterators
     if (isArrayIteratorMethod(iterFn)) {
       for (index = 0, length = lengthOfArrayLike(iterable); length > index; index++) {
@@ -180,7 +179,7 @@ var iterate = function (iterable, unboundFunction, options) {
     iterator = getIterator(iterable, iterFn);
   }
 
-  next = iterator.next;
+  next = IS_RECORD ? iterable.next : iterator.next;
   while (!(step = functionCall(next, iterator)).done) {
     try {
       result = callFn(step.value);

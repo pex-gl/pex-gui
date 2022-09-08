@@ -1,13 +1,12 @@
-import './common/es.error.cause-e924eb93.js';
-import './common/esnext.iterator.filter-b8839f58.js';
-import './common/iterate-f07d9ec5.js';
-import './common/web.dom-collections.iterator-e8ac2628.js';
-import './common/esnext.iterator.map-5c21472a.js';
-import './common/es.typed-array.uint16-array-9fc0c3ad.js';
-import './common/esnext.iterator.find-066cac9b.js';
-import './common/esnext.iterator.for-each-e6d4f0d9.js';
-import './common/es.typed-array.uint32-array-523b7495.js';
-import './common/es.typed-array.int32-array-fe31d069.js';
+import './common/es.error.cause-2b0e1203.js';
+import './common/esnext.iterator.filter-84608421.js';
+import './common/iterate-92e3ab69.js';
+import './common/web.dom-collections.iterator-24f03f52.js';
+import './common/esnext.iterator.map-7321cf9a.js';
+import { t as typedArrayConstructor } from './common/es.typed-array.uint16-array-96e18efe.js';
+import './common/esnext.iterator.find-a91c64fe.js';
+import './common/esnext.iterator.for-each-cbc9a4d7.js';
+import './common/es.typed-array.int8-array-e47cf485.js';
 
 /**
  * Context fallbacks map
@@ -1166,6 +1165,22 @@ function polyfill(ctx) {
     gl.getExtension("OES_standard_derivatives");
   }
 }
+
+// `Int16Array` constructor
+// https://tc39.es/ecma262/#sec-typedarray-objects
+typedArrayConstructor('Int16', function (init) {
+  return function Int16Array(data, byteOffset, length) {
+    return init(this, data, byteOffset, length);
+  };
+});
+
+// `Int32Array` constructor
+// https://tc39.es/ecma262/#sec-typedarray-objects
+typedArrayConstructor('Int32', function (init) {
+  return function Int32Array(data, byteOffset, length) {
+    return init(this, data, byteOffset, length);
+  };
+});
 
 /**
  * @typedef {Object} PexContextOptions

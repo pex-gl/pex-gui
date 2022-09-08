@@ -1,5 +1,6 @@
-import { _ as _export, b as anObject } from './web.dom-collections.iterator-e8ac2628.js';
-import { a as asyncIteratorIteration, i as iterate } from './iterate-f07d9ec5.js';
+import { _ as _export } from './web.dom-collections.iterator-24f03f52.js';
+import { a as asyncIteratorIteration, i as iterate } from './iterate-92e3ab69.js';
+import { g as getIteratorDirect } from './esnext.iterator.map-7321cf9a.js';
 
 // https://github.com/tc39/proposal-iterator-helpers
 
@@ -18,6 +19,6 @@ _export({ target: 'AsyncIterator', proto: true, real: true, forced: true }, {
 
 _export({ target: 'Iterator', proto: true, real: true, forced: true }, {
   forEach: function forEach(fn) {
-    iterate(anObject(this), fn, { IS_ITERATOR: true });
+    iterate(getIteratorDirect(this), fn, { IS_RECORD: true });
   }
 });

@@ -1,6 +1,6 @@
-import { n as fails, _ as _export, a2 as addToUnscopables, a3 as arrayIncludes, b as anObject, c as aCallable } from './web.dom-collections.iterator-e8ac2628.js';
-import { a as asyncIteratorIteration, i as iterate } from './iterate-f07d9ec5.js';
-import { j as asyncIteratorCreateProxy, a as functionApply, k as iteratorCreateProxy, h as callWithSafeIterationClosing } from './esnext.iterator.map-5c21472a.js';
+import { f as fails, _ as _export, a as addToUnscopables, b as arrayIncludes, d as aCallable, e as anObject, g as functionCall } from './web.dom-collections.iterator-24f03f52.js';
+import { a as asyncIteratorIteration, i as iterate } from './iterate-92e3ab69.js';
+import { g as getIteratorDirect, a as asyncIteratorCreateProxy, b as asyncIteratorClose, i as iteratorCreateProxy, c as callWithSafeIterationClosing } from './esnext.iterator.map-7321cf9a.js';
 
 var $includes = arrayIncludes.includes;
 
@@ -40,11 +40,11 @@ _export({ target: 'AsyncIterator', proto: true, real: true, forced: true }, {
 
 _export({ target: 'Iterator', proto: true, real: true, forced: true }, {
   some: function some(fn) {
-    anObject(this);
+    var record = getIteratorDirect(this);
     aCallable(fn);
-    return iterate(this, function (value, stop) {
+    return iterate(record, function (value, stop) {
       if (fn(value)) return stop();
-    }, { IS_ITERATOR: true, INTERRUPTED: true }).stopped;
+    }, { IS_RECORD: true, INTERRUPTED: true }).stopped;
   }
 });
 
@@ -55,27 +55,41 @@ _export({ target: 'Iterator', proto: true, real: true, forced: true }, {
 
 
 
-var AsyncIteratorProxy = asyncIteratorCreateProxy(function (Promise, args) {
+
+
+var AsyncIteratorProxy = asyncIteratorCreateProxy(function (Promise) {
   var state = this;
+  var iterator = state.iterator;
   var filterer = state.filterer;
 
   return new Promise(function (resolve, reject) {
+    var doneAndReject = function (error) {
+      state.done = true;
+      reject(error);
+    };
+
+    var ifAbruptCloseAsyncIterator = function (error) {
+      asyncIteratorClose(iterator, doneAndReject, error, doneAndReject);
+    };
+
     var loop = function () {
       try {
-        Promise.resolve(anObject(functionApply(state.next, state.iterator, args))).then(function (step) {
+        Promise.resolve(anObject(functionCall(state.next, iterator))).then(function (step) {
           try {
             if (anObject(step).done) {
               state.done = true;
               resolve({ done: true, value: undefined });
             } else {
               var value = step.value;
-              Promise.resolve(filterer(value)).then(function (selected) {
-                selected ? resolve({ done: false, value: value }) : loop();
-              }, reject);
+              try {
+                Promise.resolve(filterer(value)).then(function (selected) {
+                  selected ? resolve({ done: false, value: value }) : loop();
+                }, ifAbruptCloseAsyncIterator);
+              } catch (error3) { ifAbruptCloseAsyncIterator(error3); }
             }
-          } catch (err) { reject(err); }
-        }, reject);
-      } catch (error) { reject(error); }
+          } catch (error2) { doneAndReject(error2); }
+        }, doneAndReject);
+      } catch (error) { doneAndReject(error); }
     };
 
     loop();
@@ -84,8 +98,7 @@ var AsyncIteratorProxy = asyncIteratorCreateProxy(function (Promise, args) {
 
 _export({ target: 'AsyncIterator', proto: true, real: true, forced: true }, {
   filter: function filter(filterer) {
-    return new AsyncIteratorProxy({
-      iterator: anObject(this),
+    return new AsyncIteratorProxy(getIteratorDirect(this), {
       filterer: aCallable(filterer)
     });
   }
@@ -99,13 +112,14 @@ _export({ target: 'AsyncIterator', proto: true, real: true, forced: true }, {
 
 
 
-var IteratorProxy = iteratorCreateProxy(function (args) {
+
+var IteratorProxy = iteratorCreateProxy(function () {
   var iterator = this.iterator;
   var filterer = this.filterer;
   var next = this.next;
   var result, done, value;
   while (true) {
-    result = anObject(functionApply(next, iterator, args));
+    result = anObject(functionCall(next, iterator));
     done = this.done = !!result.done;
     if (done) return;
     value = result.value;
@@ -115,8 +129,7 @@ var IteratorProxy = iteratorCreateProxy(function (args) {
 
 _export({ target: 'Iterator', proto: true, real: true, forced: true }, {
   filter: function filter(filterer) {
-    return new IteratorProxy({
-      iterator: anObject(this),
+    return new IteratorProxy(getIteratorDirect(this), {
       filterer: aCallable(filterer)
     });
   }
