@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [3.0.0-alpha.2](https://github.com/pex-gl/pex-gui/compare/v3.0.0-alpha.1...v3.0.0-alpha.2) (2022-09-09)
+
+
+### Bug Fixes
+
+* don't assume pixel ratio from pex-context ([b8a6d9f](https://github.com/pex-gl/pex-gui/commit/b8a6d9f3b502643a1a189e509113510886928c3d))
+
+
+### Features
+
+* make gui render at the size regardless of the canvas size or pixel ratio unless it overflows the canvas viewport ([17eab56](https://github.com/pex-gl/pex-gui/commit/17eab565705b031fc96826dee434a60b46534e08))
+
+
+
 # [3.0.0-alpha.1](https://github.com/pex-gl/pex-gui/compare/v3.0.0-alpha.0...v3.0.0-alpha.1) (2022-07-26)
 
 
