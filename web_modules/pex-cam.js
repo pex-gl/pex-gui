@@ -1,7 +1,7 @@
 import { c as create, l as lookAt, s as set, i as invert, f as frustum, p as perspective$1, o as ortho, a as clamp, t as toDegrees, b as toRadians, d as lerp$1 } from './common/mat4-6e572b31.js';
 import { n as normalize, m as multMat4, s as sub, c as copy, d as distance, a as scale, b as add, l as length, e as distance$1, f as set$1 } from './common/vec3-0fe60268.js';
 import './common/web.dom-collections.iterator-24f03f52.js';
-import { h as hitTestPlane } from './common/ray-8463290c.js';
+import { h as hitTestPlane } from './common/ray-68b06945.js';
 
 /**
  * An interface for cameras to extend

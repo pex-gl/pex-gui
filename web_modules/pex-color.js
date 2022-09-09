@@ -7,12 +7,12 @@ import './common/string-multibyte-964969b7.js';
 
 /**
  * Updates a color based on linear r, g, b, a values.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} r
  * @param {number} g
  * @param {number} b
  * @param {number} [a]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 function fromRGB(color, r, g, b, a) {
@@ -41,7 +41,7 @@ const toRGB = copy;
  * @param {number} [g=0]
  * @param {number} [b=0]
  * @param {number} [a]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 function create(r = 0, g = 0, b = 0, a = 1) {
@@ -49,9 +49,9 @@ function create(r = 0, g = 0, b = 0, a = 1) {
 }
 /**
  * Returns a copy of a color.
- * @param {color} color
- * @param {color} [out] Deprecated: use set(c, d)
- * @return {color}
+ * @param {import("./color.js").color} color
+ * @param {import("./color.js").color} [out] Deprecated: use set(c, d)
+ * @return {import("./color.js").color}
  */
 
 function copy(color, out) {
@@ -61,12 +61,12 @@ function copy(color, out) {
 }
 /**
  * Sets a color to another color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {color|number} color2
  * @param {number} [g] // Deprecated: use fromRGB(color, r, g, b, a)
  * @param {number} [b] // Deprecated: use fromRGB(color, r, g, b, a)
  * @param {number} [a] // Deprecated: use fromRGB(color, r, g, b, a)
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 function set(color, color2, g) {
@@ -87,9 +87,9 @@ function set(color, color2, g) {
 
 /**
  * Updates a color based on byte values.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {bytes} bytes
- * @returns {color}
+ * @returns {import("./color.js").color}
  */
 function fromRGBBytes(color, [r, g, b, a]) {
   color[0] = r / 255;
@@ -100,7 +100,7 @@ function fromRGBBytes(color, [r, g, b, a]) {
 }
 /**
  * Get RGB[A] color components as bytes array.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {bytes}
  */
@@ -148,12 +148,12 @@ function linearSrgbToOklab(color, lr, lg, lb) {
 }
 /**
  * Updates a color based on Oklab values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} l
  * @param {number} a
  * @param {number} b
  * @param {number} [α]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 function fromOklab(color, L, a, b, α) {
@@ -165,7 +165,7 @@ function fromOklab(color, L, a, b, α) {
 }
 /**
  * Returns an Oklab representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {oklab}
  */
@@ -391,12 +391,12 @@ var utils = /*#__PURE__*/Object.freeze({
 
 /**
  * Updates a color based on linear values.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} r
  * @param {number} g
  * @param {number} b
  * @param {number} [a]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 function fromLinear$1(color, r, g, b, a) {
@@ -407,7 +407,7 @@ function fromLinear$1(color, r, g, b, a) {
 }
 /**
  * Returns a linear color representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {linear}
  */
@@ -425,9 +425,9 @@ function toLinear$1([r, g, b, a], out = []) {
 
 /**
  * Updates a color based on a hexadecimal string.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {hex} hex Leading '#' is optional.
- * @return {color}
+ * @return {import("./color.js").color}
  */
 function fromHex(color, hex) {
   hex = hex.replace(/^#/, "");
@@ -454,7 +454,7 @@ function fromHex(color, hex) {
 }
 /**
  * Returns a hexadecimal string representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {boolean} alpha Handle alpha
  * @return {hex}
  */
@@ -481,12 +481,12 @@ function hue2rgb(p, q, t) {
 }
 /**
  * Updates a color based on HSL values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
  * @param {number} l
  * @param {number} [a]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 
@@ -505,7 +505,7 @@ function fromHSL(color, h, s, l, a) {
 }
 /**
  * Returns a HSL representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {hsl}
  */
@@ -550,12 +550,12 @@ function toHSL([r, g, b, a], out = []) {
 
 /**
  * Updates a color based on HWB values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} w
  * @param {number} b
  * @param {number} [a]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 function fromHWB(color, h, w, b, a) {
@@ -574,7 +574,7 @@ function fromHWB(color, h, w, b, a) {
 }
 /**
  * Returns a HWB representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {hwb}
  */
@@ -595,12 +595,12 @@ function toHWB(color, out = []) {
 
 /**
  * Updates a color based on HSV values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
  * @param {number} v
  * @param {number} [a]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 function fromHSV(color, h, s, v, a) {
@@ -652,7 +652,7 @@ function fromHSV(color, h, s, v, a) {
 }
 /**
  * Returns a HSV representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {hsv}
  */
@@ -696,12 +696,12 @@ function toHSV([r, g, b, a], out = []) {
 
 /**
  * Updates a color based on XYZ values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} x
  * @param {number} y
  * @param {number} z
  * @param {number} a
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 function fromXYZ(color, x, y, z, a) {
@@ -715,9 +715,9 @@ function fromXYZ(color, x, y, z, a) {
 }
 /**
  * Returns a XYZ representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
- * @return {color}
+ * @return {xyz}
  */
 
 function toXYZ([r, g, b, a], out = []) {
@@ -759,13 +759,13 @@ function fromXYZValueToLabValue(val, white) {
 }
 /**
  * Updates a color based on Lab values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} l
  * @param {number} a
  * @param {number} b
  * @param {number} α
  * @param {Array} illuminant
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 
@@ -775,7 +775,7 @@ function fromLab(color, l, a, b, α, illuminant = D65) {
 }
 /**
  * Returns a Lab representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @param {Array} illuminant
  * @return {lab}
@@ -802,12 +802,12 @@ function toLab(color, out = [], illuminant = D65) {
 const S0 = 0.5;
 /**
  * Updates a color based on Okhsv values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
  * @param {number} v
  * @param {number} [α]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 function fromOkhsv(color, h, s, v, α) {
@@ -833,7 +833,7 @@ function fromOkhsv(color, h, s, v, α) {
 }
 /**
  * Returns an Okhsv representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {okhsv}
  */
@@ -941,12 +941,12 @@ function getCs(L, a_, b_) {
 }
 /**
  * Updates a color based on Okhsl values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
  * @param {number} l
  * @param {number} [α]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 
@@ -982,7 +982,7 @@ function fromOkhsl(color, h, s, l, α) {
 }
 /**
  * Returns an Okhsl representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {okhsl}
  */
@@ -1023,12 +1023,12 @@ function toOkhsl([r, g, b, a], out = []) {
 
 /**
  * Updates a color based on LCHuv values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} l
  * @param {number} c
  * @param {number} h
  * @param {number} [a]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 function fromLCHuv(color, l, c, h, a) {
@@ -1036,7 +1036,7 @@ function fromLCHuv(color, l, c, h, a) {
 }
 /**
  * Returns a LCHuv representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {lchuv}
  */
@@ -1087,12 +1087,12 @@ const lchToHsluv = ([L, C, H]) => {
 };
 /**
  * Updates a color based on HSLuv values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
  * @param {number} l
  * @param {number} [a]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 
@@ -1101,7 +1101,7 @@ function fromHSLuv(color, h, s, l, a) {
 }
 /**
  * Returns a HSLuv representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {hsluv}
  */
@@ -1150,12 +1150,12 @@ const lchToHpluv = ([L, C, H]) => {
 };
 /**
  * Updates a color based on HPLuv values and alpha.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
  * @param {number} l
  * @param {number} [a]
- * @return {color}
+ * @return {import("./color.js").color}
  */
 
 
@@ -1164,7 +1164,7 @@ function fromHPLuv(color, h, s, l, a) {
 }
 /**
  * Returns a HPLuv representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {hpluv}
  */
@@ -1181,7 +1181,7 @@ function toHPLuv([r, g, b, a], out = []) {
  */
 /**
  * Returns a rgb CSS string representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @return {css}
  */
@@ -1194,7 +1194,7 @@ function toCSSRGB(color, precision = 5) {
 }
 /**
  * Returns a hsl CSS string representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @return {css}
  */
@@ -1210,7 +1210,7 @@ function toCSSHSL(color, precision = 5) {
 }
 /**
  * Returns a lab CSS string representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @return {css}
  */
@@ -1225,7 +1225,7 @@ function toCSSLab(color, precision = 5) {
 }
 /**
  * Returns a lch CSS string representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @return {css}
  */
@@ -1237,7 +1237,7 @@ function toCSSLCH(color, precision = 5) {
 }
 /**
  * Returns a hwb CSS string representation of a given color.
- * @param {color} color
+ * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @return {css}
  */
