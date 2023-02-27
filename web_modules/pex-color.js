@@ -1,9 +1,6 @@
-import './common/web.dom-collections.iterator-24f03f52.js';
-import './common/esnext.iterator.for-each-cbc9a4d7.js';
-import './common/iterate-92e3ab69.js';
-import './common/es.string.replace-75d408e7.js';
-import './common/esnext.iterator.map-7321cf9a.js';
-import './common/string-multibyte-964969b7.js';
+import './common/esnext.iterator.for-each-bdc83314.js';
+import './common/iterate-3ec67ff6.js';
+import './common/esnext.iterator.map-73de652f.js';
 
 /**
  * Updates a color based on linear r, g, b, a values.
@@ -14,7 +11,6 @@ import './common/string-multibyte-964969b7.js';
  * @param {number} [a]
  * @return {import("./color.js").color}
  */
-
 function fromRGB(color, r, g, b, a) {
   color[0] = r;
   color[1] = g;
@@ -22,11 +18,11 @@ function fromRGB(color, r, g, b, a) {
   if (a !== undefined) color[3] = a;
   return color;
 }
+
 /**
  * Alias for {@link copy}
  * @function
  */
-
 const toRGB = copy;
 
 /**
@@ -43,22 +39,21 @@ const toRGB = copy;
  * @param {number} [a]
  * @return {import("./color.js").color}
  */
-
 function create(r = 0, g = 0, b = 0, a = 1) {
   return [r, g, b, a];
 }
+
 /**
  * Returns a copy of a color.
  * @param {import("./color.js").color} color
  * @param {import("./color.js").color} [out] Deprecated: use set(c, d)
  * @return {import("./color.js").color}
  */
-
 function copy(color, out) {
   if (out) set(out, color); // For backward compatibility.
-
   return color.slice();
 }
+
 /**
  * Sets a color to another color.
  * @param {import("./color.js").color} color
@@ -68,10 +63,8 @@ function copy(color, out) {
  * @param {number} [a] // Deprecated: use fromRGB(color, r, g, b, a)
  * @return {import("./color.js").color}
  */
-
 function set(color, color2, g) {
   if (g !== undefined) return fromRGB(...arguments); // For backward compatibility.
-
   color[0] = color2[0];
   color[1] = color2[1];
   color[2] = color2[2];
@@ -98,13 +91,13 @@ function fromRGBBytes(color, [r, g, b, a]) {
   if (a !== undefined) color[3] = a / 255;
   return color;
 }
+
 /**
  * Get RGB[A] color components as bytes array.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {bytes}
  */
-
 function toRGBBytes(color, out = []) {
   out[0] = Math.round(color[0] * 255);
   out[1] = Math.round(color[1] * 255);
@@ -123,7 +116,6 @@ function toRGBBytes(color, out = []) {
 /**
  * @private
  */
-
 function oklabToLinearSrgb(color, L, a, b) {
   const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
   const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
@@ -133,10 +125,10 @@ function oklabToLinearSrgb(color, L, a, b) {
   color[2] = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s;
   return color;
 }
+
 /**
  * @private
  */
-
 function linearSrgbToOklab(color, lr, lg, lb) {
   const l = Math.cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb);
   const m = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
@@ -146,6 +138,7 @@ function linearSrgbToOklab(color, lr, lg, lb) {
   color[2] = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
   return color;
 }
+
 /**
  * Updates a color based on Oklab values and alpha.
  * @param {import("./color.js").color} color
@@ -155,7 +148,6 @@ function linearSrgbToOklab(color, lr, lg, lb) {
  * @param {number} [α]
  * @return {import("./color.js").color}
  */
-
 function fromOklab(color, L, a, b, α) {
   oklabToLinearSrgb(color, L, a, b);
   color[0] = fromLinear(color[0]);
@@ -163,13 +155,13 @@ function fromOklab(color, L, a, b, α) {
   color[2] = fromLinear(color[2]);
   return setAlpha(color, α);
 }
+
 /**
  * Returns an Oklab representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {oklab}
  */
-
 function toOklab([r, g, b, a], out = []) {
   linearSrgbToOklab(out, toLinear(r), toLinear(g), toLinear(b));
   return setAlpha(out, a);
@@ -179,28 +171,29 @@ const setAlpha = (color, a) => {
   if (a !== undefined) color[3] = a;
   return color;
 };
+
 /**
  * Convert component from linear value
  * @param {number} c
  * @returns {number}
  */
-
 const fromLinear = c => c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
+
 /**
  * Convert component to linear value
  * @param {number} c
  * @returns {number}
  */
-
 const toLinear = c => c > 0.04045 ? ((c + 0.055) / 1.055) ** 2.4 : c / 12.92;
 const floorArray = (color, precision = 5) => {
   const p = 10 ** precision;
   color.forEach((n, i) => color[i] = Math.floor((n + Number.EPSILON) * p) / p);
   return color;
 };
-const TMP = [0, 0, 0]; // HSLuv
-// https://github.com/hsluv/hsluv/tree/master/haxe/src/hsluv
+const TMP = [0, 0, 0];
 
+// HSLuv
+// https://github.com/hsluv/hsluv/tree/master/haxe/src/hsluv
 const L_EPSILON = 1e-10;
 const m = [[3.240969941904521, -1.537383177570093, -0.498610760293], [-0.96924363628087, 1.87596750150772, 0.041555057407175], [0.055630079696993, -0.20397695888897, 1.056971514242878]];
 const minv = [[0.41239079926595, 0.35758433938387, 0.18048078840183], [0.21263900587151, 0.71516867876775, 0.072192315360733], [0.019330818715591, 0.11919477979462, 0.95053215224966]];
@@ -208,16 +201,12 @@ const REF_U = 0.19783000664283;
 const REF_V = 0.46831999493879;
 const KAPPA = 9.032962962;
 const EPSILON = 0.000088564516;
-
 const yToL = Y => Y <= EPSILON ? Y * KAPPA : 1.16 * Y ** (1 / 3) - 0.16;
-
 const lToY = L => L <= 0.08 ? L / KAPPA : ((L + 0.16) / 1.16) ** 3;
-
 const xyzToLuv = ([X, Y, Z]) => {
   const divider = X + 15 * Y + 3 * Z;
   let varU = 4 * X;
   let varV = 9 * Y;
-
   if (divider !== 0) {
     varU /= divider;
     varV /= divider;
@@ -225,7 +214,6 @@ const xyzToLuv = ([X, Y, Z]) => {
     varU = NaN;
     varV = NaN;
   }
-
   const L = yToL(Y);
   if (L === 0) return [0, 0, 0];
   return [L, 13 * L * (varU - REF_U), 13 * L * (varV - REF_V)];
@@ -241,34 +229,31 @@ const luvToXyz = ([L, U, V]) => {
 const luvToLch = ([L, U, V]) => {
   const C = Math.sqrt(U * U + V * V);
   let H;
-
   if (C < L_EPSILON) {
     H = 0;
   } else {
     H = Math.atan2(V, U) / (2 * Math.PI);
     if (H < 0) H = 1 + H;
   }
-
   return [L, C, H];
 };
 const lchToLuv = ([L, C, H]) => {
   const Hrad = H * 2 * Math.PI;
   return [L, Math.cos(Hrad) * C, Math.sin(Hrad) * C];
-}; // TODO: normalize
+};
 
+// TODO: normalize
 const getBounds = L => {
   const result = [];
   const sub1 = (L + 16) ** 3 / 1560896;
   const sub2 = sub1 > EPSILON ? sub1 : L / KAPPA;
   let _g = 0;
-
   while (_g < 3) {
     const c = _g++;
     const m1 = m[c][0];
     const m2 = m[c][1];
     const m3 = m[c][2];
     let _g1 = 0;
-
     while (_g1 < 2) {
       const t = _g1++;
       const top1 = (284517 * m1 - 94839 * m3) * sub2;
@@ -280,11 +265,11 @@ const getBounds = L => {
       });
     }
   }
-
   return result;
-}; // Okhsl/Okhsv
-// https://github.com/bottosson/bottosson.github.io/blob/master/misc/colorpicker/colorconversion.js
+};
 
+// Okhsl/Okhsv
+// https://github.com/bottosson/bottosson.github.io/blob/master/misc/colorpicker/colorconversion.js
 const k1 = 0.206;
 const k2 = 0.03;
 const k3 = (1 + k1) / (1 + k2);
@@ -294,10 +279,8 @@ function toe(x) {
 function toeInv(x) {
   return (x * x + k1 * x) / (k3 * (x + k2));
 }
-
 function computeMaxSaturation(a, b) {
   let k0, k1, k2, k3, k4, wl, wm, ws;
-
   if (-1.88170328 * a - 0.80936493 * b > 1) {
     k0 = 1.19086277;
     k1 = 1.76576728;
@@ -326,7 +309,6 @@ function computeMaxSaturation(a, b) {
     wm = -0.7034186147;
     ws = 1.707614701;
   }
-
   let S = k0 + k1 * a + k2 * b + k3 * a * a + k4 * a * b;
   const kl = 0.3963377774 * a + 0.2158037573 * b;
   const km = -0.1055613458 * a - 0.0638541728 * b;
@@ -349,7 +331,6 @@ function computeMaxSaturation(a, b) {
   S = S - f * f1 / (f1 * f1 - 0.5 * f * f2);
   return S;
 }
-
 function findCusp(a, b) {
   const sCusp = computeMaxSaturation(a, b);
   oklabToLinearSrgb(TMP, 1, sCusp * a, sCusp * b);
@@ -398,20 +379,19 @@ var utils = /*#__PURE__*/Object.freeze({
  * @param {number} [a]
  * @return {import("./color.js").color}
  */
-
 function fromLinear$1(color, r, g, b, a) {
   color[0] = fromLinear(r);
   color[1] = fromLinear(g);
   color[2] = fromLinear(b);
   return setAlpha(color, a);
 }
+
 /**
  * Returns a linear color representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {linear}
  */
-
 function toLinear$1([r, g, b, a], out = []) {
   out[0] = toLinear(r);
   out[1] = toLinear(g);
@@ -432,7 +412,6 @@ function toLinear$1([r, g, b, a], out = []) {
 function fromHex(color, hex) {
   hex = hex.replace(/^#/, "");
   let a = 1;
-
   if (hex.length === 8) {
     a = parseInt(hex.slice(6, 8), 16) / 255;
     hex = hex.slice(0, 6);
@@ -440,11 +419,9 @@ function fromHex(color, hex) {
     a = parseInt(hex.slice(3, 4).repeat(2), 16) / 255;
     hex = hex.slice(0, 3);
   }
-
   if (hex.length === 3) {
     hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
   }
-
   const num = parseInt(hex, 16);
   color[0] = (num >> 16 & 255) / 255;
   color[1] = (num >> 8 & 255) / 255;
@@ -452,13 +429,13 @@ function fromHex(color, hex) {
   if (color[3] !== undefined) color[3] = a;
   return color;
 }
+
 /**
  * Returns a hexadecimal string representation of a given color.
  * @param {import("./color.js").color} color
  * @param {boolean} alpha Handle alpha
  * @return {hex}
  */
-
 function toHex(color, alpha = true) {
   const c = color.map(val => Math.round(val * 255));
   return `#${(c[2] | c[1] << 8 | c[0] << 16 | 1 << 24).toString(16).slice(1).toUpperCase()}${alpha && color[3] !== undefined && color[3] !== 1 ? (c[3] | 1 << 8).toString(16).slice(1) : ""}`;
@@ -479,6 +456,7 @@ function hue2rgb(p, q, t) {
   if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
   return p;
 }
+
 /**
  * Updates a color based on HSL values and alpha.
  * @param {import("./color.js").color} color
@@ -488,8 +466,6 @@ function hue2rgb(p, q, t) {
  * @param {number} [a]
  * @return {import("./color.js").color}
  */
-
-
 function fromHSL(color, h, s, l, a) {
   if (s === 0) {
     color[0] = color[1] = color[2] = l; // achromatic
@@ -500,44 +476,37 @@ function fromHSL(color, h, s, l, a) {
     color[1] = hue2rgb(p, q, h);
     color[2] = hue2rgb(p, q, h - 1 / 3);
   }
-
   return setAlpha(color, a);
 }
+
 /**
  * Returns a HSL representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {hsl}
  */
-
 function toHSL([r, g, b, a], out = []) {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   out[2] = (max + min) / 2;
-
   if (max === min) {
     out[0] = out[1] = 0; // achromatic
   } else {
     const d = max - min;
     out[1] = out[2] > 0.5 ? d / (2 - max - min) : d / (max + min);
-
     switch (max) {
       case r:
         out[0] = (g - b) / d + (g < b ? 6 : 0);
         break;
-
       case g:
         out[0] = (b - r) / d + 2;
         break;
-
       case b:
         out[0] = (r - g) / d + 4;
         break;
     }
-
     out[0] /= 6;
   }
-
   return setAlpha(out, a);
 }
 
@@ -557,28 +526,25 @@ function toHSL([r, g, b, a], out = []) {
  * @param {number} [a]
  * @return {import("./color.js").color}
  */
-
 function fromHWB(color, h, w, b, a) {
   if (w + b >= 1) {
     color[0] = color[1] = color[2] = w / (w + b);
   } else {
     fromHSL(color, h, 1, 0.5);
-
     for (let i = 0; i < 3; i++) {
       color[i] *= 1 - w - b;
       color[i] += w;
     }
   }
-
   return setAlpha(color, a);
 }
+
 /**
  * Returns a HWB representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {hwb}
  */
-
 function toHWB(color, out = []) {
   toHSL(color, out);
   out[1] = Math.min(color[0], color[1], color[2]);
@@ -602,68 +568,59 @@ function toHWB(color, out = []) {
  * @param {number} [a]
  * @return {import("./color.js").color}
  */
-
 function fromHSV(color, h, s, v, a) {
   const i = Math.floor(h * 6);
   const f = h * 6 - i;
   const p = v * (1 - s);
   const q = v * (1 - f * s);
   const t = v * (1 - (1 - f) * s);
-
   switch (i % 6) {
     case 0:
       color[0] = v;
       color[1] = t;
       color[2] = p;
       break;
-
     case 1:
       color[0] = q;
       color[1] = v;
       color[2] = p;
       break;
-
     case 2:
       color[0] = p;
       color[1] = v;
       color[2] = t;
       break;
-
     case 3:
       color[0] = p;
       color[1] = q;
       color[2] = v;
       break;
-
     case 4:
       color[0] = t;
       color[1] = p;
       color[2] = v;
       break;
-
     case 5:
       color[0] = v;
       color[1] = p;
       color[2] = q;
       break;
   }
-
   return setAlpha(color, a);
 }
+
 /**
  * Returns a HSV representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {hsv}
  */
-
 function toHSV([r, g, b, a], out = []) {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   out[2] = max;
   const d = max - min;
   out[1] = max === 0 ? 0 : d / max;
-
   if (max === min) {
     out[0] = 0; // achromatic
   } else {
@@ -671,19 +628,15 @@ function toHSV([r, g, b, a], out = []) {
       case r:
         out[0] = (g - b) / d + (g < b ? 6 : 0);
         break;
-
       case g:
         out[0] = (b - r) / d + 2;
         break;
-
       case b:
         out[0] = (r - g) / d + 4;
         break;
     }
-
     out[0] /= 6;
   }
-
   return setAlpha(out, a);
 }
 
@@ -703,7 +656,6 @@ function toHSV([r, g, b, a], out = []) {
  * @param {number} a
  * @return {import("./color.js").color}
  */
-
 function fromXYZ(color, x, y, z, a) {
   const r = x * m[0][0] + y * m[0][1] + z * m[0][2];
   const g = x * m[1][0] + y * m[1][1] + z * m[1][2];
@@ -713,13 +665,13 @@ function fromXYZ(color, x, y, z, a) {
   color[2] = fromLinear(b);
   return setAlpha(color, a);
 }
+
 /**
  * Returns a XYZ representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {xyz}
  */
-
 function toXYZ([r, g, b, a], out = []) {
   const lr = toLinear(r);
   const lg = toLinear(g);
@@ -744,19 +696,17 @@ function toXYZ([r, g, b, a], out = []) {
  * @private
  * @see {@link https://en.wikipedia.org/wiki/Illuminant_D65}
  */
-
 const D65 = [0.3127 / 0.329, 1, (1 - 0.3127 - 0.329) / 0.329];
 const D50 = [0.3457 / 0.3585, 1, (1 - 0.3457 - 0.3585) / 0.3585];
-
 function fromLabValueToXYZValue(val, white) {
   const pow = val ** 3;
   return (pow > 0.008856 ? pow : (val - 16 / 116) / 7.787037) * white;
 }
-
 function fromXYZValueToLabValue(val, white) {
   val /= white;
   return val > 0.008856 ? Math.cbrt(val) : 7.787037 * val + 16 / 116;
 }
+
 /**
  * Updates a color based on Lab values and alpha.
  * @param {import("./color.js").color} color
@@ -767,12 +717,11 @@ function fromXYZValueToLabValue(val, white) {
  * @param {Array} illuminant
  * @return {import("./color.js").color}
  */
-
-
 function fromLab(color, l, a, b, α, illuminant = D65) {
   const y = (l + 0.16) / 1.16;
   return fromXYZ(color, fromLabValueToXYZValue(a / 5 + y, illuminant[0]), fromLabValueToXYZValue(y, illuminant[1]), fromLabValueToXYZValue(y - b / 2, illuminant[2]), α);
 }
+
 /**
  * Returns a Lab representation of a given color.
  * @param {import("./color.js").color} color
@@ -780,7 +729,6 @@ function fromLab(color, l, a, b, α, illuminant = D65) {
  * @param {Array} illuminant
  * @return {lab}
  */
-
 function toLab(color, out = [], illuminant = D65) {
   const xyz = toXYZ(color);
   const x = fromXYZValueToLabValue(xyz[0], illuminant[0]);
@@ -800,6 +748,7 @@ function toLab(color, out = [], illuminant = D65) {
  */
 
 const S0 = 0.5;
+
 /**
  * Updates a color based on Okhsv values and alpha.
  * @param {import("./color.js").color} color
@@ -809,7 +758,6 @@ const S0 = 0.5;
  * @param {number} [α]
  * @return {import("./color.js").color}
  */
-
 function fromOkhsv(color, h, s, v, α) {
   const a_ = Math.cos(2 * Math.PI * h);
   const b_ = Math.sin(2 * Math.PI * h);
@@ -831,13 +779,13 @@ function fromOkhsv(color, h, s, v, α) {
   fromOklab(color, L, C * a_, C * b_);
   return setAlpha(color, α);
 }
+
 /**
  * Returns an Okhsv representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {okhsv}
  */
-
 function toOkhsv([r, g, b, a], out = []) {
   linearSrgbToOklab(TMP, toLinear(r), toLinear(g), toLinear(b));
   let C = Math.sqrt(TMP[1] * TMP[1] + TMP[2] * TMP[2]);
@@ -872,7 +820,6 @@ function toOkhsv([r, g, b, a], out = []) {
 function findGamutIntersection(a, b, L1, C1, L0, cusp = null) {
   if (!cusp) cusp = findCusp(a, b);
   let t;
-
   if ((L1 - L0) * cusp[1] - (cusp[0] - L0) * C1 <= 0) {
     t = cusp[1] * L0 / (C1 * cusp[0] + cusp[1] * (L0 - L1));
   } else {
@@ -919,17 +866,16 @@ function findGamutIntersection(a, b, L1, C1, L0, cusp = null) {
     tb = ub >= 0 ? tb : 10e5;
     t += Math.min(tr, tg, tb);
   }
-
   return t;
 }
-
 function getCs(L, a_, b_) {
   const cusp = findCusp(a_, b_);
   const Cmax = findGamutIntersection(a_, b_, L, 1, L, cusp);
-  const STmax = getStMax(a_, b_, cusp); // prettier-ignore
+  const STmax = getStMax(a_, b_, cusp);
 
-  const Smid = 0.11516993 + 1 / (7.44778970 + 4.15901240 * b_ + a_ * (-2.19557347 + 1.75198401 * b_ + a_ * (-2.13704948 - 10.02301043 * b_ + a_ * (-4.24894561 + 5.38770819 * b_ + 4.69891013 * a_)))); // prettier-ignore
-
+  // prettier-ignore
+  const Smid = 0.11516993 + 1 / (7.44778970 + 4.15901240 * b_ + a_ * (-2.19557347 + 1.75198401 * b_ + a_ * (-2.13704948 - 10.02301043 * b_ + a_ * (-4.24894561 + 5.38770819 * b_ + 4.69891013 * a_))));
+  // prettier-ignore
   const Tmid = 0.11239642 + 1 / (1.61320320 - 0.68124379 * b_ + a_ * (+0.40370612 + 0.90148123 * b_ + a_ * (-0.27087943 + 0.61223990 * b_ + a_ * (+0.00299215 - 0.45399568 * b_ - 0.14661872 * a_))));
   const k = Cmax / Math.min(L * STmax[0], (1 - L) * STmax[1]);
   let Ca = L * Smid;
@@ -939,6 +885,7 @@ function getCs(L, a_, b_) {
   Cb = (1 - L) * 0.8;
   return [Math.sqrt(1 / (1 / (Ca * Ca) + 1 / (Cb * Cb))), Cmid, Cmax];
 }
+
 /**
  * Updates a color based on Okhsl values and alpha.
  * @param {import("./color.js").color} color
@@ -948,8 +895,6 @@ function getCs(L, a_, b_) {
  * @param {number} [α]
  * @return {import("./color.js").color}
  */
-
-
 function fromOkhsl(color, h, s, l, α) {
   if (l == 1) {
     color[0] = color[1] = color[2] = 1;
@@ -961,7 +906,6 @@ function fromOkhsl(color, h, s, l, α) {
     let L = toeInv(l);
     const [C0, Cmid, Cmax] = getCs(L, a_, b_);
     let C, t, k0, k1, k2;
-
     if (s < 0.8) {
       t = 1.25 * s;
       k0 = 0;
@@ -973,20 +917,18 @@ function fromOkhsl(color, h, s, l, α) {
       k1 = 0.2 * Cmid * Cmid * 1.25 * 1.25 / C0;
       k2 = 1 - k1 / (Cmax - Cmid);
     }
-
     C = k0 + t * k1 / (1 - k2 * t);
     fromOklab(color, L, C * a_, C * b_);
   }
-
   return setAlpha(color, α);
 }
+
 /**
  * Returns an Okhsl representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {okhsl}
  */
-
 function toOkhsl([r, g, b, a], out = []) {
   linearSrgbToOklab(TMP, toLinear(r), toLinear(g), toLinear(b));
   const C = Math.sqrt(TMP[1] * TMP[1] + TMP[2] * TMP[2]);
@@ -995,7 +937,6 @@ function toOkhsl([r, g, b, a], out = []) {
   const L = TMP[0];
   out[0] = 0.5 + 0.5 * Math.atan2(-TMP[2], -TMP[1]) / Math.PI;
   const [C0, Cmid, Cmax] = getCs(L, a_, b_);
-
   if (C < Cmid) {
     const k0 = 0;
     const k1 = 0.8 * C0;
@@ -1009,7 +950,6 @@ function toOkhsl([r, g, b, a], out = []) {
     const t = (C - k0) / (k1 + k2 * (C - k0));
     out[1] = 0.8 + 0.2 * t;
   }
-
   out[2] = toe(L);
   return setAlpha(out, a);
 }
@@ -1030,17 +970,16 @@ function toOkhsl([r, g, b, a], out = []) {
  * @param {number} [a]
  * @return {import("./color.js").color}
  */
-
 function fromLCHuv(color, l, c, h, a) {
   return fromXYZ(color, ...luvToXyz(lchToLuv([l, c, h])), a);
 }
+
 /**
  * Returns a LCHuv representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {lchuv}
  */
-
 function toLCHuv([r, g, b, a], out = []) {
   [out[0], out[1], out[2]] = luvToLch(xyzToLuv(toXYZ([r, g, b])));
   return setAlpha(out, a);
@@ -1057,34 +996,30 @@ const lengthOfRayUntilIntersect = (theta, {
   intercept,
   slope
 }) => intercept / (Math.sin(theta) - slope * Math.cos(theta));
-
 const maxChromaForLH = (L, H) => {
   const hrad = H * Math.PI * 2;
   const bounds = getBounds(L * 100);
   let min = Infinity;
   let _g = 0;
-
   while (_g < bounds.length) {
     const bound = bounds[_g];
     ++_g;
     const length = lengthOfRayUntilIntersect(hrad, bound);
     if (length >= 0) min = Math.min(min, length);
   }
-
   return min / 100;
 };
-
 const hsluvToLch = ([H, S, L]) => {
   if (L > 1 - L_EPSILON) return [1, 0, H];
   if (L < L_EPSILON) return [0, 0, H];
   return [L, maxChromaForLH(L, H) * S, H];
 };
-
 const lchToHsluv = ([L, C, H]) => {
   if (L > 1 - L_EPSILON) return [H, 0, 1];
   if (L < L_EPSILON) return [H, 0, 0];
   return [H, C / maxChromaForLH(L, H), L];
 };
+
 /**
  * Updates a color based on HSLuv values and alpha.
  * @param {import("./color.js").color} color
@@ -1094,18 +1029,16 @@ const lchToHsluv = ([L, C, H]) => {
  * @param {number} [a]
  * @return {import("./color.js").color}
  */
-
-
 function fromHSLuv(color, h, s, l, a) {
   return fromLCHuv(color, ...hsluvToLch([h, s, l]), a);
 }
+
 /**
  * Returns a HSLuv representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {hsluv}
  */
-
 function toHSLuv([r, g, b, a], out = []) {
   [out[0], out[1], out[2]] = lchToHsluv(toLCHuv([r, g, b]));
   return setAlpha(out, a);
@@ -1121,33 +1054,29 @@ const distanceLineFromOrigin = ({
   intercept,
   slope
 }) => Math.abs(intercept) / Math.sqrt(slope ** 2 + 1);
-
 const maxSafeChromaForL = L => {
   const bounds = getBounds(L * 100);
   let min = Infinity;
   let _g = 0;
-
   while (_g < bounds.length) {
     const bound = bounds[_g];
     ++_g;
     const length = distanceLineFromOrigin(bound);
     min = Math.min(min, length);
   }
-
   return min / 100;
 };
-
 const hpluvToLch = ([H, S, L]) => {
   if (L > 1 - L_EPSILON) return [1, 0, H];
   if (L < L_EPSILON) return [0, 0, H];
   return [L, maxSafeChromaForL(L) * S, H];
 };
-
 const lchToHpluv = ([L, C, H]) => {
   if (L > 1 - L_EPSILON) return [H, 0, 1];
   if (L < L_EPSILON) return [H, 0, 0];
   return [H, C / maxSafeChromaForL(L), L];
 };
+
 /**
  * Updates a color based on HPLuv values and alpha.
  * @param {import("./color.js").color} color
@@ -1157,18 +1086,16 @@ const lchToHpluv = ([L, C, H]) => {
  * @param {number} [a]
  * @return {import("./color.js").color}
  */
-
-
 function fromHPLuv(color, h, s, l, a) {
   return fromLCHuv(color, ...hpluvToLch([h, s, l]), a);
 }
+
 /**
  * Returns a HPLuv representation of a given color.
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @return {hpluv}
  */
-
 function toHPLuv([r, g, b, a], out = []) {
   [out[0], out[1], out[2]] = lchToHpluv(toLCHuv([r, g, b]));
   return setAlpha(out, a);
@@ -1179,26 +1106,26 @@ function toHPLuv([r, g, b, a], out = []) {
  *
  * @see {@link https://www.w3.org/TR/css-color-4/}
  */
+
 /**
  * Returns a rgb CSS string representation of a given color.
  * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @return {css}
  */
-
 function toCSSRGB(color, precision = 5) {
   toRGBBytes(color, TMP);
   if (precision !== undefined) floorArray(TMP, precision);
   const a = color[3] !== undefined ? `, ${color[3]}` : "";
   return `rgb${a ? "a" : ""}(${TMP.slice(0, 3).join(", ")}${a})`;
 }
+
 /**
  * Returns a hsl CSS string representation of a given color.
  * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @return {css}
  */
-
 function toCSSHSL(color, precision = 5) {
   toHSL(color, TMP);
   TMP[0] *= 360;
@@ -1208,13 +1135,13 @@ function toCSSHSL(color, precision = 5) {
   const a = color[3] !== undefined ? `, ${color[3]}` : "";
   return `hsl${a ? "a" : ""}(${TMP[0]}, ${TMP[1]}%, ${TMP[2]}%${a})`;
 }
+
 /**
  * Returns a lab CSS string representation of a given color.
  * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @return {css}
  */
-
 function toCSSLab(color, precision = 5) {
   toLab(color, TMP, D50);
   TMP[0] *= 100;
@@ -1223,25 +1150,25 @@ function toCSSLab(color, precision = 5) {
   if (precision !== undefined) floorArray(TMP, precision);
   return `lab(${TMP[0]}% ${TMP[1]} ${TMP[2]}${color[3] !== undefined ? ` / ${color[3]}` : ""})`;
 }
+
 /**
  * Returns a lch CSS string representation of a given color.
  * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @return {css}
  */
-
 function toCSSLCH(color, precision = 5) {
   toLCHuv(color, TMP);
   if (precision !== undefined) floorArray(TMP, precision);
   return `lch(${TMP[0]}% ${TMP[1]} ${TMP[2]}${color[3] !== undefined ? ` / ${color[3]}` : ""})`;
 }
+
 /**
  * Returns a hwb CSS string representation of a given color.
  * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @return {css}
  */
-
 function toCSSHWB(color, precision = 5) {
   toHWB(color, TMP);
   if (precision !== undefined) floorArray(TMP, precision);

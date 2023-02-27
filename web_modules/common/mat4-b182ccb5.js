@@ -1,11 +1,10 @@
-import './web.dom-collections.iterator-24f03f52.js';
-
 /** @module utils */
 
 /**
  * @constant {number}
  */
 const EPSILON = 0.000001;
+
 /**
  * Linear interpolation between two numbers.
  * @param {number} a
@@ -13,10 +12,10 @@ const EPSILON = 0.000001;
  * @param {number} t
  * @returns {number}
  */
-
 function lerp(a, b, t) {
   return a + (b - a) * t;
 }
+
 /**
  * Clamps a number between two numbers.
  * @param {number} n
@@ -24,10 +23,10 @@ function lerp(a, b, t) {
  * @param {number} max
  * @returns {number}
  */
-
 function clamp(n, min, max) {
   return Math.max(min, Math.min(n, max));
 }
+
 /**
  * Smooth Hermite interpolation between 0 and 1
  * @param {number} n
@@ -35,11 +34,11 @@ function clamp(n, min, max) {
  * @param {number} max
  * @returns {number}
  */
-
 function smoothstep(n, min, max) {
   n = clamp((n - min) / (max - min), 0, 1);
   return n * n * (3 - 2 * n);
 }
+
 /**
  * Maps a number from one range to another.
  * @param {number} n
@@ -49,52 +48,51 @@ function smoothstep(n, min, max) {
  * @param {number} outEnd
  * @returns {number}
  */
-
 function map(n, inStart, inEnd, outStart, outEnd) {
   return outStart + (outEnd - outStart) * (n - inStart) / (inEnd - inStart);
 }
+
 /**
  * Transforms degrees into radians.
  * @param {import("./types.js").Degrees} degrees
  * @returns {import("./types.js").Radians}
  */
-
 function toRadians(degrees) {
   return degrees * Math.PI / 180;
 }
+
 /**
  * Transforms radians into degrees.
  * @param {import("./types.js").Radians} radians
  * @returns {import("./types.js").Degrees}
  */
-
 function toDegrees(radians) {
   return radians * 180 / Math.PI;
 }
+
 /**
  * Returns the sign of a number.
  * @param {number} n
  * @returns {number}
  */
-
 function sign(n) {
   return n / Math.abs(n);
 }
+
 /**
  * Check if a number is a power of two
  * @param {number} a
  * @returns {boolean}
  */
-
 function isPowerOfTwo(a) {
   return (a & a - 1) === 0;
 }
+
 /**
  * Returns the next highest power of two.
  * @param {number} n
  * @returns {number}
  */
-
 function nextPowerOfTwo(n) {
   if (n === 0) return 1;
   n--;
@@ -119,6 +117,8 @@ var utils = /*#__PURE__*/Object.freeze({
   isPowerOfTwo: isPowerOfTwo,
   nextPowerOfTwo: nextPowerOfTwo
 });
+
+/** @module mat4 */
 
 /**
  * Returns a 4x4 identity matrix.
@@ -147,38 +147,37 @@ var utils = /*#__PURE__*/Object.freeze({
  * ```
  * @returns {import("./types.js").mat4}
  */
-
 function create() {
   // prettier-ignore
   return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 }
+
 /**
  * Sets a matrix to the identity matrix.
  * @param {import("./types.js").mat4} a
  * @returns {import("./types.js").mat4}
  */
-
 function identity(a) {
   a[0] = a[5] = a[10] = a[15] = 1;
   a[1] = a[2] = a[3] = a[4] = a[6] = a[7] = a[8] = a[9] = a[11] = a[12] = a[13] = a[14] = 0;
   return a;
 }
+
 /**
  * Returns a copy of a matrix.
  * @param {import("./types.js").mat4} a
  * @returns {import("./types.js").mat4}
  */
-
 function copy(a) {
   return a.slice();
 }
+
 /**
  * Sets a matrix from another matrix.
  * @param {import("./types.js").mat4} a
  * @param {import("./types.js").mat4} b
  * @returns {import("./types.js").mat4}
  */
-
 function set(a, b) {
   a[0] = b[0];
   a[1] = b[1];
@@ -198,23 +197,23 @@ function set(a, b) {
   a[15] = b[15];
   return a;
 }
+
 /**
  * Compares two matrices.
  * @param {import("./types.js").mat4} a
  * @param {import("./types.js").mat4} b
  * @returns {boolean}
  */
-
 function equals(a, b) {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3] && a[4] === b[4] && a[5] === b[5] && a[6] === b[6] && a[7] === b[7] && a[8] === b[8] && a[9] === b[9] && a[10] === b[10] && a[11] === b[11] && a[12] === b[12] && a[13] === b[13] && a[14] === b[14] && a[15] === b[15];
 }
+
 /**
  * Multiplies two matrices.
  * @param {import("./types.js").mat4} a
  * @param {import("./types.js").mat4} b
  * @returns {import("./types.js").mat4}
  */
-
 function mult(a, b) {
   const a00 = a[0];
   const a01 = a[1];
@@ -266,12 +265,12 @@ function mult(a, b) {
   a[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
   return a;
 }
+
 /**
  * Inverts a matrix.
  * @param {import("./types.js").mat4} a
  * @returns {import("./types.js").mat4}
  */
-
 function invert(a) {
   const a00 = a[0];
   const a10 = a[1];
@@ -357,12 +356,12 @@ function invert(a) {
   a[15] *= det;
   return a;
 }
+
 /**
  * Transposes a matrix.
  * @param {import("./types.js").mat4} a
  * @returns {import("./types.js").mat4}
  */
-
 function transpose(a) {
   const a01 = a[1];
   const a02 = a[2];
@@ -374,32 +373,33 @@ function transpose(a) {
   const a23 = a[11];
   const a30 = a[12];
   const a31 = a[13];
-  const a32 = a[14]; // 1st row - keeping a00
+  const a32 = a[14];
 
+  // 1st row - keeping a00
   a[1] = a[4];
   a[2] = a20;
-  a[3] = a30; // 2nd row - keeping a11
-
+  a[3] = a30;
+  // 2nd row - keeping a11
   a[4] = a01;
   a[6] = a21;
-  a[7] = a31; // 3rd row - keeping a22
-
+  a[7] = a31;
+  // 3rd row - keeping a22
   a[8] = a02;
   a[9] = a12;
-  a[11] = a32; // 4th row - keeping a33
-
+  a[11] = a32;
+  // 4th row - keeping a33
   a[12] = a03;
   a[13] = a13;
   a[14] = a23;
   return a;
 }
+
 /**
  * Translates a matrix by a vector.
  * @param {import("./types.js").mat4} a
  * @param {import("./types.js").vec3} v
  * @returns {import("./types.js").mat4}
  */
-
 function translate(a, [x, y, z]) {
   a[12] += a[0] * x + a[4] * y + a[8] * z;
   a[13] += a[1] * x + a[5] * y + a[9] * z;
@@ -407,6 +407,7 @@ function translate(a, [x, y, z]) {
   a[15] += a[3] * x + a[7] * y + a[11] * z;
   return a;
 }
+
 /**
  * Rotates a matrix by an angle at an axis.
  * @param {import("./types.js").mat4} a
@@ -414,14 +415,11 @@ function translate(a, [x, y, z]) {
  * @param {import("./types.js").vec3} v
  * @returns {import("./types.js").mat4}
  */
-
 function rotate(a, r, [x, y, z]) {
   let len = Math.sqrt(x * x + y * y + z * z);
-
   if (len < EPSILON) {
     return null;
   }
-
   len = 1 / len;
   x *= len;
   y *= len;
@@ -464,13 +462,13 @@ function rotate(a, r, [x, y, z]) {
   a[11] = a03 * b20 + a13 * b21 + a23 * b22;
   return a;
 }
+
 /**
  * Scales a matrix by a vector.
  * @param {import("./types.js").mat4} a
  * @param {import("./types.js").vec3} v
  * @returns {import("./types.js").mat4}
  */
-
 function scale(a, [x, y, z]) {
   a[0] *= x;
   a[1] *= x;
@@ -486,13 +484,13 @@ function scale(a, [x, y, z]) {
   a[11] *= z;
   return a;
 }
+
 /**
  * Sets a matrix to a quaternion.
  * @param {import("./types.js").mat4} a
  * @param {import("./types.js").quat} q
  * @returns {import("./types.js").mat4}
  */
-
 function fromQuat(a, q) {
   const x = q[0];
   const y = q[1];
@@ -523,6 +521,7 @@ function fromQuat(a, q) {
   a[15] = 1;
   return a;
 }
+
 /**
  * Sets a matrix to the TRS matrix.
  * @param {import("./types.js").mat4} a
@@ -531,13 +530,13 @@ function fromQuat(a, q) {
  * @param {import("./types.js").vec3} s
  * @returns {import("./types.js").mat4}
  */
-
 function fromTranslationRotationScale(a, v, q, s) {
   // const TEMP_0 = create();
   // identity(a);
   // translate(a, translation);
   // mult(a, fromQuat(TEMP_0, rotation));
   // scale(a, scaling);
+
   const x = q[0];
   const y = q[1];
   const z = q[2];
@@ -570,13 +569,13 @@ function fromTranslationRotationScale(a, v, q, s) {
   a[14] = v[2];
   return a;
 }
+
 /**
  * Sets a 4x4 matrix to a 3x3 matrix.
  * @param {import("./types.js").mat4} a
  * @param {import("./types.js").mat3} b
  * @returns {import("./types.js").mat4}
  */
-
 function fromMat3(a, b) {
   a[0] = b[0];
   a[1] = b[1];
@@ -591,6 +590,7 @@ function fromMat3(a, b) {
   a[15] = 1;
   return a;
 }
+
 /**
  * Creates a frustum matrix.
  * @param {import("./types.js").mat4} a
@@ -602,7 +602,6 @@ function fromMat3(a, b) {
  * @param {number} far
  * @returns {import("./types.js").mat4}
  */
-
 function frustum(a, left, right, bottom, top, near, far) {
   const rl = 1 / (right - left);
   const tb = 1 / (top - bottom);
@@ -625,6 +624,7 @@ function frustum(a, left, right, bottom, top, near, far) {
   a[15] = 0;
   return a;
 }
+
 /**
  * Creates a perspective matrix.
  * @param {import("./types.js").mat4} a
@@ -634,7 +634,6 @@ function frustum(a, left, right, bottom, top, near, far) {
  * @param {number} far
  * @returns {import("./types.js").mat4}
  */
-
 function perspective(a, fovy, aspectRatio, near, far) {
   const f = 1 / Math.tan(fovy / 2);
   const nf = 1 / (near - far);
@@ -646,6 +645,7 @@ function perspective(a, fovy, aspectRatio, near, far) {
   a[14] = 2 * far * near * nf;
   return a;
 }
+
 /**
  * Creates an orthographic matrix.
  * @param {import("./types.js").mat4} a
@@ -657,7 +657,6 @@ function perspective(a, fovy, aspectRatio, near, far) {
  * @param {number} far
  * @returns {import("./types.js").mat4}
  */
-
 function ortho(a, left, right, bottom, top, near, far) {
   const lr = left - right;
   const bt = bottom - top;
@@ -672,6 +671,7 @@ function ortho(a, left, right, bottom, top, near, far) {
   a[15] = 1;
   return a;
 }
+
 /**
  * Calculates a lookAt matrix from position, target and up vectors.
  * @param {import("./types.js").mat4} a
@@ -680,12 +680,10 @@ function ortho(a, left, right, bottom, top, near, far) {
  * @param {import("./types.js").vec3} up
  * @returns {import("./types.js").mat4}
  */
-
 function lookAt(a, [eyex, eyey, eyez], [targetx, targety, targetz], [upx, upy, upz]) {
   if (Math.abs(eyex - targetx) < EPSILON && Math.abs(eyey - targety) < EPSILON && Math.abs(eyez - targetz) < EPSILON) {
     return identity(a);
   }
-
   let z0 = eyex - targetx;
   let z1 = eyey - targety;
   let z2 = eyez - targetz;
@@ -697,26 +695,22 @@ function lookAt(a, [eyex, eyey, eyez], [targetx, targety, targetz], [upx, upy, u
   let x1 = upz * z0 - upx * z2;
   let x2 = upx * z1 - upy * z0;
   len = Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
-
   if (len) {
     len = 1 / len;
     x0 *= len;
     x1 *= len;
     x2 *= len;
   }
-
   let y0 = z1 * x2 - z2 * x1;
   let y1 = z2 * x0 - z0 * x2;
   let y2 = z0 * x1 - z1 * x0;
   len = Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2);
-
   if (len) {
     len = 1 / len;
     x0 *= len;
     x1 *= len;
     x2 *= len;
   }
-
   a[0] = x0;
   a[1] = y0;
   a[2] = z0;

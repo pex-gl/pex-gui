@@ -1,113 +1,55 @@
-import { K as getBuiltIn, j as functionUncurryThis, f as fails, y as isCallable, L as inspectSource, M as toPropertyKey, o as objectDefineProperty, B as createPropertyDescriptor, r as lengthOfArrayLike, N as toAbsoluteIndex, O as objectSetPrototypeOf, z as isObject, E as createNonEnumerableProperty, C as hasOwnProperty_1, P as objectIsPrototypeOf, Q as copyConstructorProperties, n as descriptors, s as global_1, _ as _export } from './web.dom-collections.iterator-24f03f52.js';
-import { l as classof, t as toString_1, m as functionApply } from './esnext.iterator.map-7321cf9a.js';
+import { f as functionBindNative, a as functionUncurryThis, b as aCallable, i as isCallable, d as anObject, o as objectDefineProperty, e as isObject, g as classof, h as createNonEnumerableProperty, j as fails, k as createPropertyDescriptor, l as getBuiltIn, m as hasOwnProperty_1, n as objectIsPrototypeOf, p as copyConstructorProperties, q as descriptors, r as global_1, _ as _export } from './esnext.iterator.map-73de652f.js';
 
-var noop = function () { /* empty */ };
-var empty = [];
-var construct = getBuiltIn('Reflect', 'construct');
-var constructorRegExp = /^\s*(?:class|function)\b/;
-var exec = functionUncurryThis(constructorRegExp.exec);
-var INCORRECT_TO_STRING = !constructorRegExp.exec(noop);
+var FunctionPrototype = Function.prototype;
+var apply = FunctionPrototype.apply;
+var call = FunctionPrototype.call;
 
-var isConstructorModern = function isConstructor(argument) {
-  if (!isCallable(argument)) return false;
+// eslint-disable-next-line es/no-reflect -- safe
+var functionApply = typeof Reflect == 'object' && Reflect.apply || (functionBindNative ? call.bind(apply) : function () {
+  return call.apply(apply, arguments);
+});
+
+var functionUncurryThisAccessor = function (object, key, method) {
   try {
-    construct(noop, empty, argument);
-    return true;
-  } catch (error) {
-    return false;
-  }
+    // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+    return functionUncurryThis(aCallable(Object.getOwnPropertyDescriptor(object, key)[method]));
+  } catch (error) { /* empty */ }
 };
 
-var isConstructorLegacy = function isConstructor(argument) {
-  if (!isCallable(argument)) return false;
-  switch (classof(argument)) {
-    case 'AsyncFunction':
-    case 'GeneratorFunction':
-    case 'AsyncGeneratorFunction': return false;
-  }
+var $String = String;
+var $TypeError = TypeError;
+
+var aPossiblePrototype = function (argument) {
+  if (typeof argument == 'object' || isCallable(argument)) return argument;
+  throw $TypeError("Can't set " + $String(argument) + ' as a prototype');
+};
+
+/* eslint-disable no-proto -- safe */
+
+
+
+
+// `Object.setPrototypeOf` method
+// https://tc39.es/ecma262/#sec-object.setprototypeof
+// Works with __proto__ only. Old v8 can't work with null proto objects.
+// eslint-disable-next-line es/no-object-setprototypeof -- safe
+var objectSetPrototypeOf = Object.setPrototypeOf || ('__proto__' in {} ? function () {
+  var CORRECT_SETTER = false;
+  var test = {};
+  var setter;
   try {
-    // we can't check .prototype since constructors produced by .bind haven't it
-    // `Function#toString` throws on some built-it function in some legacy engines
-    // (for example, `DOMQuad` and similar in FF41-)
-    return INCORRECT_TO_STRING || !!exec(constructorRegExp, inspectSource(argument));
-  } catch (error) {
-    return true;
-  }
-};
-
-isConstructorLegacy.sham = true;
-
-// `IsConstructor` abstract operation
-// https://tc39.es/ecma262/#sec-isconstructor
-var isConstructor = !construct || fails(function () {
-  var called;
-  return isConstructorModern(isConstructorModern.call)
-    || !isConstructorModern(Object)
-    || !isConstructorModern(function () { called = true; })
-    || called;
-}) ? isConstructorLegacy : isConstructorModern;
-
-var createProperty = function (object, key, value) {
-  var propertyKey = toPropertyKey(key);
-  if (propertyKey in object) objectDefineProperty.f(object, propertyKey, createPropertyDescriptor(0, value));
-  else object[propertyKey] = value;
-};
-
-var $Array = Array;
-var max = Math.max;
-
-var arraySliceSimple = function (O, start, end) {
-  var length = lengthOfArrayLike(O);
-  var k = toAbsoluteIndex(start, length);
-  var fin = toAbsoluteIndex(end === undefined ? length : end, length);
-  var result = $Array(max(fin - k, 0));
-  for (var n = 0; k < fin; k++, n++) createProperty(result, n, O[k]);
-  result.length = n;
-  return result;
-};
-
-var floor = Math.floor;
-
-var mergeSort = function (array, comparefn) {
-  var length = array.length;
-  var middle = floor(length / 2);
-  return length < 8 ? insertionSort(array, comparefn) : merge(
-    array,
-    mergeSort(arraySliceSimple(array, 0, middle), comparefn),
-    mergeSort(arraySliceSimple(array, middle), comparefn),
-    comparefn
-  );
-};
-
-var insertionSort = function (array, comparefn) {
-  var length = array.length;
-  var i = 1;
-  var element, j;
-
-  while (i < length) {
-    j = i;
-    element = array[i];
-    while (j && comparefn(array[j - 1], element) > 0) {
-      array[j] = array[--j];
-    }
-    if (j !== i++) array[j] = element;
-  } return array;
-};
-
-var merge = function (array, left, right, comparefn) {
-  var llength = left.length;
-  var rlength = right.length;
-  var lindex = 0;
-  var rindex = 0;
-
-  while (lindex < llength || rindex < rlength) {
-    array[lindex + rindex] = (lindex < llength && rindex < rlength)
-      ? comparefn(left[lindex], right[rindex]) <= 0 ? left[lindex++] : right[rindex++]
-      : lindex < llength ? left[lindex++] : right[rindex++];
-  } return array;
-};
-
-var arraySort = mergeSort;
+    setter = functionUncurryThisAccessor(Object.prototype, '__proto__', 'set');
+    setter(test, []);
+    CORRECT_SETTER = test instanceof Array;
+  } catch (error) { /* empty */ }
+  return function setPrototypeOf(O, proto) {
+    anObject(O);
+    aPossiblePrototype(proto);
+    if (CORRECT_SETTER) setter(O, proto);
+    else O.__proto__ = proto;
+    return O;
+  };
+}() : undefined);
 
 var defineProperty = objectDefineProperty.f;
 
@@ -134,6 +76,13 @@ var inheritIfRequired = function ($this, dummy, Wrapper) {
   return $this;
 };
 
+var $String$1 = String;
+
+var toString_1 = function (argument) {
+  if (classof(argument) === 'Symbol') throw TypeError('Cannot convert a Symbol value to a string');
+  return $String$1(argument);
+};
+
 var normalizeStringArgument = function (argument, $default) {
   return argument === undefined ? arguments.length < 2 ? '' : $default : toString_1(argument);
 };
@@ -150,10 +99,11 @@ var $Error = Error;
 var replace = functionUncurryThis(''.replace);
 
 var TEST = (function (arg) { return String($Error(arg).stack); })('zxcasd');
+// eslint-disable-next-line redos/no-vulnerable -- safe
 var V8_OR_CHAKRA_STACK_ENTRY = /\n\s*at [^:]*:[^\n]*/;
 var IS_V8_OR_CHAKRA_STACK = V8_OR_CHAKRA_STACK_ENTRY.test(TEST);
 
-var clearErrorStack = function (stack, dropEntries) {
+var errorStackClear = function (stack, dropEntries) {
   if (IS_V8_OR_CHAKRA_STACK && typeof stack == 'string' && !$Error.prepareStackTrace) {
     while (dropEntries--) stack = replace(stack, V8_OR_CHAKRA_STACK_ENTRY, '');
   } return stack;
@@ -162,10 +112,20 @@ var clearErrorStack = function (stack, dropEntries) {
 var errorStackInstallable = !fails(function () {
   var error = Error('a');
   if (!('stack' in error)) return true;
-  // eslint-disable-next-line es-x/no-object-defineproperty -- safe
+  // eslint-disable-next-line es/no-object-defineproperty -- safe
   Object.defineProperty(error, 'stack', createPropertyDescriptor(1, 7));
   return error.stack !== 7;
 });
+
+// non-standard V8
+var captureStackTrace = Error.captureStackTrace;
+
+var errorStackInstall = function (error, C, stack, dropEntries) {
+  if (errorStackInstallable) {
+    if (captureStackTrace) captureStackTrace(error, C);
+    else createNonEnumerableProperty(error, 'stack', errorStackClear(stack, dropEntries));
+  }
+};
 
 var wrapErrorConstructorWithCause = function (FULL_NAME, wrapper, FORCED, IS_AGGREGATE_ERROR) {
   var STACK_TRACE_LIMIT = 'stackTraceLimit';
@@ -189,7 +149,7 @@ var wrapErrorConstructorWithCause = function (FULL_NAME, wrapper, FORCED, IS_AGG
     var message = normalizeStringArgument(IS_AGGREGATE_ERROR ? b : a, undefined);
     var result = IS_AGGREGATE_ERROR ? new OriginalError(a) : new OriginalError();
     if (message !== undefined) createNonEnumerableProperty(result, 'message', message);
-    if (errorStackInstallable) createNonEnumerableProperty(result, 'stack', clearErrorStack(result.stack, 2));
+    errorStackInstall(result, WrappedError, result.stack, 2);
     if (this && objectIsPrototypeOf(OriginalErrorPrototype, this)) inheritIfRequired(result, this, WrappedError);
     if (arguments.length > OPTIONS_POSITION) installErrorCause(result, arguments[OPTIONS_POSITION]);
     return result;
@@ -243,6 +203,7 @@ var exportWebAssemblyErrorCauseWrapper = function (ERROR_NAME, wrapper) {
   }
 };
 
+// https://tc39.es/ecma262/#sec-nativeerror
 // https://github.com/tc39/proposal-error-cause
 exportGlobalErrorCauseWrapper('Error', function (init) {
   return function Error(message) { return functionApply(init, this, arguments); };
@@ -275,4 +236,4 @@ exportWebAssemblyErrorCauseWrapper('RuntimeError', function (init) {
   return function RuntimeError(message) { return functionApply(init, this, arguments); };
 });
 
-export { arraySort as a, arraySliceSimple as b, createProperty as c, inheritIfRequired as d, isConstructor as i };
+export { objectSetPrototypeOf as o };

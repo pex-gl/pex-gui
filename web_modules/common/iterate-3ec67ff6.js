@@ -1,5 +1,4 @@
-import { K as getBuiltIn, d as aCallable, e as anObject, g as functionCall, w as wellKnownSymbol, s as global_1, y as isCallable, f as fails, C as hasOwnProperty_1, E as createNonEnumerableProperty, _ as _export, a4 as iteratorsCore, T as tryToString, r as lengthOfArrayLike, P as objectIsPrototypeOf } from './web.dom-collections.iterator-24f03f52.js';
-import { g as getIteratorDirect, b as asyncIteratorClose, k as anInstance, f as functionBindContext, d as getIteratorMethod, e as isArrayIteratorMethod, h as getIterator, n as iteratorClose } from './esnext.iterator.map-7321cf9a.js';
+import { M as getIteratorDirect, l as getBuiltIn, b as aCallable, d as anObject, L as functionCall, P as asyncIteratorClose, e as isObject, n as objectIsPrototypeOf, w as wellKnownSymbol, r as global_1, i as isCallable, j as fails, m as hasOwnProperty_1, h as createNonEnumerableProperty, _ as _export, S as iteratorsCore, G as isNullOrUndefined, T as getMethod, g as classof, x as tryToString, D as functionBindContext, z as lengthOfArrayLike, U as iteratorClose } from './esnext.iterator.map-73de652f.js';
 
 var $TypeError = TypeError;
 var MAX_SAFE_INTEGER = 0x1FFFFFFFFFFFFF; // 2 ** 53 - 1 == 9007199254740991
@@ -19,6 +18,7 @@ var doesNotExceedSafeInteger = function (it) {
 
 
 
+
 var createMethod = function (TYPE) {
   var IS_TO_ARRAY = TYPE == 0;
   var IS_FOR_EACH = TYPE == 1;
@@ -29,7 +29,7 @@ var createMethod = function (TYPE) {
     var Promise = getBuiltIn('Promise');
     var iterator = record.iterator;
     var next = record.next;
-    var index = 0;
+    var counter = 0;
     var MAPPING = fn !== undefined;
     if (MAPPING || !IS_TO_ARRAY) aCallable(fn);
 
@@ -40,36 +40,41 @@ var createMethod = function (TYPE) {
 
       var loop = function () {
         try {
-          if (IS_TO_ARRAY && MAPPING) try {
-            doesNotExceedSafeInteger(index);
+          if (MAPPING) try {
+            doesNotExceedSafeInteger(counter);
           } catch (error5) { ifAbruptCloseAsyncIterator(error5); }
           Promise.resolve(anObject(functionCall(next, iterator))).then(function (step) {
             try {
               if (anObject(step).done) {
                 if (IS_TO_ARRAY) {
-                  target.length = index;
+                  target.length = counter;
                   resolve(target);
                 } else resolve(IS_SOME ? false : IS_EVERY || undefined);
               } else {
                 var value = step.value;
                 try {
                   if (MAPPING) {
-                    Promise.resolve(IS_TO_ARRAY ? fn(value, index) : fn(value)).then(function (result) {
+                    var result = fn(value, counter);
+
+                    var handler = function ($result) {
                       if (IS_FOR_EACH) {
                         loop();
                       } else if (IS_EVERY) {
-                        result ? loop() : asyncIteratorClose(iterator, resolve, false, reject);
+                        $result ? loop() : asyncIteratorClose(iterator, resolve, false, reject);
                       } else if (IS_TO_ARRAY) {
                         try {
-                          target[index++] = result;
+                          target[counter++] = $result;
                           loop();
                         } catch (error4) { ifAbruptCloseAsyncIterator(error4); }
                       } else {
-                        result ? asyncIteratorClose(iterator, resolve, IS_SOME || value, reject) : loop();
+                        $result ? asyncIteratorClose(iterator, resolve, IS_SOME || value, reject) : loop();
                       }
-                    }, ifAbruptCloseAsyncIterator);
+                    };
+
+                    if (isObject(result)) Promise.resolve(result).then(handler, ifAbruptCloseAsyncIterator);
+                    else handler(result);
                   } else {
-                    target[index++] = value;
+                    target[counter++] = value;
                     loop();
                   }
                 } catch (error3) { ifAbruptCloseAsyncIterator(error3); }
@@ -92,14 +97,12 @@ var asyncIteratorIteration = {
   find: createMethod(4)
 };
 
-// https://github.com/tc39/proposal-iterator-helpers
+var $TypeError$1 = TypeError;
 
-
-
-
-
-
-
+var anInstance = function (it, Prototype) {
+  if (objectIsPrototypeOf(Prototype, it)) return it;
+  throw $TypeError$1('Incorrect invocation');
+};
 
 var IteratorPrototype = iteratorsCore.IteratorPrototype;
 
@@ -128,11 +131,39 @@ if (FORCED || !hasOwnProperty_1(IteratorPrototype, 'constructor') || IteratorPro
 
 IteratorConstructor.prototype = IteratorPrototype;
 
+// `Iterator` constructor
+// https://github.com/tc39/proposal-iterator-helpers
 _export({ global: true, constructor: true, forced: FORCED }, {
   Iterator: IteratorConstructor
 });
 
-var $TypeError$1 = TypeError;
+var iterators = {};
+
+var ITERATOR = wellKnownSymbol('iterator');
+var ArrayPrototype = Array.prototype;
+
+// check on default Array iterator
+var isArrayIteratorMethod = function (it) {
+  return it !== undefined && (iterators.Array === it || ArrayPrototype[ITERATOR] === it);
+};
+
+var ITERATOR$1 = wellKnownSymbol('iterator');
+
+var getIteratorMethod = function (it) {
+  if (!isNullOrUndefined(it)) return getMethod(it, ITERATOR$1)
+    || getMethod(it, '@@iterator')
+    || iterators[classof(it)];
+};
+
+var $TypeError$2 = TypeError;
+
+var getIterator = function (argument, usingIterator) {
+  var iteratorMethod = arguments.length < 2 ? getIteratorMethod(argument) : usingIterator;
+  if (aCallable(iteratorMethod)) return anObject(functionCall(iteratorMethod, argument));
+  throw $TypeError$2(tryToString(argument) + ' is not iterable');
+};
+
+var $TypeError$3 = TypeError;
 
 var Result = function (stopped, result) {
   this.stopped = stopped;
@@ -168,7 +199,7 @@ var iterate = function (iterable, unboundFunction, options) {
     iterator = iterable;
   } else {
     iterFn = getIteratorMethod(iterable);
-    if (!iterFn) throw $TypeError$1(tryToString(iterable) + ' is not iterable');
+    if (!iterFn) throw $TypeError$3(tryToString(iterable) + ' is not iterable');
     // optimisation for array iterators
     if (isArrayIteratorMethod(iterFn)) {
       for (index = 0, length = lengthOfArrayLike(iterable); length > index; index++) {
