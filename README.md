@@ -215,7 +215,7 @@ GUI controls for PEX.
   - [.addTextureCube(title, texture, options)](#GUI+addTextureCube) ⇒ <code>GUIControl</code>
   - [.addGraph(title, options)](#GUI+addGraph) ⇒ <code>GUIControl</code>
   - [.addFPSMeeter()](#GUI+addFPSMeeter) ⇒ <code>GUIControl</code>
-  - [.addStats([options])](#GUI+addStats) ⇒ <code>GUIControl</code>
+  - [.addStats(title, [options])](#GUI+addStats) ⇒ <code>GUIControl</code>
   - [.draw()](#GUI+draw)
   - [.serialize()](#GUI+serialize) ⇒ <code>Object</code>
   - [.deserialize(data)](#GUI+deserialize)
@@ -492,7 +492,7 @@ Add a FPS counter. Need "gui.draw()" to be called on frame.
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 <a name="GUI+addStats"></a>
 
-### guI.addStats([options]) ⇒ <code>GUIControl</code>
+### guI.addStats(title, [options]) ⇒ <code>GUIControl</code>
 
 Add an updatable object stats visualiser.
 
@@ -500,6 +500,7 @@ Add an updatable object stats visualiser.
 
 | Param     | Type                | Description                                                  |
 | --------- | ------------------- | ------------------------------------------------------------ |
+| title     | <code>string</code> |                                                              |
 | [options] | <code>Object</code> | An object with an update() function to update control.stats. |
 
 <a name="GUI+draw"></a>

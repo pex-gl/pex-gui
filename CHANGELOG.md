@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+# [3.0.0-alpha.3](https://github.com/pex-gl/pex-gui/compare/v3.0.0-alpha.2...v3.0.0-alpha.3) (2023-02-27)
+
+
+### Features
+
+* add title for gui.addStats ([68e7f5f](https://github.com/pex-gl/pex-gui/commit/68e7f5f251da1c1afb265873e0e5255b983985ff))
+
+
+
 # [3.0.0-alpha.2](https://github.com/pex-gl/pex-gui/compare/v3.0.0-alpha.1...v3.0.0-alpha.2) (2022-09-09)
 
 
