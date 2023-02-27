@@ -1048,13 +1048,14 @@ class GUI {
 
   /**
    * Add an updatable object stats visualiser.
+   * @param {string} title
    * @param {Object} [options] An object with an update() function to update control.stats.
    * @returns {GUIControl}
    */
-  addStats(options) {
+  addStats(title, options) {
     const ctrl = new GUIControl({
       type: "stats",
-      title: "STATS",
+      title: title || "STATS",
       activeArea: [
         [0, 0],
         [0, 0],

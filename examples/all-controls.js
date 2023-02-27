@@ -135,6 +135,15 @@ export default async function addAllControls(gui, ctx) {
   gui.addFPSMeeter();
   gui.addHeader("Stats");
   gui.addStats();
+  gui.addStats("Object stats", {
+    update(item) {
+      Object.assign(item.stats, {
+        r: State.rgb[0],
+        g: State.rgb[1],
+        b: State.rgb[2],
+      });
+    },
+  });
 
   return { State, res };
 }
