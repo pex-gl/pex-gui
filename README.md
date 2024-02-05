@@ -181,13 +181,6 @@ gui.addStats("Object stats", {
 
 <dl>
 <dt><a href="#GUI">GUI</a></dt>
-<dd></dd>
-</dl>
-
-## Members
-
-<dl>
-<dt><a href="#gui">gui</a></dt>
 <dd><p>GUI controls for PEX.</p>
 </dd>
 </dl>
@@ -228,7 +221,14 @@ gui.addStats("Object stats", {
 
 ## GUI
 
+GUI controls for PEX.
+
 **Kind**: global class
+**Properties**
+
+| Name      | Type                 | Default           | Description                                     |
+| --------- | -------------------- | ----------------- | ----------------------------------------------- |
+| [enabled] | <code>boolean</code> | <code>true</code> | Enable/disable pointer interaction and drawing. |
 
 - [GUI](#GUI)
   - [new GUI(ctx, opts)](#new_GUI_new)
@@ -566,19 +566,6 @@ Deserialize a previously serialized data state GUI's state.
 Remove events listeners, empty list of controls and dispose of the gui's resources.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
-<a name="gui"></a>
-
-## gui
-
-GUI controls for PEX.
-
-**Kind**: global variable
-**Properties**
-
-| Name      | Type                 | Default           | Description                                     |
-| --------- | -------------------- | ----------------- | ----------------------------------------------- |
-| [enabled] | <code>boolean</code> | <code>true</code> | Enable/disable pointer interaction and drawing. |
-
 <a name="GUIControlOptions"></a>
 
 ## GUIControlOptions : <code>object</code>

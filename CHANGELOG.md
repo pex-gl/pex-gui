@@ -1,6 +1,10 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
+
+# [3.0.0](https://github.com/pex-gl/pex-gui/compare/v3.0.0-alpha.3...v3.0.0) (2024-02-05)
+
+
 
 # [3.0.0-alpha.3](https://github.com/pex-gl/pex-gui/compare/v3.0.0-alpha.2...v3.0.0-alpha.3) (2023-02-27)
 
