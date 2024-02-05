@@ -19,7 +19,7 @@ class DebugRenderer extends CanvasRenderer {
         item.activeArea[0][0],
         item.activeArea[0][1],
         rect.width(item.activeArea),
-        rect.height(item.activeArea)
+        rect.height(item.activeArea),
       );
     });
   }

@@ -11,7 +11,7 @@ import TEXTURE_CUBE_FRAG from "./shaders/texture-cube.frag.js";
 import TEXTURE_2D_FRAG from "./shaders/texture-2d.frag.js";
 
 /**
- * @typedef {Object} GUIControlOptions
+ * @typedef {object} GUIControlOptions
  * @property {number} [min=0]
  * @property {number} [max=0]
  * @property {"color"} [type] Interpret an array as color.
@@ -22,7 +22,7 @@ import TEXTURE_2D_FRAG from "./shaders/texture-2d.frag.js";
  * @property {number} [level] Level of detail for cube textures.
  */
 /**
- * @typedef {Object} GUIOptions
+ * @typedef {object} GUIOptions
  * @property {boolean} [pixelRatio=window.devicePixelRatio]
  * @property {boolean} [theme={}] See [theme file]{@link https://github.com/pex-gl/pex-gui/blob/main/theme.js} for all options.
  * @property {number} [scale=1]
@@ -68,7 +68,7 @@ class GUI {
       scale = 1,
       responsive = true,
       renderer,
-    } = {}
+    } = {},
   ) {
     this.ctx = ctx;
 
@@ -220,7 +220,7 @@ class GUI {
         (v, index) =>
           (this.activeControl.contextObject[this.activeControl.attributeName][
             index
-          ] = value[index])
+          ] = value[index]),
       );
     } else {
       this.activeControl.contextObject[this.activeControl.attributeName] =
@@ -229,7 +229,7 @@ class GUI {
 
     if (this.activeControl.onChange) {
       this.activeControl.onChange(
-        this.activeControl.contextObject[this.activeControl.attributeName]
+        this.activeControl.contextObject[this.activeControl.attributeName],
       );
     }
   }
@@ -259,7 +259,7 @@ class GUI {
       const color = this.getImageColor(
         image,
         utils.clamp(x, 0, iw - 1),
-        utils.clamp(y, 0, ih - 1)
+        utils.clamp(y, 0, ih - 1),
       );
       this.setControlValue(color);
 
@@ -287,7 +287,7 @@ class GUI {
 
     for (let i = 0; i < this.items.length; i++) {
       const prevTabs = this.items.filter(
-        ({ type }, index) => index < i && type === "tab"
+        ({ type }, index) => index < i && type === "tab",
       );
       const parentTab = prevTabs[prevTabs.length - 1];
       if (parentTab && !parentTab.current && this.items[i].type !== "tab") {
@@ -311,12 +311,12 @@ class GUI {
           this.activeControl.setActive(true);
         } else if (this.activeControl.type === "toggle") {
           this.setControlValue(
-            !this.activeControl.contextObject[this.activeControl.attributeName]
+            !this.activeControl.contextObject[this.activeControl.attributeName],
           );
         } else if (this.activeControl.type === "radiolist") {
           const hitY = this.mousePos[1] - aa[0][1];
           const hitItemIndex = Math.floor(
-            (this.activeControl.items.length * hitY) / aaHeight
+            (this.activeControl.items.length * hitY) / aaHeight,
           );
           if (
             hitItemIndex < 0 ||
@@ -332,7 +332,7 @@ class GUI {
             if (
               rect.containsPoint(
                 this.getScaledActiveArea(item.activeArea),
-                this.mousePos
+                this.mousePos,
               )
             ) {
               clickedItem = item;
@@ -350,7 +350,7 @@ class GUI {
               aaWidth,
               aaHeight,
               this.mousePos[0],
-              this.mousePos[1]
+              this.mousePos[1],
             );
             if (paletteResult.clicked) {
               this.activeControl.clickedPalette = true;
@@ -393,8 +393,8 @@ class GUI {
         const numSliders = isMultiSlider
           ? this.activeControl.getValue().length
           : this.activeControl.options.alpha
-          ? 4
-          : 3;
+            ? 4
+            : 3;
 
         if (isColor) {
           if (this.activeControl.options.palette) {
@@ -404,7 +404,7 @@ class GUI {
               aaWidth,
               aaHeight,
               mx,
-              my
+              my,
             );
             slidersHeight = paletteResult.imageStartY;
             if (paletteResult.clicked) {
@@ -432,7 +432,7 @@ class GUI {
         this.activeControl.setNormalizedValue(value, index);
         if (this.activeControl.onChange) {
           this.activeControl.onChange(
-            this.activeControl.contextObject[this.activeControl.attributeName]
+            this.activeControl.contextObject[this.activeControl.attributeName],
           );
         }
         this.activeControl.dirty = true;
@@ -454,7 +454,7 @@ class GUI {
 
   onKeyDown(event) {
     const focusedItem = this.items.filter(
-      ({ type, focus }) => type === "text" && focus
+      ({ type, focus }) => type === "text" && focus,
     )[0];
     if (!focusedItem) return;
 
@@ -463,12 +463,12 @@ class GUI {
         const str = focusedItem.contextObject[focusedItem.attributeName];
         focusedItem.contextObject[focusedItem.attributeName] = str.substr(
           0,
-          Math.max(0, str.length - 1)
+          Math.max(0, str.length - 1),
         );
         focusedItem.dirty = true;
         if (focusedItem.onChange) {
           focusedItem.onChange(
-            focusedItem.contextObject[focusedItem.attributeName]
+            focusedItem.contextObject[focusedItem.attributeName],
           );
         }
         event.stopImmediatePropagation();
@@ -483,7 +483,7 @@ class GUI {
       focusedItem.dirty = true;
       if (focusedItem.onChange) {
         focusedItem.onChange(
-          focusedItem.contextObject[focusedItem.attributeName]
+          focusedItem.contextObject[focusedItem.attributeName],
         );
       }
       event.stopImmediatePropagation();
@@ -495,7 +495,7 @@ class GUI {
   /**
    * Add a tab control.
    * @param {string} title
-   * @param {Object} contextObject
+   * @param {object} contextObject
    * @param {string} attributeName
    * @param {GUIControlOptions} [options={}]
    * @param {Function} onChange
@@ -637,7 +637,7 @@ class GUI {
   /**
    * Add a generic parameter control.
    * @param {string} title
-   * @param {Object} contextObject
+   * @param {object} contextObject
    * @param {string} attributeName
    * @param {GUIControlOptions} [options={}]
    * @param {Function} onChange
@@ -675,7 +675,7 @@ class GUI {
     // Check for class property
     const isPexContextParam = hasOwnProperty.call(
       contextObject[attributeName],
-      "class"
+      "class",
     );
     if (isPexContextParam && contextObject[attributeName].class === "texture") {
       const texture = contextObject[attributeName];
@@ -832,7 +832,7 @@ class GUI {
   /**
    * Add a radio list with options.
    * @param {string} title
-   * @param {Object} contextObject
+   * @param {object} contextObject
    * @param {string} attributeName
    * @param {Array.<{ name: string, value: number }>} items
    * @param {Function} onChange
@@ -872,7 +872,7 @@ class GUI {
   /**
    * Add a texture visualiser and selector for multiple textures (from pex-context) or images.
    * @param {string} title
-   * @param {Object} contextObject
+   * @param {object} contextObject
    * @param {string} attributeName
    * @param {Array.<{ texture: import("pex-context").texture | CanvasImageSource, value: number}>} items
    * @param {number} [itemsPerRow=4]
@@ -890,7 +890,7 @@ class GUI {
     attributeName,
     items,
     itemsPerRow,
-    onChange
+    onChange,
   ) {
     const ctrl = new GUIControl({
       type: "texturelist",
@@ -1049,7 +1049,7 @@ class GUI {
   /**
    * Add an updatable object stats visualiser.
    * @param {string} title
-   * @param {Object} [options] An object with an update() function to update control.stats.
+   * @param {object} [options] An object with an update() function to update control.stats.
    * @returns {GUIControl}
    */
   addStats(title, options) {
@@ -1072,8 +1072,8 @@ class GUI {
               Object.entries(item.ctx?.stats || {}).map(([k, v]) => [
                 k,
                 `${v.alive} / ${v.total}`,
-              ])
-            )
+              ]),
+            ),
           );
         },
       },
@@ -1151,9 +1151,9 @@ class GUI {
         this.#scale = Math.min(
           Math.min(
             this.canvas.clientWidth / rendererWidth,
-            this.canvas.clientHeight / rendererHeight
+            this.canvas.clientHeight / rendererHeight,
           ),
-          this.scale
+          this.scale,
         );
       } else {
         this.#scale = this.scale;
@@ -1180,7 +1180,7 @@ class GUI {
       const item = this.items[i];
       if (tabs.length > 0) {
         const prevTabs = items.filter(
-          ({ type }, index) => index < i && type === "tab"
+          ({ type }, index) => index < i && type === "tab",
         );
         const parentTab = prevTabs[prevTabs.length - 1];
         if (parentTab && !parentTab.current) {
@@ -1236,17 +1236,17 @@ class GUI {
 
   /**
    * Retrieve a serialized value of the current GUI's state.
-   * @returns {Object}
+   * @returns {object}
    */
   serialize() {
     return Object.fromEntries(
-      this.items.map((item) => [item.title, item.getSerializedValue()])
+      this.items.map((item) => [item.title, item.getSerializedValue()]),
     );
   }
 
   /**
    * Deserialize a previously serialized data state GUI's state.
-   * @param {Object} data
+   * @param {object} data
    */
   deserialize(data) {
     this.items.forEach((item) => {
@@ -1280,9 +1280,19 @@ export * as Renderers from "./renderers/index.js";
 export { DEFAULT_THEME };
 
 /**
- * Factory function for creating a GUI
+ * @alias module:pex-gui
  * @param {import("pex-context").ctx | CanvasRenderingContext2D} ctx
  * @param {GUIOptions} opts
  * @returns {GUI}
  */
-export default (ctx, opts) => new GUI(ctx, opts);
+function createGUI(ctx, opts) {
+  return new GUI(ctx, opts);
+}
+
+/**
+ * @module pex-gui
+ *
+ * @summary
+ * Export a factory function for creating a GUI instance.
+ */
+export default createGUI;

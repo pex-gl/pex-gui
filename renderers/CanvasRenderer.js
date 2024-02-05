@@ -20,7 +20,7 @@ function makePaletteImage(item, w, img) {
     0,
     0,
     canvas.width,
-    canvas.height
+    canvas.height,
   ).data;
   item.options.paletteImage.aspectRatio = canvas.height / canvas.width;
   item.dirty = true;
@@ -107,7 +107,7 @@ class CanvasRenderer {
       ctx.fillText(
         tab.title,
         x + textPadding,
-        y + tabHeight / 2 + fontCapOffset
+        y + tabHeight / 2 + fontCapOffset,
       );
 
       rectSet4(tab.activeArea, x, y, width, tabHeight);
@@ -131,7 +131,7 @@ class CanvasRenderer {
 
       if (tabs.length > 0) {
         const prevTabs = items.filter(
-          ({ type }, index) => index < i && type === "tab"
+          ({ type }, index) => index < i && type === "tab",
         );
         const parentTab = prevTabs[prevTabs.length - 1];
         if (parentTab && !parentTab.current) {
@@ -220,7 +220,7 @@ class CanvasRenderer {
         ctx.fillText(
           `${item.title}: ${item.getStrValue()}`,
           x + textPadding,
-          dy + textY
+          dy + textY,
         );
 
         ctx.fillStyle = this.theme.input;
@@ -244,7 +244,7 @@ class CanvasRenderer {
         ctx.fillText(
           `${item.title}: ${item.getStrValue()}`,
           x + textPadding,
-          dy + textY
+          dy + textY,
         );
 
         for (let j = 0; j < numSliders; j++) {
@@ -257,7 +257,7 @@ class CanvasRenderer {
             x,
             sliderY,
             width * item.getNormalizedValue(j),
-            sliderHeight
+            sliderHeight,
           );
         }
 
@@ -269,7 +269,7 @@ class CanvasRenderer {
             dx + w - sqSize - padding,
             dy + titleHeight * 0.2,
             sqSize,
-            sqSize
+            sqSize,
           );
 
           if (item.options?.palette && !item.options.paletteImage) {
@@ -290,7 +290,7 @@ class CanvasRenderer {
               x,
               y + (sliderHeight + padding) * numSliders,
               width,
-              width * item.options.paletteImage.aspectRatio
+              width * item.options.paletteImage.aspectRatio,
             );
           }
         }
@@ -307,7 +307,7 @@ class CanvasRenderer {
         ctx.fillText(
           item.title,
           x + textPadding * 2,
-          y + height / 2 + fontCapOffset
+          y + height / 2 + fontCapOffset,
         );
 
         rectSet4(item.activeArea, x, y, width, height);
@@ -323,7 +323,7 @@ class CanvasRenderer {
         ctx.fillText(
           item.title,
           x + itemHeight + textPadding * 2,
-          dy + padding + itemHeight / 2 + fontCapOffset
+          dy + padding + itemHeight / 2 + fontCapOffset,
         );
 
         rectSet4(item.activeArea, x, y, height, height);
@@ -350,7 +350,7 @@ class CanvasRenderer {
           ctx.fillText(
             i.name,
             x + itemHeight + textPadding * 2,
-            titleHeight + radioY + dy + itemHeight / 2 + fontCapOffset
+            titleHeight + radioY + dy + itemHeight / 2 + fontCapOffset,
           );
         }
 
@@ -374,7 +374,7 @@ class CanvasRenderer {
               itemX + padding * 0.5,
               itemY + padding * 0.5,
               cellSize - 1 - padding,
-              cellSize - 1 - padding
+              cellSize - 1 - padding,
             );
             ctx.lineWidth = 1;
             shrink = padding;
@@ -390,7 +390,7 @@ class CanvasRenderer {
             itemX + shrink,
             itemY + shrink,
             cellSize - 1 - 2 * shrink,
-            cellSize - 1 - 2 * shrink
+            cellSize - 1 - 2 * shrink,
           );
         }
 
@@ -418,7 +418,7 @@ class CanvasRenderer {
         ctx.fillText(
           item.title,
           x + textPadding,
-          dy + padding + headerSize / 2 + fontCapOffset
+          dy + padding + headerSize / 2 + fontCapOffset,
         );
       } else if (item.type === "text") {
         const y = dy + titleHeight;
@@ -432,14 +432,14 @@ class CanvasRenderer {
           x,
           y,
           item.activeArea[1][0] - item.activeArea[0][0],
-          item.activeArea[1][1] - item.activeArea[0][1]
+          item.activeArea[1][1] - item.activeArea[0][1],
         );
 
         ctx.fillStyle = this.theme.color;
         ctx.fillText(
           item.contextObject[item.attributeName],
           x + textPadding * 2,
-          y + buttonHeight / 2 + fontCapOffset
+          y + buttonHeight / 2 + fontCapOffset,
         );
         if (item.focus) {
           ctx.strokeStyle = this.theme.accent;
@@ -447,7 +447,7 @@ class CanvasRenderer {
             item.activeArea[0][0] - 0.5,
             item.activeArea[0][1] - 0.5,
             item.activeArea[1][0] - item.activeArea[0][0],
-            item.activeArea[1][1] - item.activeArea[0][1]
+            item.activeArea[1][1] - item.activeArea[0][1],
           );
         }
 
@@ -499,7 +499,7 @@ class CanvasRenderer {
           const v = utils.map(item.values[j], item.min, item.max, 0, 1);
           ctx[j === 0 ? "moveTo" : "lineTo"](
             x + j,
-            y + height - v * (height - padding * 2) - padding
+            y + height - v * (height - padding * 2) - padding,
           );
         }
         ctx.stroke();
@@ -507,7 +507,7 @@ class CanvasRenderer {
         ctx.fillText(
           `${item.title}: ${item.values[item.values.length - 1] || ""}`,
           x + textPadding,
-          dy + textY
+          dy + textY,
         );
       } else if (item.type === "stats") {
         ctx.fillStyle = this.theme.color;
@@ -516,7 +516,7 @@ class CanvasRenderer {
           ctx.fillText(
             `${name}: ${value}`,
             x + textPadding * 2,
-            dy + textY + titleHeight * (i + 1)
+            dy + textY + titleHeight * (i + 1),
           );
         });
       } else if (item.type === "label") {
@@ -526,6 +526,7 @@ class CanvasRenderer {
           ctx.fillText(lines[i], x + textPadding, dy + textY + titleHeight * i);
         }
       } else if (item.type === "separator") {
+        // Nothing to draw, just increase the gap.
       } else {
         ctx.fillStyle = this.theme.color;
         ctx.fillText(item.title, x + textPadding, dy + textY);

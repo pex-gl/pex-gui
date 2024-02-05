@@ -170,35 +170,65 @@ gui.addStats("Object stats", {
 
 <!-- api-start -->
 
+## Modules
+
+<dl>
+<dt><a href="#module_pex-gui">pex-gui</a></dt>
+<dd></dd>
+</dl>
+
 ## Classes
 
 <dl>
 <dt><a href="#GUI">GUI</a></dt>
+<dd></dd>
+</dl>
+
+## Members
+
+<dl>
+<dt><a href="#gui">gui</a></dt>
 <dd><p>GUI controls for PEX.</p>
 </dd>
+</dl>
+
+## Functions
+
+<dl>
+<dt><a href="#exp_module_pex-gui--createGUI">createGUI(ctx, opts)</a> ⇒ <code><a href="#GUI">GUI</a></code> ⏏</dt>
+<dd></dd>
 </dl>
 
 ## Typedefs
 
 <dl>
-<dt><a href="#GUIControlOptions">GUIControlOptions</a> : <code>Object</code></dt>
+<dt><a href="#GUIControlOptions">GUIControlOptions</a> : <code>object</code></dt>
 <dd></dd>
-<dt><a href="#GUIOptions">GUIOptions</a> : <code>Object</code></dt>
+<dt><a href="#GUIOptions">GUIOptions</a> : <code>object</code></dt>
 <dd></dd>
 </dl>
+
+<a name="module_pex-gui"></a>
+
+## pex-gui
+
+**Summary**: Export a factory function for creating a GUI instance.
+<a name="exp_module_pex-gui--createGUI"></a>
+
+### createGUI(ctx, opts) ⇒ [<code>GUI</code>](#GUI) ⏏
+
+**Kind**: global method of [<code>pex-gui</code>](#module_pex-gui)
+
+| Param | Type                                                                         |
+| ----- | ---------------------------------------------------------------------------- |
+| ctx   | <code>module:pex-context~ctx</code> \| <code>CanvasRenderingContext2D</code> |
+| opts  | <code>module:pex~GUIOptions</code>                                           |
 
 <a name="GUI"></a>
 
 ## GUI
 
-GUI controls for PEX.
-
 **Kind**: global class
-**Properties**
-
-| Name      | Type                 | Default           | Description                                     |
-| --------- | -------------------- | ----------------- | ----------------------------------------------- |
-| [enabled] | <code>boolean</code> | <code>true</code> | Enable/disable pointer interaction and drawing. |
 
 - [GUI](#GUI)
   - [new GUI(ctx, opts)](#new_GUI_new)
@@ -217,7 +247,7 @@ GUI controls for PEX.
   - [.addFPSMeeter()](#GUI+addFPSMeeter) ⇒ <code>GUIControl</code>
   - [.addStats(title, [options])](#GUI+addStats) ⇒ <code>GUIControl</code>
   - [.draw()](#GUI+draw)
-  - [.serialize()](#GUI+serialize) ⇒ <code>Object</code>
+  - [.serialize()](#GUI+serialize) ⇒ <code>object</code>
   - [.deserialize(data)](#GUI+deserialize)
   - [.dispose()](#GUI+dispose)
 
@@ -230,7 +260,7 @@ Creates an instance of GUI.
 | Param | Type                                                                         |
 | ----- | ---------------------------------------------------------------------------- |
 | ctx   | <code>module:pex-context~ctx</code> \| <code>CanvasRenderingContext2D</code> |
-| opts  | [<code>GUIOptions</code>](#GUIOptions)                                       |
+| opts  | <code>module:pex~GUIOptions</code>                                           |
 
 <a name="GUI+addTab"></a>
 
@@ -240,13 +270,13 @@ Add a tab control.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param         | Type                                                 | Default         |
-| ------------- | ---------------------------------------------------- | --------------- |
-| title         | <code>string</code>                                  |                 |
-| contextObject | <code>Object</code>                                  |                 |
-| attributeName | <code>string</code>                                  |                 |
-| [options]     | [<code>GUIControlOptions</code>](#GUIControlOptions) | <code>{}</code> |
-| onChange      | <code>function</code>                                |                 |
+| Param         | Type                                      | Default         |
+| ------------- | ----------------------------------------- | --------------- |
+| title         | <code>string</code>                       |                 |
+| contextObject | <code>object</code>                       |                 |
+| attributeName | <code>string</code>                       |                 |
+| [options]     | <code>module:pex~GUIControlOptions</code> | <code>{}</code> |
+| onChange      | <code>function</code>                     |                 |
 
 <a name="GUI+addColumn"></a>
 
@@ -306,13 +336,13 @@ Add a generic parameter control.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param         | Type                                                 | Default         |
-| ------------- | ---------------------------------------------------- | --------------- |
-| title         | <code>string</code>                                  |                 |
-| contextObject | <code>Object</code>                                  |                 |
-| attributeName | <code>string</code>                                  |                 |
-| [options]     | [<code>GUIControlOptions</code>](#GUIControlOptions) | <code>{}</code> |
-| onChange      | <code>function</code>                                |                 |
+| Param         | Type                                      | Default         |
+| ------------- | ----------------------------------------- | --------------- |
+| title         | <code>string</code>                       |                 |
+| contextObject | <code>object</code>                       |                 |
+| attributeName | <code>string</code>                       |                 |
+| [options]     | <code>module:pex~GUIControlOptions</code> | <code>{}</code> |
+| onChange      | <code>function</code>                     |                 |
 
 **Example**
 
@@ -371,7 +401,7 @@ Add a radio list with options.
 | Param         | Type                                                     |
 | ------------- | -------------------------------------------------------- |
 | title         | <code>string</code>                                      |
-| contextObject | <code>Object</code>                                      |
+| contextObject | <code>object</code>                                      |
 | attributeName | <code>string</code>                                      |
 | items         | <code>Array.&lt;{name: string, value: number}&gt;</code> |
 | onChange      | <code>function</code>                                    |
@@ -386,7 +416,7 @@ gui.addRadioList(
   ["Choice 1", "Choice 2", "Choice 3"].map((name, value) => ({
     name,
     value,
-  }))
+  })),
 );
 ```
 
@@ -401,7 +431,7 @@ Add a texture visualiser and selector for multiple textures (from pex-context) o
 | Param         | Type                                                                                                 | Default        |
 | ------------- | ---------------------------------------------------------------------------------------------------- | -------------- |
 | title         | <code>string</code>                                                                                  |                |
-| contextObject | <code>Object</code>                                                                                  |                |
+| contextObject | <code>object</code>                                                                                  |                |
 | attributeName | <code>string</code>                                                                                  |                |
 | items         | <code>Array.&lt;{texture: (module:pex-context~texture\|CanvasImageSource), value: number}&gt;</code> |                |
 | [itemsPerRow] | <code>number</code>                                                                                  | <code>4</code> |
@@ -426,7 +456,7 @@ Notes: texture cannot be updated once created.
 | ------- | ------------------------------------------------------------------------- |
 | title   | <code>string</code>                                                       |
 | texture | <code>module:pex-context~texture</code> \| <code>CanvasImageSource</code> |
-| options | [<code>GUIControlOptions</code>](#GUIControlOptions)                      |
+| options | <code>module:pex~GUIControlOptions</code>                                 |
 
 **Example**
 
@@ -463,10 +493,10 @@ Add a XY graph visualiser from the control values.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param   | Type                                                 |
-| ------- | ---------------------------------------------------- |
-| title   | <code>string</code>                                  |
-| options | [<code>GUIControlOptions</code>](#GUIControlOptions) |
+| Param   | Type                                      |
+| ------- | ----------------------------------------- |
+| title   | <code>string</code>                       |
+| options | <code>module:pex~GUIControlOptions</code> |
 
 **Example**
 
@@ -501,7 +531,7 @@ Add an updatable object stats visualiser.
 | Param     | Type                | Description                                                  |
 | --------- | ------------------- | ------------------------------------------------------------ |
 | title     | <code>string</code> |                                                              |
-| [options] | <code>Object</code> | An object with an update() function to update control.stats. |
+| [options] | <code>object</code> | An object with an update() function to update control.stats. |
 
 <a name="GUI+draw"></a>
 
@@ -512,7 +542,7 @@ Renders the GUI. Should be called at the end of the frame.
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 <a name="GUI+serialize"></a>
 
-### guI.serialize() ⇒ <code>Object</code>
+### guI.serialize() ⇒ <code>object</code>
 
 Retrieve a serialized value of the current GUI's state.
 
@@ -527,7 +557,7 @@ Deserialize a previously serialized data state GUI's state.
 
 | Param | Type                |
 | ----- | ------------------- |
-| data  | <code>Object</code> |
+| data  | <code>object</code> |
 
 <a name="GUI+dispose"></a>
 
@@ -536,9 +566,22 @@ Deserialize a previously serialized data state GUI's state.
 Remove events listeners, empty list of controls and dispose of the gui's resources.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
+<a name="gui"></a>
+
+## gui
+
+GUI controls for PEX.
+
+**Kind**: global variable
+**Properties**
+
+| Name      | Type                 | Default           | Description                                     |
+| --------- | -------------------- | ----------------- | ----------------------------------------------- |
+| [enabled] | <code>boolean</code> | <code>true</code> | Enable/disable pointer interaction and drawing. |
+
 <a name="GUIControlOptions"></a>
 
-## GUIControlOptions : <code>Object</code>
+## GUIControlOptions : <code>object</code>
 
 **Kind**: global typedef
 **Properties**
@@ -556,7 +599,7 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 
 <a name="GUIOptions"></a>
 
-## GUIOptions : <code>Object</code>
+## GUIOptions : <code>object</code>
 
 **Kind**: global typedef
 **Properties**
