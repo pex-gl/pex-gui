@@ -1,134 +1,132 @@
-const rgb2hsl = require('float-rgb2hsl')
-const hsl2rgb = require('float-hsl2rgb')
+import { fromHSL, toHSL } from "pex-color";
 
-function GUIControl(options) {
-  Object.assign(this, options)
-}
-
-GUIControl.prototype.setPosition = function(x, y) {
-  this.px = x
-  this.py = y
-}
-
-GUIControl.prototype.getNormalizedValue = function(idx) {
-  if (!this.contextObject) {
-    return 0
+class GUIControl {
+  constructor(options) {
+    Object.assign(this, options);
   }
 
-  var val = this.contextObject[this.attributeName]
-  var options = this.options
-  if (options && options.min !== undefined && options.max !== undefined) {
-    if (this.type === 'multislider') {
-      val = (val[idx] - options.min) / (options.max - options.min)
-    } else if (this.type === 'color') {
-      var hsl = rgb2hsl(val)
-      if (idx === 0) val = hsl[0]
-      if (idx === 1) val = hsl[1]
-      if (idx === 2) val = hsl[2]
-      if (idx === 3) val = val[4]
-    } else {
-      val = (val - options.min) / (options.max - options.min)
-    }
-  }
-  return val
-}
-
-GUIControl.prototype.setNormalizedValue = function(val, idx) {
-  if (!this.contextObject) {
-    return
+  setPosition(x, y) {
+    this.x = x;
+    this.y = y;
   }
 
-  var options = this.options
-  if (options && options.min !== undefined && options.max !== undefined) {
-    if (this.type === 'multislider') {
-      var a = this.contextObject[this.attributeName]
-      if (idx >= a.length) {
-        return
+  getNormalizedValue(idx) {
+    if (!this.contextObject) return 0;
+
+    let val = this.contextObject[this.attributeName];
+    if (
+      this.options &&
+      this.options.min !== undefined &&
+      this.options.max !== undefined
+    ) {
+      if (this.type === "multislider") {
+        val =
+          (val[idx] - this.options.min) / (this.options.max - this.options.min);
+      } else if (this.type === "color") {
+        const hsl = toHSL(val);
+        if (idx === 0) val = hsl[0];
+        if (idx === 1) val = hsl[1];
+        if (idx === 2) val = hsl[2];
+        if (idx === 3) val = val[3];
+      } else {
+        val = (val - this.options.min) / (this.options.max - this.options.min);
       }
-      a[idx] = options.min + val * (options.max - options.min)
-      val = a
-    } else if (this.type === 'color') {
-      var c = this.contextObject[this.attributeName]
-      var hsl = rgb2hsl(c)
-      if (idx === 0) hsl[0] = val
-      if (idx === 1) hsl[1] = val
-      if (idx === 2) hsl[2] = val
-      if (idx === 3) c[4] = val
+    }
+    return val;
+  }
 
-      if (idx !== 3) {
-        var rgb = hsl2rgb(hsl)
-        c[0] = rgb[0]
-        c[1] = rgb[1]
-        c[2] = rgb[2]
+  setNormalizedValue(val, idx) {
+    if (!this.contextObject) return;
+
+    if (
+      this.options &&
+      this.options.min !== undefined &&
+      this.options.max !== undefined
+    ) {
+      if (this.type === "multislider") {
+        const a = this.contextObject[this.attributeName];
+        if (idx >= a.length) {
+          return;
+        }
+        a[idx] = this.options.min + val * (this.options.max - this.options.min);
+        val = a;
+      } else if (this.type === "color") {
+        const c = this.contextObject[this.attributeName];
+        if (idx === 3) {
+          c[3] = val;
+        } else {
+          const hsl = toHSL(c);
+          if (idx === 0) hsl[0] = val;
+          if (idx === 1) hsl[1] = val;
+          if (idx === 2) hsl[2] = val;
+          fromHSL(c, ...hsl);
+        }
+
+        val = c;
+      } else {
+        val = this.options.min + val * (this.options.max - this.options.min);
       }
-      val = c
+      if (this.options && this.options.step) {
+        val = val - (val % this.options.step);
+      }
+    }
+    this.contextObject[this.attributeName] = val;
+  }
+
+  getSerializedValue() {
+    return this.contextObject ? this.contextObject[this.attributeName] : "";
+  }
+
+  setSerializedValue(value) {
+    if (this.type === "slider") {
+      this.contextObject[this.attributeName] = value;
+    } else if (this.type === "multislider") {
+      this.contextObject[this.attributeName] = value;
+    } else if (this.type === "color") {
+      this.contextObject[this.attributeName].r = value.r;
+      this.contextObject[this.attributeName].g = value.g;
+      this.contextObject[this.attributeName].b = value.b;
+      this.contextObject[this.attributeName].a = value.a;
+    } else if (this.type === "toggle") {
+      this.contextObject[this.attributeName] = value;
+    } else if (this.type === "radiolist") {
+      this.contextObject[this.attributeName] = value;
+    }
+  }
+
+  getValue() {
+    if (this.type === "slider") {
+      return this.contextObject[this.attributeName];
+    } else if (this.type === "multislider") {
+      return this.contextObject[this.attributeName];
+    } else if (this.type === "color") {
+      return this.contextObject[this.attributeName];
+    } else if (this.type === "toggle") {
+      return this.contextObject[this.attributeName];
     } else {
-      val = options.min + val * (options.max - options.min)
-    }
-    if (options && options.step) {
-      val = val - (val % options.step)
+      return 0;
     }
   }
-  this.contextObject[this.attributeName] = val
-}
 
-GUIControl.prototype.getSerializedValue = function() {
-  if (this.contextObject) {
-    return this.contextObject[this.attributeName]
-  } else {
-    return ''
-  }
-}
+  getStrValue() {
+    if (this.type === "slider") {
+      const str = `${this.contextObject[this.attributeName]}`;
+      let dotPos = str.indexOf(".") + 1;
 
-GUIControl.prototype.setSerializedValue = function(value) {
-  if (this.type === 'slider') {
-    this.contextObject[this.attributeName] = value
-  } else if (this.type === 'multislider') {
-    this.contextObject[this.attributeName] = value
-  } else if (this.type === 'color') {
-    this.contextObject[this.attributeName].r = value.r
-    this.contextObject[this.attributeName].g = value.g
-    this.contextObject[this.attributeName].b = value.b
-    this.contextObject[this.attributeName].a = value.a
-  } else if (this.type === 'toggle') {
-    this.contextObject[this.attributeName] = value
-  } else if (this.type === 'radiolist') {
-    this.contextObject[this.attributeName] = value
-  }
-}
+      if (dotPos === 0) return `${str}.0`;
 
-GUIControl.prototype.getValue = function() {
-  if (this.type === 'slider') {
-    return this.contextObject[this.attributeName]
-  } else if (this.type === 'multislider') {
-    return this.contextObject[this.attributeName]
-  } else if (this.type === 'color') {
-    return this.contextObject[this.attributeName]
-  } else if (this.type === 'toggle') {
-    return this.contextObject[this.attributeName]
-  } else {
-    return 0
-  }
-}
-
-GUIControl.prototype.getStrValue = function() {
-  if (this.type === 'slider') {
-    var str = '' + this.contextObject[this.attributeName]
-    var dotPos = str.indexOf('.') + 1
-    if (dotPos === 0) {
-      return str + '.0'
+      while (str.charAt(dotPos) === "0") {
+        dotPos++;
+      }
+      return str.substr(0, dotPos + 2);
+    } else if (this.type === "color") {
+      return this.options.alpha ? "HSLA" : "HSL";
+    } else if (this.type === "toggle") {
+      return this.contextObject[this.attributeName];
+    } else {
+      return "";
     }
-    while (str.charAt(dotPos) === '0') {
-      dotPos++
-    }
-    return str.substr(0, dotPos + 2)
-  } else if (this.type === 'color') {
-    return 'HSLA'
-  } else if (this.type === 'toggle') {
-    return this.contextObject[this.attributeName]
-  } else {
-    return ''
   }
 }
 
-module.exports = GUIControl
+export default GUIControl;

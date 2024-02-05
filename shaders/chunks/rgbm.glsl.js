@@ -1,4 +1,4 @@
-module.exports = /* glsl */ `
+export default /* glsl */ `
 vec3 decodeRGBM (vec4 rgbm) {
   vec3 r = rgbm.rgb * (7.0 * rgbm.a);
   return r * r;
@@ -13,4 +13,4 @@ vec4 encodeRGBM (vec3 rgb_0) {
   r.xyz /= r.a;
   return r;
 }
-`
+`;

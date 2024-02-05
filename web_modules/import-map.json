@@ -1,0 +1,14 @@
+{
+  "imports": {
+    "pex-color": "./pex-color.js",
+    "pex-geom": "./pex-geom.js",
+    "pex-math": "./pex-math.js",
+    "es-module-shims": "./es-module-shims.js",
+    "es-module-shims/debug": "./es-module-shims/dist/es-module-shims.debug.js",
+    "es-module-shims/wasm": "./es-module-shims/dist/es-module-shims.wasm.js",
+    "pex-cam": "./pex-cam.js",
+    "pex-context": "./pex-context.js",
+    "pex-io": "./pex-io.js",
+    "primitive-geometry": "./primitive-geometry.js"
+  }
+}
