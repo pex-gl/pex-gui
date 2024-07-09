@@ -10,25 +10,6 @@ import VERT from "./shaders/main.vert.js";
 import TEXTURE_CUBE_FRAG from "./shaders/texture-cube.frag.js";
 import TEXTURE_2D_FRAG from "./shaders/texture-2d.frag.js";
 
-/**
- * @typedef {object} GUIControlOptions
- * @property {number} [min=0]
- * @property {number} [max=0]
- * @property {"color"} [type] Interpret an array as color.
- * @property {boolean} [alpha] Add a 4th slider for colors.
- * @property {HTMLImageElement} [palette] Draw a palette image as color picker.
- * @property {boolean} [flipEnvMap] Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped.
- * @property {boolean} [flipY] Flip texture 2D vertically.
- * @property {number} [level] Level of detail for cube textures.
- */
-/**
- * @typedef {object} GUIOptions
- * @property {boolean} [pixelRatio=window.devicePixelRatio]
- * @property {boolean} [theme={}] See [theme file]{@link https://github.com/pex-gl/pex-gui/blob/main/theme.js} for all options.
- * @property {number} [scale=1]
- * @property {boolean} [responsive=true] Adapts to canvas dimension.
- */
-
 const isArrayLike = (value) =>
   Array.isArray(value) || ArrayBuffer.isView(value);
 
@@ -57,8 +38,8 @@ class GUI {
 
   /**
    * Creates an instance of GUI.
-   * @param {import("pex-context").ctx | CanvasRenderingContext2D} ctx
-   * @param {GUIOptions} opts
+   * @param {ctx | CanvasRenderingContext2D} ctx
+   * @param {import("./types.js").GUIOptions} opts
    */
   constructor(
     ctx,
@@ -497,7 +478,7 @@ class GUI {
    * @param {string} title
    * @param {object} contextObject
    * @param {string} attributeName
-   * @param {GUIControlOptions} [options={}]
+   * @param {import("./types.js").GUIControlOptions} [options={}]
    * @param {Function} onChange
    * @returns {GUIControl}
    */
@@ -639,7 +620,7 @@ class GUI {
    * @param {string} title
    * @param {object} contextObject
    * @param {string} attributeName
-   * @param {GUIControlOptions} [options={}]
+   * @param {import("./types.js").GUIControlOptions} [options={}]
    * @param {Function} onChange
    * @returns {GUIControl}
    *
@@ -755,6 +736,7 @@ class GUI {
         title,
         contextObject,
         attributeName,
+        colorSpace: options.colorSpace || "HSL",
         activeArea: [
           [0, 0],
           [0, 0],
@@ -915,7 +897,7 @@ class GUI {
    * Notes: texture cannot be updated once created.
    * @param {string} title
    * @param {import("pex-context").texture | CanvasImageSource} texture
-   * @param {GUIControlOptions} options
+   * @param {import("./types.js").GUIControlOptions} options
    * @returns {GUIControl}
    *
    * @example
@@ -971,7 +953,7 @@ class GUI {
   /**
    * Add a XY graph visualiser from the control values.
    * @param {string} title
-   * @param {GUIControlOptions} options
+   * @param {import("./types.js").GUIControlOptions} options
    * @returns {GUIControl}
    *
    * @example
@@ -1280,9 +1262,9 @@ export * as Renderers from "./renderers/index.js";
 export { DEFAULT_THEME };
 
 /**
- * @alias module:pex-gui
- * @param {import("pex-context").ctx | CanvasRenderingContext2D} ctx
- * @param {GUIOptions} opts
+ * @alias module:pex-gui.default
+ * @param {import("./types.js").ctx | CanvasRenderingContext2D} ctx
+ * @param {import("./types.js").GUIOptions} opts
  * @returns {GUI}
  */
 function createGUI(ctx, opts) {
