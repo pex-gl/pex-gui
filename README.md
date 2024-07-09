@@ -185,19 +185,14 @@ gui.addStats("Object stats", {
 </dd>
 </dl>
 
-## Functions
-
-<dl>
-<dt><a href="#exp_module_pex-gui--createGUI">createGUI(ctx, opts)</a> ⇒ <code><a href="#GUI">GUI</a></code> ⏏</dt>
-<dd></dd>
-</dl>
-
 ## Typedefs
 
 <dl>
 <dt><a href="#GUIControlOptions">GUIControlOptions</a> : <code>object</code></dt>
 <dd></dd>
 <dt><a href="#GUIOptions">GUIOptions</a> : <code>object</code></dt>
+<dd></dd>
+<dt><a href="#ctx">ctx</a> : <code>module:pex-context~ctx</code></dt>
 <dd></dd>
 </dl>
 
@@ -206,16 +201,16 @@ gui.addStats("Object stats", {
 ## pex-gui
 
 **Summary**: Export a factory function for creating a GUI instance.
-<a name="exp_module_pex-gui--createGUI"></a>
+<a name="module_pex-gui.default"></a>
 
-### createGUI(ctx, opts) ⇒ [<code>GUI</code>](#GUI) ⏏
+### pex-gui.default(ctx, opts) ⇒ [<code>GUI</code>](#GUI)
 
-**Kind**: global method of [<code>pex-gui</code>](#module_pex-gui)
+**Kind**: static method of [<code>pex-gui</code>](#module_pex-gui)
 
-| Param | Type                                                                         |
-| ----- | ---------------------------------------------------------------------------- |
-| ctx   | <code>module:pex-context~ctx</code> \| <code>CanvasRenderingContext2D</code> |
-| opts  | <code>module:pex~GUIOptions</code>                                           |
+| Param | Type                                                              |
+| ----- | ----------------------------------------------------------------- |
+| ctx   | [<code>ctx</code>](#ctx) \| <code>CanvasRenderingContext2D</code> |
+| opts  | [<code>GUIOptions</code>](#GUIOptions)                            |
 
 <a name="GUI"></a>
 
@@ -257,10 +252,10 @@ GUI controls for PEX.
 
 Creates an instance of GUI.
 
-| Param | Type                                                                         |
-| ----- | ---------------------------------------------------------------------------- |
-| ctx   | <code>module:pex-context~ctx</code> \| <code>CanvasRenderingContext2D</code> |
-| opts  | <code>module:pex~GUIOptions</code>                                           |
+| Param | Type                                                              |
+| ----- | ----------------------------------------------------------------- |
+| ctx   | [<code>ctx</code>](#ctx) \| <code>CanvasRenderingContext2D</code> |
+| opts  | [<code>GUIOptions</code>](#GUIOptions)                            |
 
 <a name="GUI+addTab"></a>
 
@@ -270,13 +265,13 @@ Add a tab control.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param         | Type                                      | Default         |
-| ------------- | ----------------------------------------- | --------------- |
-| title         | <code>string</code>                       |                 |
-| contextObject | <code>object</code>                       |                 |
-| attributeName | <code>string</code>                       |                 |
-| [options]     | <code>module:pex~GUIControlOptions</code> | <code>{}</code> |
-| onChange      | <code>function</code>                     |                 |
+| Param         | Type                                                 | Default         |
+| ------------- | ---------------------------------------------------- | --------------- |
+| title         | <code>string</code>                                  |                 |
+| contextObject | <code>object</code>                                  |                 |
+| attributeName | <code>string</code>                                  |                 |
+| [options]     | [<code>GUIControlOptions</code>](#GUIControlOptions) | <code>{}</code> |
+| onChange      | <code>function</code>                                |                 |
 
 <a name="GUI+addColumn"></a>
 
@@ -336,13 +331,13 @@ Add a generic parameter control.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param         | Type                                      | Default         |
-| ------------- | ----------------------------------------- | --------------- |
-| title         | <code>string</code>                       |                 |
-| contextObject | <code>object</code>                       |                 |
-| attributeName | <code>string</code>                       |                 |
-| [options]     | <code>module:pex~GUIControlOptions</code> | <code>{}</code> |
-| onChange      | <code>function</code>                     |                 |
+| Param         | Type                                                 | Default         |
+| ------------- | ---------------------------------------------------- | --------------- |
+| title         | <code>string</code>                                  |                 |
+| contextObject | <code>object</code>                                  |                 |
+| attributeName | <code>string</code>                                  |                 |
+| [options]     | [<code>GUIControlOptions</code>](#GUIControlOptions) | <code>{}</code> |
+| onChange      | <code>function</code>                                |                 |
 
 **Example**
 
@@ -456,7 +451,7 @@ Notes: texture cannot be updated once created.
 | ------- | ------------------------------------------------------------------------- |
 | title   | <code>string</code>                                                       |
 | texture | <code>module:pex-context~texture</code> \| <code>CanvasImageSource</code> |
-| options | <code>module:pex~GUIControlOptions</code>                                 |
+| options | [<code>GUIControlOptions</code>](#GUIControlOptions)                      |
 
 **Example**
 
@@ -493,10 +488,10 @@ Add a XY graph visualiser from the control values.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param   | Type                                      |
-| ------- | ----------------------------------------- |
-| title   | <code>string</code>                       |
-| options | <code>module:pex~GUIControlOptions</code> |
+| Param   | Type                                                 |
+| ------- | ---------------------------------------------------- |
+| title   | <code>string</code>                                  |
+| options | [<code>GUIControlOptions</code>](#GUIControlOptions) |
 
 **Example**
 
@@ -578,6 +573,7 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 | [min]        | <code>number</code>            | <code>0</code> |                                                                                     |
 | [max]        | <code>number</code>            | <code>0</code> |                                                                                     |
 | [type]       | <code>&quot;color&quot;</code> |                | Interpret an array as color.                                                        |
+| [colorSpace] | <code>string</code>            |                | Display a color as values of a pex-color color space.                               |
 | [alpha]      | <code>boolean</code>           |                | Add a 4th slider for colors.                                                        |
 | [palette]    | <code>HTMLImageElement</code>  |                | Draw a palette image as color picker.                                               |
 | [flipEnvMap] | <code>boolean</code>           |                | Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped. |
@@ -597,6 +593,12 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 | [theme]      | <code>boolean</code> | <code>{}</code>                      | See [theme file](https://github.com/pex-gl/pex-gui/blob/main/theme.js) for all options. |
 | [scale]      | <code>number</code>  | <code>1</code>                       |                                                                                         |
 | [responsive] | <code>boolean</code> | <code>true</code>                    | Adapts to canvas dimension.                                                             |
+
+<a name="ctx"></a>
+
+## ctx : <code>module:pex-context~ctx</code>
+
+**Kind**: global typedef
 
 <!-- api-end -->
 

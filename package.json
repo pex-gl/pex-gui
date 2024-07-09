@@ -1,6 +1,6 @@
 {
   "name": "pex-gui",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "GUI controls for PEX.",
   "keywords": [
     "pex",
@@ -13,7 +13,10 @@
   ],
   "homepage": "https://github.com/pex-gl/pex-gui",
   "bugs": "https://github.com/pex-gl/pex-gui/issues",
-  "repository": "pex-gl/pex-gui",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pex-gl/pex-gui.git"
+  },
   "license": "MIT",
   "author": "Marcin Ignac <marcin.ignac@gmail.com> (http://marcinignac.com)",
   "contributors": [
