@@ -1,4 +1,4 @@
-import { c as create } from './vec3-ZbfXqRLW.js';
+import { h as create } from './vec3-BbHrDQ8x.js';
 
 const TEMP_VEC3 = create();
 /**

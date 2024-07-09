@@ -29,20 +29,21 @@
     "release": "snowdev release"
   },
   "dependencies": {
-    "pex-color": "^2.1.0",
-    "pex-geom": "^3.0.1",
-    "pex-math": "^4.0.0"
+    "pex-color": "^2.1.1",
+    "pex-geom": "^3.0.2",
+    "pex-math": "^4.1.1"
   },
   "devDependencies": {
-    "es-module-shims": "1.8.2",
+    "es-module-shims": "1.10.0",
     "pex-cam": "^3.0.0-alpha.1",
-    "pex-context": "^3.0.0-alpha.1",
-    "pex-io": "^3.0.1",
-    "primitive-geometry": "^2.10.0"
+    "pex-context": "^3.1.1",
+    "pex-io": "^3.0.2",
+    "primitive-geometry": "^2.10.1"
   },
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
+    "node": ">=22.0.0",
+    "npm": ">=10.5.1",
+    "snowdev": ">=2.2.x"
   },
   "snowdev": {
     "files": "{*.js,*(renderers|shaders)/**/*.js}"

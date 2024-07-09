@@ -1,7 +1,7 @@
-import { c as create, l as lookAt, s as set, i as invert, d as frustum, p as perspective$1, o as ortho, b as clamp, t as toDegrees, e as toRadians, g as lerp$2 } from './_chunks/mat4-BW1SeyBl.js';
-import { n as normalize, m as multMat4, a as sub, g as copy, h as distance, i as scale, j as add, l as length, k as distance$1, s as set$1 } from './_chunks/vec3-ZbfXqRLW.js';
-import { g as getDefaultExportFromCjs } from './_chunks/_commonjsHelpers-jjO7Zipk.js';
-import { h as hitTestPlane } from './_chunks/ray-MfPV-GPU.js';
+import { c as create, l as lookAt, s as set, i as invert, f as frustum, p as perspective$1, o as ortho, a as clamp, t as toDegrees, b as toRadians, d as lerp$2 } from './_chunks/mat4-CjEkkwRu.js';
+import { n as normalize, m as multMat4, s as sub, c as copy, d as distance, a as scale, b as add, l as length, e as distance$1, f as set$1 } from './_chunks/vec3-BbHrDQ8x.js';
+import { g as getDefaultExportFromCjs } from './_chunks/_commonjsHelpers-BFTU3MAI.js';
+import { h as hitTestPlane } from './_chunks/ray-Ys8KxJHn.js';
 
 /**
  * An interface for cameras to extend
@@ -54,6 +54,17 @@ import { h as hitTestPlane } from './_chunks/ray-MfPV-GPU.js';
         return {
             fov: Math.PI / 3
         };
+    }
+    /**
+   * Create an instance of PerspectiveCamera
+   * @param {import("./types.js").CameraOptions & import("./types.js").PerspectiveCameraOptions} opts
+   */ constructor(opts = {}){
+        super();
+        this.set({
+            ...Camera.DEFAULT_OPTIONS,
+            ...PerspectiveCamera.DEFAULT_OPTIONS,
+            ...opts
+        });
     }
     /**
    * Update the camera
@@ -133,17 +144,6 @@ import { h as hitTestPlane } from './_chunks/ray-MfPV-GPU.js';
         normalize(sub(direction, origin));
         return ray;
     }
-    /**
-   * Create an instance of PerspectiveCamera
-   * @param {import("./types.js").CameraOptions & import("./types.js").PerspectiveCameraOptions} opts
-   */ constructor(opts = {}){
-        super();
-        this.set({
-            ...Camera.DEFAULT_OPTIONS,
-            ...PerspectiveCamera.DEFAULT_OPTIONS,
-            ...opts
-        });
-    }
 }
 
 /**
@@ -158,6 +158,17 @@ import { h as hitTestPlane } from './_chunks/ray-MfPV-GPU.js';
             top: 1,
             zoom: 1
         };
+    }
+    /**
+   * Create an instance of PerspectiveCamera
+   * @param {import("./types.js").CameraOptions & import("./types.js").OrthographicCameraOptions} opts
+   */ constructor(opts = {}){
+        super();
+        this.set({
+            ...Camera.DEFAULT_OPTIONS,
+            ...OrthographicCamera.DEFAULT_OPTIONS,
+            ...opts
+        });
     }
     /**
    * Update the camera
@@ -206,17 +217,6 @@ import { h as hitTestPlane } from './_chunks/ray-MfPV-GPU.js';
                 -this.near
             ])
         ];
-    }
-    /**
-   * Create an instance of PerspectiveCamera
-   * @param {import("./types.js").CameraOptions & import("./types.js").OrthographicCameraOptions} opts
-   */ constructor(opts = {}){
-        super();
-        this.set({
-            ...Camera.DEFAULT_OPTIONS,
-            ...OrthographicCamera.DEFAULT_OPTIONS,
-            ...opts
-        });
     }
 }
 
@@ -328,6 +328,63 @@ var eventOffset = /*@__PURE__*/ getDefaultExportFromCjs(mouseEventOffset_1);
     }
     get domElement() {
         return this.element === document ? this.element.body : this.element;
+    }
+    /**
+   * Create an instance of OrbiterControls
+   * @param {import("./types.js").OrbiterControlsOptions} opts
+   */ constructor(opts){
+        // Internals
+        // Set initially by .set
+        this.lat = null; // Y
+        this.lon = null; // XZ
+        this.currentLat = null;
+        this.currentLon = null;
+        this.distance = null;
+        this.currentDistance = null;
+        // Updated by user interaction
+        this.panning = false;
+        this.dragging = false;
+        this.zooming = false;
+        this.width = 0;
+        this.height = 0;
+        this.zoomTouchDistance = null;
+        this.panPlane = null;
+        this.clickTarget = [
+            0,
+            0,
+            0
+        ];
+        this.clickPosWorld = [
+            0,
+            0,
+            0
+        ];
+        this.clickPosPlane = [
+            0,
+            0,
+            0
+        ];
+        this.dragPos = [
+            0,
+            0,
+            0
+        ];
+        this.dragPosWorld = [
+            0,
+            0,
+            0
+        ];
+        this.dragPosPlane = [
+            0,
+            0,
+            0
+        ];
+        // TODO: add ability to set lat/lng instead of position/target
+        this.set({
+            ...OrbiterControls.DEFAULT_OPTIONS,
+            ...opts
+        });
+        this.setup();
     }
     /**
    * Update the control
@@ -510,63 +567,6 @@ var eventOffset = /*@__PURE__*/ getDefaultExportFromCjs(mouseEventOffset_1);
         this.element.removeEventListener("wheel", this.onWheel);
         document.removeEventListener("pointermove", this.onPointerMove);
         document.removeEventListener("pointerup", this.onPointerUp);
-    }
-    /**
-   * Create an instance of OrbiterControls
-   * @param {import("./types.js").OrbiterControlsOptions} opts
-   */ constructor(opts){
-        // Internals
-        // Set initially by .set
-        this.lat = null; // Y
-        this.lon = null; // XZ
-        this.currentLat = null;
-        this.currentLon = null;
-        this.distance = null;
-        this.currentDistance = null;
-        // Updated by user interaction
-        this.panning = false;
-        this.dragging = false;
-        this.zooming = false;
-        this.width = 0;
-        this.height = 0;
-        this.zoomTouchDistance = null;
-        this.panPlane = null;
-        this.clickTarget = [
-            0,
-            0,
-            0
-        ];
-        this.clickPosWorld = [
-            0,
-            0,
-            0
-        ];
-        this.clickPosPlane = [
-            0,
-            0,
-            0
-        ];
-        this.dragPos = [
-            0,
-            0,
-            0
-        ];
-        this.dragPosWorld = [
-            0,
-            0,
-            0
-        ];
-        this.dragPosPlane = [
-            0,
-            0,
-            0
-        ];
-        // TODO: add ability to set lat/lng instead of position/target
-        this.set({
-            ...OrbiterControls.DEFAULT_OPTIONS,
-            ...opts
-        });
-        this.setup();
     }
 }
 

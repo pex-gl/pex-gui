@@ -1,4 +1,4 @@
-const ok = async (response)=>response.ok ? response : Promise.reject(new Error(`GET ${response.url} ${response.status} (${response.statusText})`));
+/** @module pex-io */ const ok = async (response)=>response.ok ? response : Promise.reject(new Error(`GET ${response.url} ${response.status} (${response.statusText})`));
 /**
  * Load an item and parse the Response as text.
  * @function
@@ -40,13 +40,9 @@ const ok = async (response)=>response.ok ? response : Promise.reject(new Error(`
     return await (await ok(await fetch(url, options))).blob();
 };
 /**
- * @typedef {object} ImageOptions
- * @property {string} url
- * @property {...*} rest {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement#properties|HTMLImageElement#properties}
- */ /**
  * Load an item, parse the Response as blob and create a HTML Image.
  * @function
- * @param {string | ImageOptions} urlOrOpts
+ * @param {string | import("./types.js").ImageOptions} urlOrOpts
  * @param {RequestInit} options
  * @returns {Promise<HTMLImageElement>}
  */ const loadImage = async (urlOrOpts, options)=>{
@@ -54,7 +50,7 @@ const ok = async (response)=>response.ok ? response : Promise.reject(new Error(`
     const img = new Image();
     let src = urlOrOpts;
     if (urlOrOpts.url) {
-        const { url , ...rest } = urlOrOpts;
+        const { url, ...rest } = urlOrOpts;
         src = url;
         try {
             Object.assign(img, rest);
@@ -86,19 +82,10 @@ const ok = async (response)=>response.ok ? response : Promise.reject(new Error(`
 };
 const LOADERS_MAP_KEYS = Object.keys(LOADERS_MAP);
 /**
- * @typedef {object} Resource
- * @property {string} [text]
- * @property {string} [json]
- * @property {string} [image]
- * @property {string} [binary]
- * @property {RequestInit} [options] {@link https://developer.mozilla.org/en-US/docs/Web/API/Request/Request#parameters|Request#parameters}
- */ /**
- * @typedef {string | object | HTMLImageElement | Blob | ArrayBuffer} LoadedResource
- */ /**
  * Loads resources from a named map.
  * @function
- * @param {Object.<string, Resource>} resources
- * @returns {Promise<Object.<string, LoadedResource>>}
+ * @param {Object.<string, import("./types.js").Resource>} resources
+ * @returns {Promise<Object.<string, import("./types.js").LoadedResource>>}
  * @example
  * const resources = {
  *   hello: { text: "assets/hello.txt" },

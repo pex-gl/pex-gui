@@ -1,6 +1,6 @@
-import { t as toString$3, s as set$2, a as sub, n as normalize, d as dot, c as create$3, b as toString$4 } from './_chunks/vec3-ZbfXqRLW.js';
-import { s as set3 } from './_chunks/avec3-iLO3gi3v.js';
-export { r as ray } from './_chunks/ray-MfPV-GPU.js';
+import { t as toString$3, f as set$2, s as sub, n as normalize, g as dot, h as create$3, i as toString$4 } from './_chunks/vec3-BbHrDQ8x.js';
+import { s as set3 } from './_chunks/avec3-DnUFjeKE.js';
+export { r as ray } from './_chunks/ray-Ys8KxJHn.js';
 
 /**
  * Creates a new bounding box.
@@ -67,10 +67,11 @@ export { r as ray } from './_chunks/ray-MfPV-GPU.js';
 /**
  * Updates a bounding box from a list of points.
  * @param {import("./types.js").aabb} a
- * @param {import("pex-math/types/types").vec3[] | import("pex-math/types/types").TypedArray} points
+ * @param {import("./types.js").vec3[] | import("./types.js").TypedArray} points
  * @returns {import("./types.js").aabb}
  */ function fromPoints$1(a, points) {
-    const isFlatArray = !points[0]?.length;
+    var _points_;
+    const isFlatArray = !((_points_ = points[0]) == null ? void 0 : _points_.length);
     const l = points.length / (isFlatArray ? 3 : 1);
     for(let i = 0; i < l; i++){
         if (isFlatArray) {
@@ -84,8 +85,8 @@ export { r as ray } from './_chunks/ray-MfPV-GPU.js';
 /**
  * Returns a list of 8 points from a bounding box.
  * @param {import("./types.js").aabb} a
- * @param {import("pex-math/types/types").vec3[]} [points]
- * @returns {import("pex-math/types/types").vec3[]}
+ * @param {import("./types.js").vec3[]} [points]
+ * @returns {import("./types.js").vec3[]}
  */ function getCorners$1(a, points) {
     if (points === void 0) points = Array.from({
         length: 8
@@ -103,8 +104,8 @@ export { r as ray } from './_chunks/ray-MfPV-GPU.js';
 /**
  * Returns the center of a bounding box.
  * @param {import("./types.js").aabb} a
- * @param {import("pex-math/types/types").vec3} out
- * @returns {import("pex-math/types/types").vec3}
+ * @param {import("./types.js").vec3} out
+ * @returns {import("./types.js").vec3}
  */ function center$1(a, out) {
     if (out === void 0) out = [
         0,
@@ -119,8 +120,8 @@ export { r as ray } from './_chunks/ray-MfPV-GPU.js';
 /**
  * Returns the size of a bounding box.
  * @param {import("./types.js").aabb} a
- * @param {import("pex-math/types/types").vec3} out
- * @returns {import("pex-math/types/types").vec3}
+ * @param {import("./types.js").vec3} out
+ * @returns {import("./types.js").vec3}
  */ function size$1(a, out) {
     if (out === void 0) out = [
         0,
@@ -135,7 +136,7 @@ export { r as ray } from './_chunks/ray-MfPV-GPU.js';
 /**
  * Checks if a point is inside a bounding box.
  * @param {import("./types.js").aabb} a
- * @param {import("pex-math/types/types").vec3} p
+ * @param {import("./types.js").vec3} p
  * @returns {boolean}
  */ function containsPoint$1(a, param) {
     let [x, y, z] = param;
@@ -162,9 +163,9 @@ export { r as ray } from './_chunks/ray-MfPV-GPU.js';
 /**
  * Includes a point in a bounding box.
  * @param {import("./types.js").aabb} a
- * @param {import("pex-math/types/types").vec3} p
+ * @param {import("./types.js").vec3} p
  * @param {number} [i=0] offset in the point array
- * @returns {import("pex-math/types/types").vec3}
+ * @returns {import("./types.js").vec3}
  */ function includePoint$1(a, p, i) {
     if (i === void 0) i = 0;
     a[0][0] = Math.min(a[0][0], p[i + 0]);
@@ -233,7 +234,7 @@ const TEMP_0 = create$3();
 /**
  * Returns on which side a point is.
  * @param {import("./types.js").plane} plane
- * @param {import("pex-math/types/types").vec3} point
+ * @param {import("./types.js").vec3} point
  * @returns {number}
  */ function side(param, point) {
     let [planePoint, planeNormal] = param;
@@ -320,7 +321,7 @@ var plane = /*#__PURE__*/Object.freeze({
 /**
  * Updates a rectangle from a list of points.
  * @param {import("./types.js").rect} a
- * @param {import("pex-math/types/types").vec2[] | import("pex-math/types/types").TypedArray} points
+ * @param {import("./types.js").vec2[] | import("./types.js").TypedArray} points
  * @returns {import("./types.js").rect}
  */ function fromPoints(a, points) {
     const isTypedArray = !Array.isArray(points);
@@ -332,8 +333,8 @@ var plane = /*#__PURE__*/Object.freeze({
 /**
  * Returns a list of 4 points from a rectangle.
  * @param {import("./types.js").rect} a
- * @param {import("pex-math/types/types").vec2[]} points
- * @returns {import("pex-math/types/types").vec2[]}
+ * @param {import("./types.js").vec2[]} points
+ * @returns {import("./types.js").vec2[]}
  */ function getCorners(a, points) {
     if (points === void 0) points = [];
     points[0] = a[0].slice();
@@ -363,7 +364,7 @@ var plane = /*#__PURE__*/Object.freeze({
 /**
  * Sets the size of a rectangle using width and height.
  * @param {import("./types.js").rect} a
- * @param {import("pex-math/types/types").vec2} size
+ * @param {import("./types.js").vec2} size
  * @returns {import("./types.js").rect}
  */ function setSize(a, size) {
     a[1][0] = a[0][0] + size[0];
@@ -373,8 +374,8 @@ var plane = /*#__PURE__*/Object.freeze({
 /**
  * Returns the size of a rectangle.
  * @param {import("./types.js").rect} a
- * @param {import("pex-math/types/types").vec2} out
- * @returns {import("pex-math/types/types").vec2}
+ * @param {import("./types.js").vec2} out
+ * @returns {import("./types.js").vec2}
  */ function size(a, out) {
     if (out === void 0) out = [];
     out[0] = width(a);
@@ -405,7 +406,7 @@ var plane = /*#__PURE__*/Object.freeze({
 /**
  * Sets the position of a rectangle.
  * @param {import("./types.js").rect} a
- * @param {import("pex-math/types/types").vec2} p
+ * @param {import("./types.js").vec2} p
  * @returns {import("./types.js").rect}
  */ function setPosition(a, param) {
     let [x, y] = param;
@@ -420,7 +421,7 @@ var plane = /*#__PURE__*/Object.freeze({
 /**
  * Returns the center of a rectangle.
  * @param {import("./types.js").rect} a
- * @param {import("pex-math/types/types").vec2} out
+ * @param {import("./types.js").vec2} out
  * @returns {import("./types.js").rect}
  */ function center(a, out) {
     if (out === void 0) out = [];
@@ -431,7 +432,7 @@ var plane = /*#__PURE__*/Object.freeze({
 /**
  * Checks if a point is inside a rectangle.
  * @param {import("./types.js").rect} a
- * @param {import("pex-math/types/types").vec2} p
+ * @param {import("./types.js").vec2} p
  * @returns {boolean}
  */ function containsPoint(a, param) {
     let [x, y] = param;
@@ -448,7 +449,7 @@ var plane = /*#__PURE__*/Object.freeze({
 /**
  * Includes a point in a rectangle.
  * @param {import("./types.js").rect} a
- * @param {import("pex-math/types/types").vec2} p
+ * @param {import("./types.js").vec2} p
  * @returns {import("./types.js").rect}
  */ function includePoint(a, param) {
     let [x, y] = param;
@@ -475,8 +476,8 @@ var plane = /*#__PURE__*/Object.freeze({
 /**
  * Maps a point into the dimensions of a rectangle.
  * @param {import("./types.js").rect} a
- * @param {import("pex-math/types/types").vec2} p
- * @returns {import("pex-math/types/types").vec2}
+ * @param {import("./types.js").vec2} p
+ * @returns {import("./types.js").vec2}
  */ function mapPoint(a, p) {
     const minx = a[0][0];
     const miny = a[0][1];
@@ -489,8 +490,8 @@ var plane = /*#__PURE__*/Object.freeze({
 /**
  * Clamps a point into the dimensions of a rectangle.
  * @param {import("./types.js").rect} a
- * @param {import("pex-math/types/types").vec2} p
- * @returns {import("pex-math/types/types").vec2}
+ * @param {import("./types.js").vec2} p
+ * @returns {import("./types.js").vec2}
  */ function clampPoint(a, p) {
     const minx = a[0][0];
     const miny = a[0][1];

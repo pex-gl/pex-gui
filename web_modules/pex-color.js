@@ -277,6 +277,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * All components in the range 0 <= x <= 1
  */ /**
  * Creates a new color from linear values.
+ * @alias module:pex-color.create
  * @param {number} [r=0]
  * @param {number} [g=0]
  * @param {number} [b=0]
@@ -296,6 +297,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Returns a copy of a color.
+ * @alias module:pex-color.copy
  * @param {color} color
  * @returns {color}
  */ function copy(color) {
@@ -303,6 +305,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Sets a color to another color.
+ * @alias module:pex-color.set
  * @param {color} color
  * @param {color} color2
  * @returns {color}
@@ -314,6 +317,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Updates a color based on r, g, b, [a] values.
+ * @alias module:pex-color.fromValues
  * @param {import("./color.js").color} color
  * @param {number} r
  * @param {number} g
@@ -348,6 +352,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * All components in the range 0 <= x <= 255
  */ /**
  * Updates a color based on byte values.
+ * @alias module:pex-color.fromBytes
  * @param {import("./color.js").color} color
  * @param {bytes} bytes
  * @returns {import("./color.js").color}
@@ -361,6 +366,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Get RGB[A] color components as bytes array.
+ * @alias module:pex-color.toBytes
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {bytes}
@@ -394,6 +400,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @see {@link https://en.wikipedia.org/wiki/SRGB}
  */ /**
  * Updates a color based on linear values.
+ * @alias module:pex-color.fromLinear
  * @param {import("./color.js").color} color
  * @param {number} r
  * @param {number} g
@@ -408,6 +415,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Returns a linear color representation of a given color.
+ * @alias module:pex-color.toLinear
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {linear}
@@ -424,6 +432,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @typedef {string} hex hexadecimal string (RGB[A] or RRGGBB[AA]).
  */ /**
  * Updates a color based on a hexadecimal string.
+ * @alias module:pex-color.fromHex
  * @param {import("./color.js").color} color
  * @param {hex} hex Leading '#' is optional.
  * @returns {import("./color.js").color}
@@ -449,6 +458,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Returns a hexadecimal string representation of a given color.
+ * @alias module:pex-color.toHex
  * @param {import("./color.js").color} color
  * @param {boolean} alpha Handle alpha
  * @returns {hex}
@@ -473,6 +483,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Updates a color based on HSL values and alpha.
+ * @alias module:pex-color.fromHSL
  * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
@@ -493,6 +504,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Returns a HSL representation of a given color.
+ * @alias module:pex-color.toHSL
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {hsl}
@@ -530,6 +542,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @see {@link https://en.wikipedia.org/wiki/HWB_color_model}
  */ /**
  * Updates a color based on HWB values and alpha.
+ * @alias module:pex-color.fromHWB
  * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} w
@@ -550,6 +563,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Returns a HWB representation of a given color.
+ * @alias module:pex-color.toHWB
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {hwb}
@@ -568,6 +582,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @see {@link https://en.wikipedia.org/wiki/HSL_and_HSV}
  */ /**
  * Updates a color based on HSV values and alpha.
+ * @alias module:pex-color.fromHSV
  * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
@@ -616,6 +631,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Returns a HSV representation of a given color.
+ * @alias module:pex-color.toHSV
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {hsv}
@@ -653,6 +669,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @see {@link https://en.wikipedia.org/wiki/CIE_1931_color_space}
  */ /**
  * Updates a color based on XYZ values and alpha.
+ * @alias module:pex-color.fromXYZ
  * @param {import("./color.js").color} color
  * @param {number} x
  * @param {number} y
@@ -670,6 +687,7 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 /**
  * Returns a XYZ representation of a given color.
+ * @alias module:pex-color.toXYZ
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {xyz}
@@ -716,6 +734,7 @@ function fromXYZValueToLabValue(val, white) {
 }
 /**
  * Updates a color based on Lab values and alpha.
+ * @alias module:pex-color.fromLab
  * @param {import("./color.js").color} color
  * @param {number} l
  * @param {number} a
@@ -730,6 +749,7 @@ function fromXYZValueToLabValue(val, white) {
 }
 /**
  * Returns a Lab representation of a given color.
+ * @alias module:pex-color.toLab
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @param {Array} illuminant
@@ -765,6 +785,7 @@ function fromXYZValueToLabValue(val, white) {
 }
 /**
  * Updates a color based on Oklab values and alpha.
+ * @alias module:pex-color.fromOklab
  * @param {import("./color.js").color} color
  * @param {number} L
  * @param {number} a
@@ -780,6 +801,7 @@ function fromXYZValueToLabValue(val, white) {
 }
 /**
  * Returns an Oklab representation of a given color.
+ * @alias module:pex-color.toOklab
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {oklab}
@@ -798,6 +820,7 @@ function fromXYZValueToLabValue(val, white) {
  */ const S0 = 0.5;
 /**
  * Updates a color based on Okhsv values and alpha.
+ * @alias module:pex-color.fromOkhsv
  * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
@@ -827,6 +850,7 @@ function fromXYZValueToLabValue(val, white) {
 }
 /**
  * Returns an Okhsv representation of a given color.
+ * @alias module:pex-color.toOkhsv
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {okhsv}
@@ -935,6 +959,7 @@ function getCs(L, a_, b_) {
 }
 /**
  * Updates a color based on Okhsl values and alpha.
+ * @alias module:pex-color.fromOkhsl
  * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
@@ -970,6 +995,7 @@ function getCs(L, a_, b_) {
 }
 /**
  * Returns an Okhsl representation of a given color.
+ * @alias module:pex-color.toOkhsl
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {okhsl}
@@ -1007,6 +1033,7 @@ function getCs(L, a_, b_) {
  * @see {@link https://en.wikipedia.org/wiki/CIELUV}
  */ /**
  * Updates a color based on LCHuv values and alpha.
+ * @alias module:pex-color.fromLCHuv
  * @param {import("./color.js").color} color
  * @param {number} l
  * @param {number} c
@@ -1022,6 +1049,7 @@ function getCs(L, a_, b_) {
 }
 /**
  * Returns a LCHuv representation of a given color.
+ * @alias module:pex-color.toLCHuv
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {lchuv}
@@ -1042,7 +1070,7 @@ function getCs(L, a_, b_) {
  * All components in the range 0 <= x <= 1
  * @see {@link https://www.hsluv.org/}
  */ const lengthOfRayUntilIntersect = (theta, param)=>{
-    let { intercept , slope  } = param;
+    let { intercept, slope } = param;
     return intercept / (Math.sin(theta) - slope * Math.cos(theta));
 };
 const maxChromaForLH = (L, H)=>{
@@ -1096,6 +1124,7 @@ const lchToHsluv = (param)=>{
 };
 /**
  * Updates a color based on HSLuv values and alpha.
+ * @alias module:pex-color.fromHSLuv
  * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
@@ -1111,6 +1140,7 @@ const lchToHsluv = (param)=>{
 }
 /**
  * Returns a HSLuv representation of a given color.
+ * @alias module:pex-color.toHSLuv
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {hsluv}
@@ -1130,7 +1160,7 @@ const lchToHsluv = (param)=>{
  *
  * All components in the range 0 <= x <= 1.
  */ const distanceLineFromOrigin = (param)=>{
-    let { intercept , slope  } = param;
+    let { intercept, slope } = param;
     return Math.abs(intercept) / Math.sqrt(slope ** 2 + 1);
 };
 const maxSafeChromaForL = (L)=>{
@@ -1183,6 +1213,7 @@ const lchToHpluv = (param)=>{
 };
 /**
  * Updates a color based on HPLuv values and alpha.
+ * @alias module:pex-color.fromHPLuv
  * @param {import("./color.js").color} color
  * @param {number} h
  * @param {number} s
@@ -1198,6 +1229,7 @@ const lchToHpluv = (param)=>{
 }
 /**
  * Returns a HPLuv representation of a given color.
+ * @alias module:pex-color.toHPLuv
  * @param {import("./color.js").color} color
  * @param {Array} out
  * @returns {hpluv}
@@ -1214,6 +1246,7 @@ const lchToHpluv = (param)=>{
 
 /**
  * Returns a rgb CSS string representation of a given color.
+ * @alias module:pex-color.toCSSRGB
  * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @returns {css}
@@ -1226,6 +1259,7 @@ const lchToHpluv = (param)=>{
 }
 /**
  * Returns a hsl CSS string representation of a given color.
+ * @alias module:pex-color.toCSSHSL
  * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @returns {css}
@@ -1241,6 +1275,7 @@ const lchToHpluv = (param)=>{
 }
 /**
  * Returns a lab CSS string representation of a given color.
+ * @alias module:pex-color.toCSSLab
  * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @returns {css}
@@ -1255,6 +1290,7 @@ const lchToHpluv = (param)=>{
 }
 /**
  * Returns a lch CSS string representation of a given color.
+ * @alias module:pex-color.toCSSLCH
  * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @returns {css}
@@ -1266,6 +1302,7 @@ const lchToHpluv = (param)=>{
 }
 /**
  * Returns a hwb CSS string representation of a given color.
+ * @alias module:pex-color.toCSSHWB
  * @param {import("./color.js").color} color
  * @param {number} [precision=5]
  * @returns {css}

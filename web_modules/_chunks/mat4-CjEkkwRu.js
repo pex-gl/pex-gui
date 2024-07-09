@@ -44,8 +44,17 @@
  * @param {number} outStart
  * @param {number} outEnd
  * @returns {number}
- */ function map(n, inStart, inEnd, outStart, outEnd) {
+ */ function remap(n, inStart, inEnd, outStart, outEnd) {
     return outStart + (outEnd - outStart) * (n - inStart) / (inEnd - inStart);
+}
+/**
+ * @deprecated Use "remap()"
+ * @ignore
+ */ function map() {
+    for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++){
+        args[_key] = arguments[_key];
+    }
+    return remap(...args);
 }
 /**
  * Transforms degrees into radians.
@@ -101,6 +110,7 @@ var utils = /*#__PURE__*/Object.freeze({
   map: map,
   nextPowerOfTwo: nextPowerOfTwo,
   prevPowerOfTwo: prevPowerOfTwo,
+  remap: remap,
   smoothstep: smoothstep,
   toDegrees: toDegrees,
   toRadians: toRadians
@@ -797,4 +807,4 @@ var mat4 = /*#__PURE__*/Object.freeze({
   transpose: transpose
 });
 
-export { EPSILON as E, fromPointToPoint as a, clamp as b, create as c, frustum as d, toRadians as e, fromDirection as f, lerp as g, invert as i, lookAt as l, mat4 as m, ortho as o, perspective as p, set as s, toDegrees as t, utils as u };
+export { EPSILON as E, clamp as a, toRadians as b, create as c, lerp as d, fromDirection as e, frustum as f, fromPointToPoint as g, invert as i, lookAt as l, mat4 as m, ortho as o, perspective as p, set as s, toDegrees as t, utils as u };

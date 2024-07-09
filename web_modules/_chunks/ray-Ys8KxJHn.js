@@ -1,4 +1,4 @@
-import { s as set, d as dot, a as sub, j as add, i as scale, o as cross, l as length, t as toString$1, c as create$1 } from './vec3-ZbfXqRLW.js';
+import { f as set, g as dot, s as sub, b as add, a as scale, j as cross, l as length, t as toString$1, h as create$1 } from './vec3-BbHrDQ8x.js';
 
 /**
  * Enum for different intersections values
@@ -42,7 +42,7 @@ const EPSILON = 1e-6;
  * @see {@link https://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld017.htm}
  * @param {import("./types.js").ray} ray
  * @param {import("./types.js").plane} plane
- * @param {import("pex-math/types/types").vec3} out
+ * @param {import("./types.js").vec3} out
  * @returns {number}
  */ function hitTestPlane(param, param1, out) {
     let [origin, direction] = param;
@@ -63,7 +63,7 @@ const EPSILON = 1e-6;
  * @see {@link http://geomalgorithms.com/a06-_intersect-2.html#intersect3D_RayTriangle()}
  * @param {import("./types.js").ray} ray
  * @param {import("./types.js").triangle} triangle
- * @param {import("pex-math/types/types").vec3} out
+ * @param {import("./types.js").vec3} out
  * @returns {number}
  */ function hitTestTriangle(param, param1, out) {
     let [origin, direction] = param;
