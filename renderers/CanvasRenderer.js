@@ -505,7 +505,7 @@ class CanvasRenderer {
         ctx.stroke();
 
         ctx.fillText(
-          `${item.title}: ${item.values[item.values.length - 1] || ""}`,
+          `${item.title}: ${item.values[item.values.length - 1] ?? ""}`,
           x + textPadding,
           dy + textY,
         );
