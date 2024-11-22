@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+# [3.1.0](https://github.com/pex-gl/pex-gui/compare/v3.0.1...v3.1.0) (2024-11-22)
+
+
+### Bug Fixes
+
+* check for nullish when rendering graph control value ([6e5c7bb](https://github.com/pex-gl/pex-gui/commit/6e5c7bb0c946312075de03e35120224163707412))
+* use round instead of floor in fps graph redraw ([1373b6b](https://github.com/pex-gl/pex-gui/commit/1373b6b894539396262e67e978d32c8ad9f1ba05))
+
+
+### Features
+
+* add format support to graph controls ([506553a](https://github.com/pex-gl/pex-gui/commit/506553aaa04bf526adf4e6c13a3ceba96de59ec8))
+* handle multiline and empty string title in control stats ([285e223](https://github.com/pex-gl/pex-gui/commit/285e223447a4f3e6fde422f990939576809de54a))
+
+
+
 ## [3.0.1](https://github.com/pex-gl/pex-gui/compare/v3.0.0...v3.0.1) (2024-07-09)
 
 
