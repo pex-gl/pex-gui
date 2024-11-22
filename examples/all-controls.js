@@ -25,7 +25,7 @@ export default async function addAllControls(gui, ctx) {
       (name, value) => ({
         name,
         value,
-      })
+      }),
     ),
     checkboxValue: false,
     message: "Message",
@@ -55,7 +55,7 @@ export default async function addAllControls(gui, ctx) {
             mipmap: true,
             min: ctx.Filter.LinearMipmapLinear,
             aniso: 16,
-          })
+          }),
         )
       : images,
   };
@@ -72,7 +72,7 @@ export default async function addAllControls(gui, ctx) {
     "Radio list",
     State,
     "currentRadioListChoice",
-    State.radioListChoices
+    State.radioListChoices,
   );
 
   gui.addSeparator();
@@ -117,7 +117,7 @@ export default async function addAllControls(gui, ctx) {
     State.textures.map((texture, value) => ({
       texture,
       value,
-    }))
+    })),
   );
   if (isPexGl) gui.addTextureCube("Cube", State.cubeTexture, { level: 2 }); // gui.addParam("Cube", State, "cubeTexture", { level: 2 });
 
@@ -129,8 +129,9 @@ export default async function addAllControls(gui, ctx) {
       item.options.t += 0.01;
     },
     redraw(item) {
-      item.values.push(+Math.sin(item.options.t).toFixed(3));
+      item.values.push(Math.sin(item.options.t));
     },
+    format: (value) => value?.toFixed(3) || "",
   });
   gui.addFPSMeeter();
   gui.addHeader("Stats");

@@ -486,10 +486,14 @@ class CanvasRenderer {
         ctx.textAlign = "right";
         const textX = x + width - padding;
         if (item.max !== undefined) {
-          ctx.fillText(item.max, textX, y + padding * 2.5);
+          ctx.fillText(item.options.format(item.max), textX, y + padding * 2.5);
         }
         if (item.min !== undefined) {
-          ctx.fillText(item.min, textX, y + height - padding * 2.5);
+          ctx.fillText(
+            item.options.format(item.min),
+            textX,
+            y + height - padding * 2.5,
+          );
         }
         ctx.restore();
 
@@ -505,7 +509,7 @@ class CanvasRenderer {
         ctx.stroke();
 
         ctx.fillText(
-          `${item.title}: ${item.values[item.values.length - 1] ?? ""}`,
+          `${item.title}: ${item.options.format(item.values[item.values.length - 1])}`,
           x + textPadding,
           dy + textY,
         );

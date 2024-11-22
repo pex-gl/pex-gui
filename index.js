@@ -974,7 +974,10 @@ class GUI {
     const ctrl = new GUIControl({
       type: "graph",
       title,
-      options,
+      options: {
+        format: (value) => value,
+        ...options,
+      },
       activeArea: [
         [0, 0],
         [0, 0],
@@ -1021,8 +1024,9 @@ class GUI {
         item.options.time.update(now);
       },
       redraw(item) {
-        item.values.push(Math.round(item.options.time.fps));
+        item.values.push(item.options.time.fps);
       },
+      format: (value) => (Number.isFinite(value) ? Math.round(value) : ""),
     });
 
     return ctrl;
