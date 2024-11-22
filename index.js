@@ -1021,7 +1021,7 @@ class GUI {
         item.options.time.update(now);
       },
       redraw(item) {
-        item.values.push(Math.floor(item.options.time.fps));
+        item.values.push(Math.round(item.options.time.fps));
       },
     });
 
