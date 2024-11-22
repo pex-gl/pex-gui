@@ -1041,7 +1041,7 @@ class GUI {
   addStats(title, options) {
     const ctrl = new GUIControl({
       type: "stats",
-      title: title || "STATS",
+      title: title ?? "STATS",
       activeArea: [
         [0, 0],
         [0, 0],

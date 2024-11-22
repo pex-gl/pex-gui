@@ -196,7 +196,11 @@ class CanvasRenderer {
       } else if (item.type === "graph") {
         eh = titleHeight + graphHeight;
       } else if (item.type === "stats") {
-        eh = titleHeight + Object.entries(item.stats).length * titleHeight;
+        eh =
+          Object.values(item.stats)
+            .map((value) => String(value).split("\n").length)
+            .reduce((a, b) => a + b, 0) * titleHeight;
+        if (item.title !== "") eh += titleHeight;
       } else if (item.type === "label") {
         eh = item.title.split("\n").length * titleHeight;
       }
@@ -515,14 +519,27 @@ class CanvasRenderer {
         );
       } else if (item.type === "stats") {
         ctx.fillStyle = this.theme.color;
-        ctx.fillText(item.title, x + textPadding, dy + textY);
-        Object.entries(item.stats).map(([name, value], i) => {
-          ctx.fillText(
-            `${name}: ${value}`,
-            x + textPadding * 2,
-            dy + textY + titleHeight * (i + 1),
-          );
-        });
+
+        let lineIndex = 0;
+        if (item.title) {
+          ctx.fillText(item.title, x + textPadding, dy + textY);
+          lineIndex++;
+        }
+
+        for (let [name, value] of Object.entries(item.stats)) {
+          const lines = String(value).split("\n");
+
+          for (let j = 0; j < lines.length; j++) {
+            const lineValue = lines[j];
+
+            ctx.fillText(
+              j === 0 ? `${name}: ${lineValue}` : lineValue,
+              x + textPadding * 2,
+              dy + textY + titleHeight * lineIndex,
+            );
+            lineIndex++;
+          }
+        }
       } else if (item.type === "label") {
         ctx.fillStyle = this.theme.color;
         const lines = item.title.split("\n");
