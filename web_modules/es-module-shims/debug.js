@@ -338,7 +338,7 @@ var esModuleShims_debug = {};
     featureDetectionPromise = featureDetectionPromise.then(()=>{
         console.info(`es-module-shims: detected native support - ${supportsDynamicImport ? '' : 'no '}dynamic import, ${supportsImportMeta ? '' : 'no '}import meta, ${supportsImportMaps ? '' : 'no '}import maps`);
     });
-    /* es-module-lexer 1.5.2 */ let e, a, r, i = 2 << 19;
+    /* es-module-lexer 1.5.4 */ let e, a, r, i = 2 << 19;
     const s = 1 === new Uint8Array(new Uint16Array([
         1
     ]).buffer)[0] ? function(e, a) {
@@ -352,7 +352,7 @@ var esModuleShims_debug = {};
             const r = e.charCodeAt(i);
             a[i++] = (255 & r) << 8 | r >>> 8;
         }
-    }, f = "xportmportlassetaourceromsyncunctionssertvoyiedelecontininstantybreareturdebuggeawaithrwhileforifcatcfinallels";
+    }, f = "xportmportlassforetaourceromsyncunctionssertvoyiedelecontininstantybreareturdebuggeawaithrwhileifcatcfinallels";
     let t, c$1, n;
     function parse(k, l) {
         if (l === void 0) l = "@";
@@ -364,8 +364,8 @@ var esModuleShims_debug = {};
                 "use asm";
                 var i = new e.Int8Array(r), s = new e.Int16Array(r), f = new e.Int32Array(r), t = new e.Uint8Array(r), c = new e.Uint16Array(r), n = 1040;
                 function b() {
-                    var e = 0, a = 0, r = 0, t = 0, b = 0, o = 0;
-                    o = n;
+                    var e = 0, a = 0, r = 0, t = 0, c = 0, b = 0, u = 0;
+                    u = n;
                     n = n + 10240 | 0;
                     i[804] = 1;
                     i[803] = 0;
@@ -375,8 +375,8 @@ var esModuleShims_debug = {};
                     i[805] = 0;
                     f[68] = 0;
                     i[802] = 0;
-                    f[70] = o + 2048;
-                    f[71] = o;
+                    f[70] = u + 2048;
+                    f[71] = u;
                     i[806] = 0;
                     e = (f[3] | 0) + -2 | 0;
                     f[72] = e;
@@ -386,7 +386,7 @@ var esModuleShims_debug = {};
                         r = e + 2 | 0;
                         f[72] = r;
                         if (e >>> 0 >= a >>> 0) {
-                            b = 18;
+                            t = 18;
                             break;
                         }
                         a: do {
@@ -401,22 +401,22 @@ var esModuleShims_debug = {};
                                 case 101:
                                     {
                                         if ((((s[400] | 0) == 0 ? H(r) | 0 : 0) ? (m(e + 4 | 0, 16, 10) | 0) == 0 : 0) ? (k(), (i[804] | 0) == 0) : 0) {
-                                            b = 9;
+                                            t = 9;
                                             break e;
-                                        } else b = 17;
+                                        } else t = 17;
                                         break;
                                     }
                                 case 105:
                                     {
                                         if (H(r) | 0 ? (m(e + 4 | 0, 26, 10) | 0) == 0 : 0) {
                                             l();
-                                            b = 17;
-                                        } else b = 17;
+                                            t = 17;
+                                        } else t = 17;
                                         break;
                                     }
                                 case 59:
                                     {
-                                        b = 17;
+                                        t = 17;
                                         break;
                                     }
                                 case 47:
@@ -433,43 +433,43 @@ var esModuleShims_debug = {};
                                             }
                                         default:
                                             {
-                                                b = 16;
+                                                t = 16;
                                                 break e;
                                             }
                                     }
                                 default:
                                     {
-                                        b = 16;
+                                        t = 16;
                                         break e;
                                     }
                             }
                         }while (0);
-                        if ((b | 0) == 17) {
-                            b = 0;
+                        if ((t | 0) == 17) {
+                            t = 0;
                             f[69] = f[72];
                         }
                         e = f[72] | 0;
                         a = f[73] | 0;
                     }
-                    if ((b | 0) == 9) {
+                    if ((t | 0) == 9) {
                         e = f[72] | 0;
                         f[69] = e;
-                        b = 19;
-                    } else if ((b | 0) == 16) {
+                        t = 19;
+                    } else if ((t | 0) == 16) {
                         i[804] = 0;
                         f[72] = e;
-                        b = 19;
-                    } else if ((b | 0) == 18) if (!(i[802] | 0)) {
+                        t = 19;
+                    } else if ((t | 0) == 18) if (!(i[802] | 0)) {
                         e = r;
-                        b = 19;
+                        t = 19;
                     } else e = 0;
                     do {
-                        if ((b | 0) == 19) {
+                        if ((t | 0) == 19) {
                             e: while(1){
                                 a = e + 2 | 0;
                                 f[72] = a;
                                 if (e >>> 0 >= (f[73] | 0) >>> 0) {
-                                    b = 86;
+                                    t = 92;
                                     break;
                                 }
                                 a: do {
@@ -485,66 +485,66 @@ var esModuleShims_debug = {};
                                             {
                                                 if (((s[400] | 0) == 0 ? H(a) | 0 : 0) ? (m(e + 4 | 0, 16, 10) | 0) == 0 : 0) {
                                                     k();
-                                                    b = 85;
-                                                } else b = 85;
+                                                    t = 91;
+                                                } else t = 91;
                                                 break;
                                             }
                                         case 105:
                                             {
                                                 if (H(a) | 0 ? (m(e + 4 | 0, 26, 10) | 0) == 0 : 0) {
                                                     l();
-                                                    b = 85;
-                                                } else b = 85;
+                                                    t = 91;
+                                                } else t = 91;
                                                 break;
                                             }
                                         case 99:
                                             {
                                                 if ((H(a) | 0 ? (m(e + 4 | 0, 36, 8) | 0) == 0 : 0) ? V(s[e + 12 >> 1] | 0) | 0 : 0) {
                                                     i[806] = 1;
-                                                    b = 85;
-                                                } else b = 85;
+                                                    t = 91;
+                                                } else t = 91;
                                                 break;
                                             }
                                         case 40:
                                             {
-                                                t = f[70] | 0;
-                                                a = s[400] | 0;
-                                                b = a & 65535;
-                                                f[t + (b << 3) >> 2] = 1;
-                                                r = f[69] | 0;
-                                                s[400] = a + 1 << 16 >> 16;
-                                                f[t + (b << 3) + 4 >> 2] = r;
-                                                b = 85;
+                                                r = f[70] | 0;
+                                                e = s[400] | 0;
+                                                t = e & 65535;
+                                                f[r + (t << 3) >> 2] = 1;
+                                                a = f[69] | 0;
+                                                s[400] = e + 1 << 16 >> 16;
+                                                f[r + (t << 3) + 4 >> 2] = a;
+                                                t = 91;
                                                 break;
                                             }
                                         case 41:
                                             {
                                                 a = s[400] | 0;
                                                 if (!(a << 16 >> 16)) {
-                                                    b = 36;
+                                                    t = 36;
                                                     break e;
                                                 }
-                                                b = a + -1 << 16 >> 16;
-                                                s[400] = b;
+                                                r = a + -1 << 16 >> 16;
+                                                s[400] = r;
                                                 t = s[399] | 0;
                                                 a = t & 65535;
-                                                if (t << 16 >> 16 != 0 ? (f[(f[70] | 0) + ((b & 65535) << 3) >> 2] | 0) == 5 : 0) {
+                                                if (t << 16 >> 16 != 0 ? (f[(f[70] | 0) + ((r & 65535) << 3) >> 2] | 0) == 5 : 0) {
                                                     a = f[(f[71] | 0) + (a + -1 << 2) >> 2] | 0;
                                                     r = a + 4 | 0;
                                                     if (!(f[r >> 2] | 0)) f[r >> 2] = (f[69] | 0) + 2;
                                                     f[a + 12 >> 2] = e + 4;
                                                     s[399] = t + -1 << 16 >> 16;
-                                                    b = 85;
-                                                } else b = 85;
+                                                    t = 91;
+                                                } else t = 91;
                                                 break;
                                             }
                                         case 123:
                                             {
-                                                b = f[69] | 0;
-                                                t = f[63] | 0;
-                                                e = b;
+                                                t = f[69] | 0;
+                                                r = f[63] | 0;
+                                                e = t;
                                                 do {
-                                                    if ((s[b >> 1] | 0) == 41 & (t | 0) != 0 ? (f[t + 4 >> 2] | 0) == (b | 0) : 0) {
+                                                    if ((s[t >> 1] | 0) == 41 & (r | 0) != 0 ? (f[r + 4 >> 2] | 0) == (t | 0) : 0) {
                                                         a = f[64] | 0;
                                                         f[63] = a;
                                                         if (!a) {
@@ -556,42 +556,42 @@ var esModuleShims_debug = {};
                                                         }
                                                     }
                                                 }while (0);
-                                                t = f[70] | 0;
-                                                r = s[400] | 0;
-                                                b = r & 65535;
-                                                f[t + (b << 3) >> 2] = (i[806] | 0) == 0 ? 2 : 6;
-                                                s[400] = r + 1 << 16 >> 16;
-                                                f[t + (b << 3) + 4 >> 2] = e;
+                                                r = f[70] | 0;
+                                                a = s[400] | 0;
+                                                t = a & 65535;
+                                                f[r + (t << 3) >> 2] = (i[806] | 0) == 0 ? 2 : 6;
+                                                s[400] = a + 1 << 16 >> 16;
+                                                f[r + (t << 3) + 4 >> 2] = e;
                                                 i[806] = 0;
-                                                b = 85;
+                                                t = 91;
                                                 break;
                                             }
                                         case 125:
                                             {
                                                 e = s[400] | 0;
                                                 if (!(e << 16 >> 16)) {
-                                                    b = 49;
+                                                    t = 49;
                                                     break e;
                                                 }
-                                                t = f[70] | 0;
-                                                b = e + -1 << 16 >> 16;
-                                                s[400] = b;
-                                                if ((f[t + ((b & 65535) << 3) >> 2] | 0) == 4) {
+                                                r = f[70] | 0;
+                                                t = e + -1 << 16 >> 16;
+                                                s[400] = t;
+                                                if ((f[r + ((t & 65535) << 3) >> 2] | 0) == 4) {
                                                     h();
-                                                    b = 85;
-                                                } else b = 85;
+                                                    t = 91;
+                                                } else t = 91;
                                                 break;
                                             }
                                         case 39:
                                             {
                                                 v(39);
-                                                b = 85;
+                                                t = 91;
                                                 break;
                                             }
                                         case 34:
                                             {
                                                 v(34);
-                                                b = 85;
+                                                t = 91;
                                                 break;
                                             }
                                         case 47:
@@ -611,137 +611,138 @@ var esModuleShims_debug = {};
                                                         e = f[69] | 0;
                                                         a = s[e >> 1] | 0;
                                                         r: do {
-                                                            if (!(U(a) | 0)) {
-                                                                switch(a << 16 >> 16){
-                                                                    case 41:
-                                                                        if (D(f[(f[70] | 0) + (c[400] << 3) + 4 >> 2] | 0) | 0) break r;
-                                                                        else {
-                                                                            b = 66;
-                                                                            break r;
-                                                                        }
-                                                                    case 125:
-                                                                        break;
-                                                                    default:
-                                                                        {
-                                                                            b = 66;
-                                                                            break r;
-                                                                        }
-                                                                }
-                                                                r = f[70] | 0;
-                                                                t = c[400] | 0;
-                                                                if (!(p(f[r + (t << 3) + 4 >> 2] | 0) | 0) ? (f[r + (t << 3) >> 2] | 0) != 6 : 0) b = 66;
-                                                            } else switch(a << 16 >> 16){
+                                                            if (!(U(a) | 0)) if (a << 16 >> 16 == 41) {
+                                                                r = s[400] | 0;
+                                                                if (!(D(f[(f[70] | 0) + ((r & 65535) << 3) + 4 >> 2] | 0) | 0)) t = 65;
+                                                            } else t = 64;
+                                                            else switch(a << 16 >> 16){
                                                                 case 46:
                                                                     if (((s[e + -2 >> 1] | 0) + -48 & 65535) < 10) {
-                                                                        b = 66;
+                                                                        t = 64;
                                                                         break r;
                                                                     } else break r;
                                                                 case 43:
                                                                     if ((s[e + -2 >> 1] | 0) == 43) {
-                                                                        b = 66;
+                                                                        t = 64;
                                                                         break r;
                                                                     } else break r;
                                                                 case 45:
                                                                     if ((s[e + -2 >> 1] | 0) == 45) {
-                                                                        b = 66;
+                                                                        t = 64;
                                                                         break r;
                                                                     } else break r;
                                                                 default:
                                                                     break r;
                                                             }
                                                         }while (0);
+                                                        if ((t | 0) == 64) {
+                                                            r = s[400] | 0;
+                                                            t = 65;
+                                                        }
                                                         r: do {
-                                                            if ((b | 0) == 66 ? (0, !(u(e) | 0)) : 0) {
-                                                                switch(a << 16 >> 16){
-                                                                    case 0:
-                                                                        break r;
-                                                                    case 47:
-                                                                        {
-                                                                            if (i[805] | 0) break r;
-                                                                            break;
-                                                                        }
-                                                                    default:
-                                                                        {}
+                                                            if ((t | 0) == 65) {
+                                                                t = 0;
+                                                                if (r << 16 >> 16 != 0 ? (c = f[70] | 0, b = (r & 65535) + -1 | 0, a << 16 >> 16 == 102 ? (f[c + (b << 3) >> 2] | 0) == 1 : 0) : 0) {
+                                                                    if ((s[e + -2 >> 1] | 0) == 111 ? $(f[c + (b << 3) + 4 >> 2] | 0, 44, 3) | 0 : 0) break;
+                                                                } else t = 69;
+                                                                if ((t | 0) == 69 ? (0, a << 16 >> 16 == 125) : 0) {
+                                                                    t = f[70] | 0;
+                                                                    r = r & 65535;
+                                                                    if (p(f[t + (r << 3) + 4 >> 2] | 0) | 0) break;
+                                                                    if ((f[t + (r << 3) >> 2] | 0) == 6) break;
                                                                 }
-                                                                b = f[65] | 0;
-                                                                if ((b | 0 ? e >>> 0 >= (f[b >> 2] | 0) >>> 0 : 0) ? e >>> 0 <= (f[b + 4 >> 2] | 0) >>> 0 : 0) {
-                                                                    g();
-                                                                    i[805] = 0;
-                                                                    b = 85;
-                                                                    break a;
-                                                                }
-                                                                r = f[3] | 0;
-                                                                do {
-                                                                    if (e >>> 0 <= r >>> 0) break;
-                                                                    e = e + -2 | 0;
-                                                                    f[69] = e;
-                                                                    a = s[e >> 1] | 0;
-                                                                }while (!(E(a) | 0));
-                                                                if (F(a) | 0) {
+                                                                if (!(o(e) | 0)) {
+                                                                    switch(a << 16 >> 16){
+                                                                        case 0:
+                                                                            break r;
+                                                                        case 47:
+                                                                            {
+                                                                                if (i[805] | 0) break r;
+                                                                                break;
+                                                                            }
+                                                                        default:
+                                                                            {}
+                                                                    }
+                                                                    t = f[65] | 0;
+                                                                    if ((t | 0 ? e >>> 0 >= (f[t >> 2] | 0) >>> 0 : 0) ? e >>> 0 <= (f[t + 4 >> 2] | 0) >>> 0 : 0) {
+                                                                        g();
+                                                                        i[805] = 0;
+                                                                        t = 91;
+                                                                        break a;
+                                                                    }
+                                                                    r = f[3] | 0;
                                                                     do {
                                                                         if (e >>> 0 <= r >>> 0) break;
                                                                         e = e + -2 | 0;
                                                                         f[69] = e;
-                                                                    }while (F(s[e >> 1] | 0) | 0);
-                                                                    if (j(e) | 0) {
-                                                                        g();
-                                                                        i[805] = 0;
-                                                                        b = 85;
-                                                                        break a;
+                                                                        a = s[e >> 1] | 0;
+                                                                    }while (!(E(a) | 0));
+                                                                    if (F(a) | 0) {
+                                                                        do {
+                                                                            if (e >>> 0 <= r >>> 0) break;
+                                                                            e = e + -2 | 0;
+                                                                            f[69] = e;
+                                                                        }while (F(s[e >> 1] | 0) | 0);
+                                                                        if (j(e) | 0) {
+                                                                            g();
+                                                                            i[805] = 0;
+                                                                            t = 91;
+                                                                            break a;
+                                                                        }
                                                                     }
+                                                                    i[805] = 1;
+                                                                    t = 91;
+                                                                    break a;
                                                                 }
-                                                                i[805] = 1;
-                                                                b = 85;
-                                                                break a;
                                                             }
                                                         }while (0);
                                                         g();
                                                         i[805] = 0;
-                                                        b = 85;
+                                                        t = 91;
                                                         break a;
                                                     }
                                             }
                                         case 96:
                                             {
-                                                t = f[70] | 0;
-                                                r = s[400] | 0;
-                                                b = r & 65535;
-                                                f[t + (b << 3) + 4 >> 2] = f[69];
-                                                s[400] = r + 1 << 16 >> 16;
-                                                f[t + (b << 3) >> 2] = 3;
+                                                r = f[70] | 0;
+                                                a = s[400] | 0;
+                                                t = a & 65535;
+                                                f[r + (t << 3) + 4 >> 2] = f[69];
+                                                s[400] = a + 1 << 16 >> 16;
+                                                f[r + (t << 3) >> 2] = 3;
                                                 h();
-                                                b = 85;
+                                                t = 91;
                                                 break;
                                             }
                                         default:
-                                            b = 85;
+                                            t = 91;
                                     }
                                 }while (0);
-                                if ((b | 0) == 85) {
-                                    b = 0;
+                                if ((t | 0) == 91) {
+                                    t = 0;
                                     f[69] = f[72];
                                 }
                                 e = f[72] | 0;
                             }
-                            if ((b | 0) == 36) {
+                            if ((t | 0) == 36) {
                                 T();
                                 e = 0;
                                 break;
-                            } else if ((b | 0) == 49) {
+                            } else if ((t | 0) == 49) {
                                 T();
                                 e = 0;
                                 break;
-                            } else if ((b | 0) == 86) {
+                            } else if ((t | 0) == 92) {
                                 e = (i[802] | 0) == 0 ? (s[399] | s[400]) << 16 >> 16 == 0 : 0;
                                 break;
                             }
                         }
                     }while (0);
-                    n = o;
+                    n = u;
                     return e | 0;
                 }
                 function k() {
-                    var e = 0, a = 0, r = 0, t = 0, c = 0, n = 0, b = 0, k = 0, l = 0, u = 0, h = 0, d = 0, C = 0, g = 0;
+                    var e = 0, a = 0, r = 0, t = 0, c = 0, n = 0, b = 0, k = 0, l = 0, o = 0, h = 0, d = 0, C = 0, g = 0;
                     k = f[72] | 0;
                     l = f[65] | 0;
                     g = k + 12 | 0;
@@ -821,7 +822,7 @@ var esModuleShims_debug = {};
                                                             case 97:
                                                                 {
                                                                     a = f[72] | 0;
-                                                                    if ((m(a + 2 | 0, 66, 8) | 0) == 0 ? (c = a + 10 | 0, F(s[c >> 1] | 0) | 0) : 0) {
+                                                                    if ((m(a + 2 | 0, 72, 8) | 0) == 0 ? (c = a + 10 | 0, F(s[c >> 1] | 0) | 0) : 0) {
                                                                         f[72] = c;
                                                                         w(0) | 0;
                                                                         C = 22;
@@ -846,7 +847,7 @@ var esModuleShims_debug = {};
                                                                 {}
                                                         }
                                                         r: do {
-                                                            if ((C | 0) == 22 ? (b = f[72] | 0, (m(b + 2 | 0, 74, 14) | 0) == 0) : 0) {
+                                                            if ((C | 0) == 22 ? (b = f[72] | 0, (m(b + 2 | 0, 80, 14) | 0) == 0) : 0) {
                                                                 r = b + 16 | 0;
                                                                 a = s[r >> 1] | 0;
                                                                 if (!(V(a) | 0)) switch(a << 16 >> 16){
@@ -868,8 +869,8 @@ var esModuleShims_debug = {};
                                                                 }
                                                             }
                                                         }while (0);
-                                                        if ((C | 0) == 31 ? (u = f[72] | 0, q(d) | 0, h = f[72] | 0, h >>> 0 > u >>> 0) : 0) {
-                                                            O(e, k, u, h);
+                                                        if ((C | 0) == 31 ? (o = f[72] | 0, q(d) | 0, h = f[72] | 0, h >>> 0 > o >>> 0) : 0) {
+                                                            O(e, k, o, h);
                                                             f[72] = (f[72] | 0) + -2;
                                                             break e;
                                                         }
@@ -979,9 +980,9 @@ var esModuleShims_debug = {};
                             }while (0);
                             g = (w(1) | 0) << 16 >> 16 == 102;
                             e = f[72] | 0;
-                            if (g ? (m(e + 2 | 0, 60, 6) | 0) == 0 : 0) {
+                            if (g ? (m(e + 2 | 0, 66, 6) | 0) == 0 : 0) {
                                 f[72] = e + 8;
-                                o(k, w(1) | 0, 0);
+                                u(k, w(1) | 0, 0);
                                 e = (l | 0) == 0 ? 240 : l + 16 | 0;
                                 while(1){
                                     e = f[e >> 2] | 0;
@@ -1004,7 +1005,7 @@ var esModuleShims_debug = {};
                     t = w(1) | 0;
                     a = f[72] | 0;
                     e: do {
-                        if (t << 16 >> 16 != 46) if (t << 16 >> 16 == 115 & a >>> 0 > r >>> 0) if ((m(a + 2 | 0, 50, 10) | 0) == 0 ? (e = a + 12 | 0, V(s[e >> 1] | 0) | 0) : 0) n = 14;
+                        if (t << 16 >> 16 != 46) if (t << 16 >> 16 == 115 & a >>> 0 > r >>> 0) if ((m(a + 2 | 0, 56, 10) | 0) == 0 ? (e = a + 12 | 0, V(s[e >> 1] | 0) | 0) : 0) n = 14;
                         else {
                             a = 6;
                             r = 0;
@@ -1021,7 +1022,7 @@ var esModuleShims_debug = {};
                                 case 109:
                                     {
                                         e = f[72] | 0;
-                                        if (m(e + 2 | 0, 44, 6) | 0) break e;
+                                        if (m(e + 2 | 0, 50, 6) | 0) break e;
                                         a = f[69] | 0;
                                         if (!(G(a) | 0) ? (s[a >> 1] | 0) == 46 : 0) break e;
                                         d(c, c, e + 8 | 0, 2);
@@ -1030,7 +1031,7 @@ var esModuleShims_debug = {};
                                 case 115:
                                     {
                                         e = f[72] | 0;
-                                        if (m(e + 2 | 0, 50, 10) | 0) break e;
+                                        if (m(e + 2 | 0, 56, 10) | 0) break e;
                                         a = f[69] | 0;
                                         if (!(G(a) | 0) ? (s[a >> 1] | 0) == 46 : 0) break e;
                                         e = e + 12 | 0;
@@ -1148,14 +1149,14 @@ var esModuleShims_debug = {};
                                     if ((n | 0) == 36) f[72] = (f[72] | 0) + 2;
                                     b = (w(1) | 0) << 16 >> 16 == 102;
                                     e = f[72] | 0;
-                                    if (b ? m(e + 2 | 0, 60, 6) | 0 : 0) {
+                                    if (b ? m(e + 2 | 0, 66, 6) | 0 : 0) {
                                         T();
                                         break e;
                                     }
                                     f[72] = e + 8;
                                     e = w(1) | 0;
                                     if (W(e) | 0) {
-                                        o(c, e, 0);
+                                        u(c, e, 0);
                                         break e;
                                     } else {
                                         T();
@@ -1218,7 +1219,7 @@ var esModuleShims_debug = {};
                                 a = b;
                             }
                             if ((n | 0) == 53) {
-                                o(c, t, r);
+                                u(c, t, r);
                                 break;
                             } else if ((n | 0) == 55) {
                                 T();
@@ -1228,143 +1229,7 @@ var esModuleShims_debug = {};
                     }while (0);
                     return;
                 }
-                function u(e) {
-                    e = e | 0;
-                    var a = 0, r = 0;
-                    e: do {
-                        switch(s[e >> 1] | 0){
-                            case 100:
-                                switch(s[e + -2 >> 1] | 0){
-                                    case 105:
-                                        {
-                                            a = $(e + -4 | 0, 98, 2) | 0;
-                                            break e;
-                                        }
-                                    case 108:
-                                        {
-                                            a = $(e + -4 | 0, 102, 3) | 0;
-                                            break e;
-                                        }
-                                    default:
-                                        {
-                                            a = 0;
-                                            break e;
-                                        }
-                                }
-                            case 101:
-                                switch(s[e + -2 >> 1] | 0){
-                                    case 115:
-                                        switch(s[e + -4 >> 1] | 0){
-                                            case 108:
-                                                {
-                                                    a = B(e + -6 | 0, 101) | 0;
-                                                    break e;
-                                                }
-                                            case 97:
-                                                {
-                                                    a = B(e + -6 | 0, 99) | 0;
-                                                    break e;
-                                                }
-                                            default:
-                                                {
-                                                    a = 0;
-                                                    break e;
-                                                }
-                                        }
-                                    case 116:
-                                        {
-                                            a = $(e + -4 | 0, 108, 4) | 0;
-                                            break e;
-                                        }
-                                    case 117:
-                                        {
-                                            a = $(e + -4 | 0, 116, 6) | 0;
-                                            break e;
-                                        }
-                                    default:
-                                        {
-                                            a = 0;
-                                            break e;
-                                        }
-                                }
-                            case 102:
-                                {
-                                    if ((s[e + -2 >> 1] | 0) == 111) {
-                                        r = e + -4 | 0;
-                                        if ((r | 0) != (f[3] | 0) ? (a = s[r >> 1] | 0, !(E(a) | 0)) : 0) if (a << 16 >> 16 == 101) switch(s[e + -6 >> 1] | 0){
-                                            case 99:
-                                                {
-                                                    a = $(e + -8 | 0, 128, 6) | 0;
-                                                    break e;
-                                                }
-                                            case 112:
-                                                {
-                                                    a = $(e + -8 | 0, 140, 2) | 0;
-                                                    break e;
-                                                }
-                                            default:
-                                                {
-                                                    a = 0;
-                                                    break e;
-                                                }
-                                        }
-                                        else a = 0;
-                                        else a = 1;
-                                    } else a = 0;
-                                    break;
-                                }
-                            case 107:
-                                {
-                                    a = $(e + -2 | 0, 144, 4) | 0;
-                                    break;
-                                }
-                            case 110:
-                                {
-                                    a = e + -2 | 0;
-                                    if (B(a, 105) | 0) a = 1;
-                                    else a = $(a, 152, 5) | 0;
-                                    break;
-                                }
-                            case 111:
-                                {
-                                    a = B(e + -2 | 0, 100) | 0;
-                                    break;
-                                }
-                            case 114:
-                                {
-                                    a = $(e + -2 | 0, 162, 7) | 0;
-                                    break;
-                                }
-                            case 116:
-                                {
-                                    a = $(e + -2 | 0, 176, 4) | 0;
-                                    break;
-                                }
-                            case 119:
-                                switch(s[e + -2 >> 1] | 0){
-                                    case 101:
-                                        {
-                                            a = B(e + -4 | 0, 110) | 0;
-                                            break e;
-                                        }
-                                    case 111:
-                                        {
-                                            a = $(e + -4 | 0, 184, 3) | 0;
-                                            break e;
-                                        }
-                                    default:
-                                        {
-                                            a = 0;
-                                            break e;
-                                        }
-                                }
-                            default:
-                                a = 0;
-                        }
-                    }while (0);
-                    return a | 0;
-                }
-                function o(e, a, r) {
+                function u(e, a, r) {
                     e = e | 0;
                     a = a | 0;
                     r = r | 0;
@@ -1395,7 +1260,7 @@ var esModuleShims_debug = {};
                             r = a << 16 >> 16 == 97;
                             if (r) {
                                 i = f[72] | 0;
-                                if (m(i + 2 | 0, 88, 10) | 0) t = 13;
+                                if (m(i + 2 | 0, 94, 10) | 0) t = 13;
                             } else {
                                 i = f[72] | 0;
                                 if (!(((a << 16 >> 16 == 119 ? (s[i + 2 >> 1] | 0) == 105 : 0) ? (s[i + 4 >> 1] | 0) == 116 : 0) ? (s[i + 6 >> 1] | 0) == 104 : 0)) t = 13;
@@ -1494,6 +1359,137 @@ var esModuleShims_debug = {};
                         }
                     }while (0);
                     return;
+                }
+                function o(e) {
+                    e = e | 0;
+                    e: do {
+                        switch(s[e >> 1] | 0){
+                            case 100:
+                                switch(s[e + -2 >> 1] | 0){
+                                    case 105:
+                                        {
+                                            e = $(e + -4 | 0, 104, 2) | 0;
+                                            break e;
+                                        }
+                                    case 108:
+                                        {
+                                            e = $(e + -4 | 0, 108, 3) | 0;
+                                            break e;
+                                        }
+                                    default:
+                                        {
+                                            e = 0;
+                                            break e;
+                                        }
+                                }
+                            case 101:
+                                switch(s[e + -2 >> 1] | 0){
+                                    case 115:
+                                        switch(s[e + -4 >> 1] | 0){
+                                            case 108:
+                                                {
+                                                    e = B(e + -6 | 0, 101) | 0;
+                                                    break e;
+                                                }
+                                            case 97:
+                                                {
+                                                    e = B(e + -6 | 0, 99) | 0;
+                                                    break e;
+                                                }
+                                            default:
+                                                {
+                                                    e = 0;
+                                                    break e;
+                                                }
+                                        }
+                                    case 116:
+                                        {
+                                            e = $(e + -4 | 0, 114, 4) | 0;
+                                            break e;
+                                        }
+                                    case 117:
+                                        {
+                                            e = $(e + -4 | 0, 122, 6) | 0;
+                                            break e;
+                                        }
+                                    default:
+                                        {
+                                            e = 0;
+                                            break e;
+                                        }
+                                }
+                            case 102:
+                                {
+                                    if ((s[e + -2 >> 1] | 0) == 111 ? (s[e + -4 >> 1] | 0) == 101 : 0) switch(s[e + -6 >> 1] | 0){
+                                        case 99:
+                                            {
+                                                e = $(e + -8 | 0, 134, 6) | 0;
+                                                break e;
+                                            }
+                                        case 112:
+                                            {
+                                                e = $(e + -8 | 0, 146, 2) | 0;
+                                                break e;
+                                            }
+                                        default:
+                                            {
+                                                e = 0;
+                                                break e;
+                                            }
+                                    }
+                                    else e = 0;
+                                    break;
+                                }
+                            case 107:
+                                {
+                                    e = $(e + -2 | 0, 150, 4) | 0;
+                                    break;
+                                }
+                            case 110:
+                                {
+                                    e = e + -2 | 0;
+                                    if (B(e, 105) | 0) e = 1;
+                                    else e = $(e, 158, 5) | 0;
+                                    break;
+                                }
+                            case 111:
+                                {
+                                    e = B(e + -2 | 0, 100) | 0;
+                                    break;
+                                }
+                            case 114:
+                                {
+                                    e = $(e + -2 | 0, 168, 7) | 0;
+                                    break;
+                                }
+                            case 116:
+                                {
+                                    e = $(e + -2 | 0, 182, 4) | 0;
+                                    break;
+                                }
+                            case 119:
+                                switch(s[e + -2 >> 1] | 0){
+                                    case 101:
+                                        {
+                                            e = B(e + -4 | 0, 110) | 0;
+                                            break e;
+                                        }
+                                    case 111:
+                                        {
+                                            e = $(e + -4 | 0, 190, 3) | 0;
+                                            break e;
+                                        }
+                                    default:
+                                        {
+                                            e = 0;
+                                            break e;
+                                        }
+                                }
+                            default:
+                                e = 0;
+                        }
+                    }while (0);
+                    return e | 0;
                 }
                 function h() {
                     var e = 0, a = 0, r = 0, i = 0;
@@ -1976,12 +1972,12 @@ var esModuleShims_debug = {};
                     switch(s[e >> 1] | 0){
                         case 107:
                             {
-                                e = $(e + -2 | 0, 144, 4) | 0;
+                                e = $(e + -2 | 0, 150, 4) | 0;
                                 break;
                             }
                         case 101:
                             {
-                                if ((s[e + -2 >> 1] | 0) == 117) e = $(e + -4 | 0, 116, 6) | 0;
+                                if ((s[e + -2 >> 1] | 0) == 117) e = $(e + -4 | 0, 122, 6) | 0;
                                 else e = 0;
                                 break;
                             }
@@ -2074,7 +2070,7 @@ var esModuleShims_debug = {};
                 }
                 function D(e) {
                     e = e | 0;
-                    if (!($(e, 190, 5) | 0) ? !($(e, 200, 3) | 0) : 0) e = $(e, 206, 2) | 0;
+                    if (!($(e, 196, 5) | 0) ? !($(e, 44, 3) | 0) : 0) e = $(e, 206, 2) | 0;
                     else e = 1;
                     return e | 0;
                 }
@@ -2678,8 +2674,12 @@ var esModuleShims_debug = {};
             const urlStart = commentStart + commentPrefix.length;
             const commentEnd = source.indexOf('\n', urlStart);
             const urlEnd = commentEnd !== -1 ? commentEnd : source.length;
+            let sourceUrl = source.slice(urlStart, urlEnd);
+            try {
+                sourceUrl = new URL(sourceUrl, load.r).href;
+            } catch  {}
             pushStringTo(urlStart);
-            resolvedSource += new URL(source.slice(urlStart, urlEnd), load.r).href;
+            resolvedSource += sourceUrl;
             lastIndex = urlEnd;
         }
         let sourceURLCommentStart = source.lastIndexOf(sourceURLCommentPrefix);

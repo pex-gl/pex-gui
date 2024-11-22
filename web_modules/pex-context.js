@@ -83,15 +83,13 @@ const checkProps = (allowedProps, obj)=>Object.keys(obj).forEach((prop)=>{
 const isWebGL2 = (gl)=>typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext;
 // State and gl
 function compareFBOAttachments(framebuffer, passOpts) {
-    var _framebuffer_depth, _passOpts_depth;
-    const fboDepthAttachment = (_framebuffer_depth = framebuffer.depth) == null ? void 0 : _framebuffer_depth.texture;
-    const passDepthAttachment = ((_passOpts_depth = passOpts.depth) == null ? void 0 : _passOpts_depth.texture) || passOpts.depth;
+    const fboDepthAttachment = framebuffer.depth?.texture;
+    const passDepthAttachment = passOpts.depth?.texture || passOpts.depth;
     if (fboDepthAttachment != passDepthAttachment) return false;
     if (framebuffer.color.length != passOpts.color.length) return false;
     for(let i = 0; i < framebuffer.color.length; i++){
-        var _framebuffer_color_i, _passOpts_color_i;
-        const fboColorAttachment = (_framebuffer_color_i = framebuffer.color[i]) == null ? void 0 : _framebuffer_color_i.texture;
-        const passColorAttachment = ((_passOpts_color_i = passOpts.color[i]) == null ? void 0 : _passOpts_color_i.texture) || passOpts.color[i];
+        const fboColorAttachment = framebuffer.color[i]?.texture;
+        const passColorAttachment = passOpts.color[i]?.texture || passOpts.color[i];
         if (fboColorAttachment != passColorAttachment) return false;
     }
     return true;
@@ -173,12 +171,11 @@ function enableVertexData(ctx, vertexLayout, cmd, updateState) {
     }
 }
 function drawElements(ctx, cmd, instanced, primitive) {
-    var _cmd_indices, _cmd_vertexArray_indices, _cmd_vertexArray, _cmd_indices1, _cmd_vertexArray_indices1, _cmd_vertexArray1;
     const gl = ctx.gl;
     // TODO: is that always correct
     const count = cmd.count || ctx.state.indexBuffer.length;
-    const offset = ((_cmd_indices = cmd.indices) == null ? void 0 : _cmd_indices.offset) || ((_cmd_vertexArray = cmd.vertexArray) == null ? void 0 : (_cmd_vertexArray_indices = _cmd_vertexArray.indices) == null ? void 0 : _cmd_vertexArray_indices.offset) || 0;
-    const type = ((_cmd_indices1 = cmd.indices) == null ? void 0 : _cmd_indices1.type) || ((_cmd_vertexArray1 = cmd.vertexArray) == null ? void 0 : (_cmd_vertexArray_indices1 = _cmd_vertexArray1.indices) == null ? void 0 : _cmd_vertexArray_indices1.offset) || ctx.state.indexBuffer.type;
+    const offset = cmd.indices?.offset || cmd.vertexArray?.indices?.offset || 0;
+    const type = cmd.indices?.type || cmd.vertexArray?.indices?.offset || ctx.state.indexBuffer.type;
     // Instanced drawing
     if (instanced) {
         if (cmd.multiDraw) {
@@ -279,13 +276,12 @@ function drawArrays(ctx, cmd, instanced, primitive) {
     }
 }
 function draw(ctx, cmd) {
-    var _cmd_vertexArray, _cmd_multiDraw;
     const instanced = Object.values(cmd.attributes || cmd.vertexArray.attributes).some((attrib)=>attrib.divisor);
     const primitive = cmd.pipeline.primitive;
     // Draw elements/arrays: instanced, base, multi-draw
-    if (cmd.indices || ((_cmd_vertexArray = cmd.vertexArray) == null ? void 0 : _cmd_vertexArray.indices)) {
+    if (cmd.indices || cmd.vertexArray?.indices) {
         drawElements(ctx, cmd, instanced, primitive);
-    } else if (cmd.count || ((_cmd_multiDraw = cmd.multiDraw) == null ? void 0 : _cmd_multiDraw.counts)) {
+    } else if (cmd.count || cmd.multiDraw?.counts) {
         drawArrays(ctx, cmd, instanced, primitive);
     } else {
         throw new Error("Vertex arrays requires elements, count or multiDraw");
@@ -1155,7 +1151,7 @@ function polyfill(ctx) {
         };
         gl.getQueryObject = gl.getQueryParameter;
     } else {
-        const extDTQ = capabilities.isWebGL2 ? gl.getExtension("EXT_disjoint_timer_query_webgl2") : gl.getExtension("EXT_disjoint_timer_query");
+        const extDTQ = gl.getExtension("EXT_disjoint_timer_query_webgl2") || gl.getExtension("EXT_disjoint_timer_query");
         gl.TIME_ELAPSED = extDTQ.TIME_ELAPSED_EXT;
         gl.GPU_DISJOINT = extDTQ.GPU_DISJOINT_EXT;
         gl.QUERY_RESULT ||= extDTQ.QUERY_RESULT_EXT;
@@ -1591,8 +1587,8 @@ function polyfill(ctx) {
         // With EXT_color_buffer_float, types just become color-renderable
         // With EXT_color_buffer_half_float and WEBGL_color_buffer_float,
         // they come from the extension and need _EXT suffix
-        RGBA32F: extColorBufferFloat && gl.RGBA32F || gl.getExtension("WEBGL_color_buffer_float").RGBA32F_EXT,
-        RGBA16F: extColorBufferFloat && gl.RGBA16F || gl.getExtension("EXT_color_buffer_half_float").RGBA16F_EXT,
+        RGBA32F: extColorBufferFloat && gl.RGBA32F || gl.getExtension("WEBGL_color_buffer_float")?.RGBA32F_EXT,
+        RGBA16F: extColorBufferFloat && gl.RGBA16F || gl.getExtension("EXT_color_buffer_half_float")?.RGBA16F_EXT,
         R16F: extColorBufferFloat && gl.R16F,
         RG16F: extColorBufferFloat && gl.RG16F,
         R32F: extColorBufferFloat && gl.R32F,
@@ -1929,8 +1925,7 @@ const allowedCommandProps = [
      * @param {import("./types.js").PexCommand | import("./types.js").PexCommand[]} [batches]
      * @param {import("./types.js").PexCommand} [subCommand]
      */ submit (cmd, batches, subCommand) {
-            var _this_state_framebuffer;
-            const prevFramebufferId = (_this_state_framebuffer = this.state.framebuffer) == null ? void 0 : _this_state_framebuffer.id;
+            const prevFramebufferId = this.state.framebuffer?.id;
             if (this.debugMode) {
                 checkProps(allowedCommandProps, cmd);
                 console.debug(NAMESPACE, "submit", cmd.name || cmd.id, {
@@ -1960,8 +1955,7 @@ const allowedCommandProps = [
             const cmdState = this.mergeCommands(parentState, cmd, false);
             this.apply(cmdState);
             if (this.debugMode) {
-                var _this_state_framebuffer1;
-                const currFramebufferId = (_this_state_framebuffer1 = this.state.framebuffer) == null ? void 0 : _this_state_framebuffer1.id;
+                const currFramebufferId = this.state.framebuffer?.id;
                 const framebufferCanged = prevFramebufferId != currFramebufferId;
                 console.debug(NAMESPACE, "fbo-state", "  ".repeat(this.stack.length), cmd.name, framebufferCanged ? `${prevFramebufferId} -> ${currFramebufferId}` : currFramebufferId, [
                     ...this.state.viewport
@@ -2004,11 +1998,10 @@ const allowedCommandProps = [
      * })
      * ```
      */ pass (opts) {
-            var _opts_color;
-            console.debug(NAMESPACE, "pass", opts, ((_opts_color = opts.color) == null ? void 0 : _opts_color.map((param)=>{
+            console.debug(NAMESPACE, "pass", opts, opts.color?.map((param)=>{
                 let { texture, info } = param;
-                return (texture == null ? void 0 : texture.info) || info;
-            })) || "");
+                return texture?.info || info;
+            }) || "");
             return this.resource(createPass(this, opts));
         },
         /**

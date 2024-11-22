@@ -496,7 +496,7 @@ class CanvasRenderer {
         ctx.strokeStyle = this.theme.color;
         ctx.beginPath();
         for (let j = 0; j < item.values.length; j++) {
-          const v = utils.map(item.values[j], item.min, item.max, 0, 1);
+          const v = utils.remap(item.values[j], item.min, item.max, 0, 1);
           ctx[j === 0 ? "moveTo" : "lineTo"](
             x + j,
             y + height - v * (height - padding * 2) - padding,
