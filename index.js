@@ -1093,7 +1093,7 @@ class GUI {
         item.options.update?.(item, now);
 
         const dt = now - item.prev;
-        if (dt > (item.options.interval || 2000)) {
+        if (dt > (item.options.interval ?? 2000)) {
           item.prev = now;
           item.options.redraw?.(item);
           item.dirty = true;
