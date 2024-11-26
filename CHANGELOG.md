@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.1.1](https://github.com/pex-gl/pex-gui/compare/v3.1.0...v3.1.1) (2024-11-26)
+
+
+### Bug Fixes
+
+* allow update interval of 0 for stats and graph controls ([154220f](https://github.com/pex-gl/pex-gui/commit/154220ffec80027e4ed88d16f416ce098fed5b9a))
+
+
+
 # [3.1.0](https://github.com/pex-gl/pex-gui/compare/v3.0.1...v3.1.0) (2024-11-22)
 
 
