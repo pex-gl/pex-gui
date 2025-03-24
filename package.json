@@ -42,9 +42,9 @@
     "pex-math": "^4.1.1"
   },
   "devDependencies": {
-    "es-module-shims": "1.10.1",
+    "es-module-shims": "2.0.10",
     "pex-cam": "^3.0.0-alpha.1",
-    "pex-context": "^3.1.2",
+    "pex-context": "^3.2.0",
     "pex-io": "^3.0.2",
     "primitive-geometry": "^2.10.1"
   },

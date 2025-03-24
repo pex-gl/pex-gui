@@ -6,7 +6,7 @@
  * @param {RequestInit} options
  * @returns {Promise<string>}
  */ const loadText = async (url, options)=>{
-    if (options === void 0) options = {};
+    if (options === undefined) options = {};
     return await (await ok(await fetch(url, options))).text();
 };
 /**
@@ -16,7 +16,7 @@
  * @param {RequestInit} options
  * @returns {Promise<JSON>}
  */ const loadJson = async (url, options)=>{
-    if (options === void 0) options = {};
+    if (options === undefined) options = {};
     return await (await ok(await fetch(url, options))).json();
 };
 /**
@@ -26,7 +26,7 @@
  * @param {RequestInit} options
  * @returns {Promise<ArrayBuffer>}
  */ const loadArrayBuffer = async (url, options)=>{
-    if (options === void 0) options = {};
+    if (options === undefined) options = {};
     return await (await ok(await fetch(url, options))).arrayBuffer();
 };
 /**
@@ -36,7 +36,7 @@
  * @param {RequestInit} options
  * @returns {Promise<Blob>}
  */ const loadBlob = async (url, options)=>{
-    if (options === void 0) options = {};
+    if (options === undefined) options = {};
     return await (await ok(await fetch(url, options))).blob();
 };
 /**
@@ -46,7 +46,7 @@
  * @param {RequestInit} options
  * @returns {Promise<HTMLImageElement>}
  */ const loadImage = async (urlOrOpts, options)=>{
-    if (options === void 0) options = {};
+    if (options === undefined) options = {};
     const img = new Image();
     let src = urlOrOpts;
     if (urlOrOpts.url) {

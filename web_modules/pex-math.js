@@ -1,8 +1,8 @@
-import { e as fromDirection$1, g as fromPointToPoint$1, c as create$6, E as EPSILON, a as clamp } from './_chunks/mat4-CjEkkwRu.js';
-export { m as mat4, u as utils } from './_chunks/mat4-CjEkkwRu.js';
-import { k as create$5 } from './_chunks/vec3-BbHrDQ8x.js';
-export { v as vec2, o as vec3 } from './_chunks/vec3-BbHrDQ8x.js';
-export { a as avec3 } from './_chunks/avec3-DnUFjeKE.js';
+import { e as fromDirection$1, g as fromPointToPoint$1, c as create$6, E as EPSILON, a as clamp } from './_chunks/mat4-DkKmQtAV.js';
+export { m as mat4, u as utils } from './_chunks/mat4-DkKmQtAV.js';
+import { k as create$5 } from './_chunks/vec3-DW1VLBq6.js';
+export { v as vec2, o as vec3 } from './_chunks/vec3-DW1VLBq6.js';
+export { a as avec3 } from './_chunks/avec3-CX_9gCVx.js';
 
 /** @module mat2x3 */ /**
  * Returns a 2x3 identity matrix, a short form for a 3x3 matrix with the last row ignored.
@@ -521,7 +521,7 @@ var mat3 = /*#__PURE__*/Object.freeze({
  * @param {number} [precision=4]
  * @returns {string}
  */ function toString$3(a, precision) {
-    if (precision === void 0) precision = 4;
+    if (precision === undefined) precision = 4;
     const scale = 10 ** precision;
     // prettier-ignore
     return `[${Math.floor(a[0] * scale) / scale}, ${Math.floor(a[1] * scale) / scale}, ${Math.floor(a[2] * scale) / scale}, ${Math.floor(a[3] * scale) / scale}]`;
@@ -746,7 +746,7 @@ const TEMP_VEC2 = create$5();
  * @param {number} [precision=4]
  * @returns {string}
  */ function toString$2(a, i, precision) {
-    if (precision === void 0) precision = 4;
+    if (precision === undefined) precision = 4;
     const scale = 10 ** precision;
     // prettier-ignore
     return `[${Math.floor(a[i * 2] * scale) / scale}, ${Math.floor(a[i * 2 + 1] * scale) / scale}]`;
@@ -937,7 +937,7 @@ const TEMP_VEC4 = create$2();
  * @param {number} [precision=4]
  * @returns {string}
  */ function toString$1(a, i, precision) {
-    if (precision === void 0) precision = 4;
+    if (precision === undefined) precision = 4;
     const scale = 10 ** precision;
     // prettier-ignore
     return `[${Math.floor(a[i * 4] * scale) / scale}, ${Math.floor(a[i * 4 + 1] * scale) / scale}, ${Math.floor(a[i * 4 + 2] * scale) / scale}, ${Math.floor(a[i * 4 + 3] * scale) / scale}]`;

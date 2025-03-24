@@ -168,7 +168,7 @@
  * @param {number} [precision=4]
  * @returns {string}
  */ function toString$1(a, precision) {
-    if (precision === void 0) precision = 4;
+    if (precision === undefined) precision = 4;
     const scale = 10 ** precision;
     // prettier-ignore
     return `[${Math.floor(a[0] * scale) / scale}, ${Math.floor(a[1] * scale) / scale}]`;
@@ -434,7 +434,7 @@ var vec2 = /*#__PURE__*/Object.freeze({
  * @param {number} [precision=4]
  * @returns {string}
  */ function toString(a, precision) {
-    if (precision === void 0) precision = 4;
+    if (precision === undefined) precision = 4;
     const scale = 10 ** precision;
     // prettier-ignore
     return `[${Math.floor(a[0] * scale) / scale}, ${Math.floor(a[1] * scale) / scale}, ${Math.floor(a[2] * scale) / scale}]`;

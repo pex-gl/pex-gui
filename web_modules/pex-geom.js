@@ -1,6 +1,6 @@
-import { t as toString$3, f as set$2, s as sub, n as normalize, g as dot, h as create$3, i as toString$4 } from './_chunks/vec3-BbHrDQ8x.js';
-import { s as set3 } from './_chunks/avec3-DnUFjeKE.js';
-export { r as ray } from './_chunks/ray-Ys8KxJHn.js';
+import { t as toString$3, f as set$2, s as sub, n as normalize, g as dot, h as create$3, i as toString$4 } from './_chunks/vec3-DW1VLBq6.js';
+import { s as set3 } from './_chunks/avec3-CX_9gCVx.js';
+export { r as ray } from './_chunks/ray-bLshgWN6.js';
 
 /**
  * Creates a new bounding box.
@@ -87,7 +87,7 @@ export { r as ray } from './_chunks/ray-Ys8KxJHn.js';
  * @param {import("./types.js").vec3[]} [points]
  * @returns {import("./types.js").vec3[]}
  */ function getCorners$1(a, points) {
-    if (points === void 0) points = Array.from({
+    if (points === undefined) points = Array.from({
         length: 8
     }, ()=>[]);
     set3(points[0], 0, a[0][0], a[0][1], a[0][2]);
@@ -106,7 +106,7 @@ export { r as ray } from './_chunks/ray-Ys8KxJHn.js';
  * @param {import("./types.js").vec3} out
  * @returns {import("./types.js").vec3}
  */ function center$1(a, out) {
-    if (out === void 0) out = [
+    if (out === undefined) out = [
         0,
         0,
         0
@@ -122,7 +122,7 @@ export { r as ray } from './_chunks/ray-Ys8KxJHn.js';
  * @param {import("./types.js").vec3} out
  * @returns {import("./types.js").vec3}
  */ function size$1(a, out) {
-    if (out === void 0) out = [
+    if (out === undefined) out = [
         0,
         0,
         0
@@ -166,7 +166,7 @@ export { r as ray } from './_chunks/ray-Ys8KxJHn.js';
  * @param {number} [i=0] offset in the point array
  * @returns {import("./types.js").vec3}
  */ function includePoint$1(a, p, i) {
-    if (i === void 0) i = 0;
+    if (i === undefined) i = 0;
     a[0][0] = Math.min(a[0][0], p[i + 0]);
     a[0][1] = Math.min(a[0][1], p[i + 1]);
     a[0][2] = Math.min(a[0][2], p[i + 2]);
@@ -181,7 +181,7 @@ export { r as ray } from './_chunks/ray-Ys8KxJHn.js';
  * @param {number} [precision=4]
  * @returns {string}
  */ function toString$2(a, precision) {
-    if (precision === void 0) precision = 4;
+    if (precision === undefined) precision = 4;
     // prettier-ignore
     return `[${toString$3(a[0], precision)}, ${toString$3(a[1], precision)}]`;
 }
@@ -251,7 +251,7 @@ const TEMP_0 = create$3();
  * @param {number} [precision=4]
  * @returns {string}
  */ function toString$1(a, precision) {
-    if (precision === void 0) precision = 4;
+    if (precision === undefined) precision = 4;
     // prettier-ignore
     return `[${toString$3(a[0], precision)}, ${toString$3(a[1], precision)}]`;
 }
@@ -335,7 +335,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").vec2[]} points
  * @returns {import("./types.js").vec2[]}
  */ function getCorners(a, points) {
-    if (points === void 0) points = [];
+    if (points === undefined) points = [];
     points[0] = a[0].slice();
     points[1] = [
         a[0][1],
@@ -376,7 +376,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").vec2} out
  * @returns {import("./types.js").vec2}
  */ function size(a, out) {
-    if (out === void 0) out = [];
+    if (out === undefined) out = [];
     out[0] = width(a);
     out[1] = height(a);
     return out;
@@ -423,7 +423,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").vec2} out
  * @returns {import("./types.js").rect}
  */ function center(a, out) {
-    if (out === void 0) out = [];
+    if (out === undefined) out = [];
     out[0] = a[0][0] + width(a) * 0.5;
     out[1] = a[0][1] + height(a) * 0.5;
     return out;
@@ -506,7 +506,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {number} [precision=4]
  * @returns {string}
  */ function toString(a, precision) {
-    if (precision === void 0) precision = 4;
+    if (precision === undefined) precision = 4;
     // prettier-ignore
     return `[${toString$4(a[0], precision)}, ${toString$4(a[1], precision)}]`;
 }

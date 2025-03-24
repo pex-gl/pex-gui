@@ -3,6 +3,7 @@
     "es-module-shims": "./es-module-shims.js",
     "es-module-shims/debug": "./es-module-shims/debug.js",
     "es-module-shims/wasm": "./es-module-shims/wasm.js",
+    "es-module-shims/typescript-transform": "./es-module-shims/typescript-transform.js",
     "pex-cam": "./pex-cam.js",
     "pex-color": "./pex-color.js",
     "pex-context": "./pex-context.js",

@@ -662,7 +662,7 @@ var utils = /*#__PURE__*/Object.freeze({
  */ function lookAt(a, param, param1, param2) {
     let [eyex, eyey, eyez] = param;
     let [targetx, targety, targetz] = param1;
-    let [upx, upy, upz] = param2 === void 0 ? Y_UP : param2;
+    let [upx, upy, upz] = param2 === undefined ? Y_UP : param2;
     if (Math.abs(eyex - targetx) < EPSILON && Math.abs(eyey - targety) < EPSILON && Math.abs(eyez - targetz) < EPSILON) {
         return identity(a);
     }
@@ -720,7 +720,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @returns {import("./types.js").mat4}
  */ function fromDirection(a, param, param1) {
     let [z0, z1, z2] = param;
-    let [upx, upy, upz] = param1 === void 0 ? Y_UP : param1;
+    let [upx, upy, upz] = param1 === undefined ? Y_UP : param1;
     let len = z0 * z0 + z1 * z1 + z2 * z2;
     if (len > 0) {
         len = 1 / Math.sqrt(len);
