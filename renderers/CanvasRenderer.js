@@ -460,7 +460,7 @@ class CanvasRenderer {
         const y = dy + titleHeight;
         const height = eh - titleHeight;
 
-        if (item.values.length > width) item.values.shift();
+        if (item.values.length > width) item.values = item.values.slice(-width);
         if (item.values.length) {
           item.max = item.options.max ?? Math.max(...item.values);
         }
