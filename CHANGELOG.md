@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.1.2](https://github.com/pex-gl/pex-gui/compare/v3.1.1...v3.1.2) (2025-03-24)
+
+
+### Bug Fixes
+
+* ensure graph values don't overflow render width ([570dcaf](https://github.com/pex-gl/pex-gui/commit/570dcaf35149b356b5a8438864cf876a5b7c9e50))
+
+
+
 ## [3.1.1](https://github.com/pex-gl/pex-gui/compare/v3.1.0...v3.1.1) (2024-11-26)
 
 
