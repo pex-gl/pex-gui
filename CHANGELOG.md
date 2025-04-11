@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.1.3](https://github.com/pex-gl/pex-gui/compare/v3.1.2...v3.1.3) (2025-04-11)
+
+
+### Bug Fixes
+
+* add fallback font to theme ([be96f71](https://github.com/pex-gl/pex-gui/commit/be96f715ea9f755631ea69a86604480484b537be)), closes [#44](https://github.com/pex-gl/pex-gui/issues/44)
+
+
+
 ## [3.1.2](https://github.com/pex-gl/pex-gui/compare/v3.1.1...v3.1.2) (2025-03-24)
 
 
