@@ -1,5 +1,5 @@
 export default {
-  fontFamily: "Monaco",
+  fontFamily: `"Monaco", monospace`,
   fontSize: 10,
   capHeight: 0.09,
 
