@@ -330,7 +330,7 @@ class CanvasRenderer {
           dy + padding + itemHeight / 2 + fontCapOffset,
         );
 
-        rectSet4(item.activeArea, x, y, height, height);
+        rectSet4(item.activeArea, x, y, width, height);
       } else if (item.type === "radiolist") {
         const y = dy + titleHeight;
         const height =
@@ -358,7 +358,7 @@ class CanvasRenderer {
           );
         }
 
-        rectSet4(item.activeArea, x, y, itemHeight, height);
+        rectSet4(item.activeArea, x, y, width, height);
       } else if (item.type === "texturelist") {
         const y = dy + titleHeight;
         ctx.fillStyle = this.theme.color;
