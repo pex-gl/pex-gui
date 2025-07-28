@@ -530,20 +530,22 @@ class GUI {
     });
     this.items.push(column);
 
-    const ctrl = new GUIControl({
-      type: "header",
-      title,
-      dirty: true,
-      activeArea: [
-        [0, 0],
-        [0, 0],
-      ],
-      setTitle(title) {
-        this.title = title;
-        this.dirty = true;
-      },
-    });
-    this.items.push(ctrl);
+    if (title) {
+      const ctrl = new GUIControl({
+        type: "header",
+        title,
+        dirty: true,
+        activeArea: [
+          [0, 0],
+          [0, 0],
+        ],
+        setTitle(title) {
+          this.title = title;
+          this.dirty = true;
+        },
+      });
+      this.items.push(ctrl);
+    }
     return column;
   }
 
