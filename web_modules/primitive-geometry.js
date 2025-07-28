@@ -107,24 +107,17 @@
 };
 /**
  * @private
- */ function computePlane(geometry, indices, su, sv, nu, nv, direction, pw, quads, uvScale, uvOffset, center, ccw) {
-    if (direction === undefined) direction = "z";
-    if (pw === undefined) pw = 0;
-    if (quads === undefined) quads = false;
-    if (uvScale === undefined) uvScale = [
-        1,
-        1
-    ];
-    if (uvOffset === undefined) uvOffset = [
-        0,
-        0
-    ];
-    if (center === undefined) center = [
-        0,
-        0,
-        0
-    ];
-    if (ccw === undefined) ccw = true;
+ */ function computePlane(geometry, indices, su, sv, nu, nv, direction = "z", pw = 0, quads = false, uvScale = [
+    1,
+    1
+], uvOffset = [
+    0,
+    0
+], center = [
+    0,
+    0,
+    0
+], ccw = true) {
     const { positions, normals, uvs, cells } = geometry;
     const [u, v, w, flipU, flipV, normal] = PLANE_DIRECTIONS[direction];
     const vertexOffset = indices.vertex;
@@ -183,8 +176,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @alias module:box
  * @param {BoxOptions} [options={}]
  * @returns {import("../types.js").BasicSimplicialComplex}
- */ function box(param) {
-    let { sx = 1, sy = sx, sz = sx } = param === undefined ? {} : param;
+ */ function box({ sx = 1, sy = sx, sz = sx } = {}) {
     checkArguments(arguments);
     const x = sx / 2;
     const y = sy / 2;
@@ -209,8 +201,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @alias module:circle
  * @param {CircleOptions} [options={}]
  * @returns {import("../types.js").BasicSimplicialComplex}
- */ function circle(param) {
-    let { radius = 0.5, segments = 32, theta = TAU, thetaOffset = 0, closed = false } = param === undefined ? {} : param;
+ */ function circle({ radius = 0.5, segments = 32, theta = TAU, thetaOffset = 0, closed = false } = {}) {
     checkArguments(arguments);
     const positions = new Float32Array(segments * 3);
     const cells = new (getCellsTypedArray(segments))((segments - (closed ? 0 : 1)) * 2);
@@ -240,8 +231,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @alias module:quad
  * @param {QuadOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function quad(param) {
-    let { scale = 0.5 } = param === undefined ? {} : param;
+ */ function quad({ scale = 0.5 } = {}) {
     checkArguments(arguments);
     return {
         // prettier-ignore
@@ -269,8 +259,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @alias module:plane
  * @param {PlaneOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function plane(param) {
-    let { sx = 1, sy = sx, nx = 1, ny = nx, direction = "z", quads = false } = param === undefined ? {} : param;
+ */ function plane({ sx = 1, sy = sx, nx = 1, ny = nx, direction = "z", quads = false } = {}) {
     checkArguments(arguments);
     const size = (nx + 1) * (ny + 1);
     return computePlane({
@@ -297,8 +286,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @alias module:roundedRectangle
  * @param {RoundedCubeOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function roundedRectangle(param) {
-    let { sx = 1, sy = sx, nx = 1, ny = nx, radius = sx * 0.25, roundSegments = 8, edgeSegments = 1 } = param === undefined ? {} : param;
+ */ function roundedRectangle({ sx = 1, sy = sx, nx = 1, ny = nx, radius = sx * 0.25, roundSegments = 8, edgeSegments = 1 } = {}) {
     checkArguments(arguments);
     const size = (nx + 1) * (ny + 1) + (roundSegments + 1) * (roundSegments + 1) * 4 + (roundSegments + 1) * (edgeSegments + 1) * 4;
     const geometry = {
@@ -458,8 +446,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @alias module:stadium
  * @param {StadiumOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function stadium(param) {
-    let { sx = 1, sy = 0.5, nx, ny, roundSegments, edgeSegments } = param === undefined ? {} : param;
+ */ function stadium({ sx = 1, sy = 0.5, nx, ny, roundSegments, edgeSegments } = {}) {
     checkArguments(arguments);
     return roundedRectangle({
         sx,
@@ -473,44 +460,44 @@ var utils = /*#__PURE__*/Object.freeze({
 }
 
 const safeSqrt = (x)=>Math.sqrt(Math.max(x, 0));
+const safeDivide = (x, y)=>x / (y + Number.EPSILON);
 const isNegligeable = (x)=>Math.abs(x) < Number.EPSILON * 2;
 const remapRectangular = (x, radius)=>(x / radius + 1) / 2;
 const remap = (x)=>(x + 1) / 2; // From [-1, 1] to [0, 1]
-function rectangular(param) {
-    let { uvs, index, x, y, radius, sx = 1, sy = 1 } = param;
+function rectangular({ uvs, index, x, y, radius, sx = 1, sy = 1 }) {
     uvs[index] = remapRectangular(x, radius * sx);
     uvs[index + 1] = remapRectangular(y, radius * sy);
 }
+function polar({ uvs, index, radiusRatio, thetaRatio }) {
+    uvs[index] = radiusRatio;
+    uvs[index + 1] = thetaRatio;
+}
 // Basic
-function radial(param) {
-    let { uvs, index, u, v, radius } = param;
-    const x = Math.sqrt(u ** 2 + v ** 2) / Math.max(Math.abs(u), Math.abs(v));
+function radial({ uvs, index, u, v, radius }) {
+    const x = safeDivide(Math.sqrt(u ** 2 + v ** 2), Math.max(Math.abs(u), Math.abs(v)));
     uvs[index] = remap(x * u);
     uvs[index + 1] = remap(x * v);
 }
 const FOUR_OVER_PI = 4 / Math.PI;
-function concentric(param) {
-    let { uvs, index, u, v, radius } = param;
+function concentric({ uvs, index, u, v, radius }) {
     const u2 = u ** 2;
     const v2 = v ** 2;
     const x = Math.sqrt(u2 + v2);
     if (u2 > v2) {
         uvs[index] = remap(x * Math.sign(u));
-        uvs[index + 1] = remap(x * (FOUR_OVER_PI * Math.atan(v / Math.abs(u))));
+        uvs[index + 1] = remap(x * (FOUR_OVER_PI * Math.atan(safeDivide(v, Math.abs(u)))));
     } else {
-        uvs[index] = remap(x * (FOUR_OVER_PI * Math.atan(u / (Math.abs(v) + Number.EPSILON))));
+        uvs[index] = remap(x * (FOUR_OVER_PI * Math.atan(safeDivide(u, Math.abs(v)))));
         uvs[index + 1] = remap(x * Math.sign(v));
     }
 }
-function lamé(param) {
-    let { uvs, index, u, v, radius } = param;
+function lamé({ uvs, index, u, v, radius }) {
     const u2 = u ** 2;
     const v2 = v ** 2;
     uvs[index] = remap(Math.sign(u) * Math.abs(u) ** (1 - u2 - v2));
     uvs[index + 1] = remap(Math.sign(v) * Math.abs(v) ** (1 - u2 - v2));
 }
-function elliptical(param) {
-    let { uvs, index, u, v, radius } = param;
+function elliptical({ uvs, index, u, v, radius }) {
     const t = u ** 2 - v ** 2;
     const pu1 = 0.5 * safeSqrt(2 + t + 2 * SQRT2 * u);
     const pu2 = 0.5 * safeSqrt(2 + t - 2 * SQRT2 * u);
@@ -528,8 +515,7 @@ function fixFGSingularities(uvs, index, u, v, radius) {
         return true;
     }
 }
-function fgSquircular(param) {
-    let { uvs, index, u, v, radius } = param;
+function fgSquircular({ uvs, index, u, v, radius }) {
     const ok = fixFGSingularities(uvs, index, u, v);
     if (ok) {
         const u2 = u ** 2;
@@ -541,8 +527,7 @@ function fgSquircular(param) {
         uvs[index + 1] = remap(sign / (u * SQRT2) * sqrtUV);
     }
 }
-function twoSquircular(param) {
-    let { uvs, index, u, v, radius } = param;
+function twoSquircular({ uvs, index, u, v, radius }) {
     const ok = fixFGSingularities(uvs, index, u, v);
     if (ok) {
         const sign = Math.sign(u * v);
@@ -551,8 +536,7 @@ function twoSquircular(param) {
         uvs[index + 1] = remap(sign / (u * SQRT2) * sqrtUV);
     }
 }
-function threeSquircular(param) {
-    let { uvs, index, u, v, radius } = param;
+function threeSquircular({ uvs, index, u, v, radius }) {
     const ok = fixFGSingularities(uvs, index, u, v);
     if (ok) {
         const u2 = u ** 2;
@@ -563,8 +547,7 @@ function threeSquircular(param) {
         uvs[index + 1] = remap(sign / u * sqrtUV);
     }
 }
-function cornerificTapered2(param) {
-    let { uvs, index, u, v, radius } = param;
+function cornerificTapered2({ uvs, index, u, v, radius }) {
     const ok = fixFGSingularities(uvs, index, u, v);
     if (ok) {
         const u2 = u ** 2;
@@ -576,8 +559,7 @@ function cornerificTapered2(param) {
         uvs[index + 1] = remap(sign / u * sqrtUV);
     }
 }
-function tapered4(param) {
-    let { uvs, index, u, v, radius } = param;
+function tapered4({ uvs, index, u, v, radius }) {
     const ok = fixFGSingularities(uvs, index, u, v);
     if (ok) {
         const u2 = u ** 2;
@@ -592,8 +574,7 @@ function tapered4(param) {
 }
 // Non-axial
 const FOURTH_SQRT2 = 2 ** (1 / 4);
-function nonAxial2Pinch(param) {
-    let { uvs, index, u, v, radius } = param;
+function nonAxial2Pinch({ uvs, index, u, v, radius }) {
     const u2 = u ** 2;
     const v2 = v ** 2;
     const sign = Math.sign(u * v);
@@ -601,30 +582,28 @@ function nonAxial2Pinch(param) {
     const sqrtUV = (uv2Sum - 2 * u2 * v2 - safeSqrt((uv2Sum - 4 * u2 * v2) * uv2Sum)) ** (1 / 4);
     if (isNegligeable(v)) {
         uvs[index] = remap(Math.sign(u) * Math.sqrt(Math.abs(u)));
-        uvs[index + 1] = remap(sign / (u * FOURTH_SQRT2) * sqrtUV);
+        uvs[index + 1] = remap(safeDivide(sign, u * FOURTH_SQRT2) * sqrtUV);
     } else {
-        uvs[index] = remap(sign / (v * FOURTH_SQRT2) * sqrtUV);
-        uvs[index + 1] = remap(isNegligeable(u) ? Math.sign(v) * Math.sqrt(Math.abs(v)) : sign / (u * FOURTH_SQRT2) * sqrtUV);
+        uvs[index] = remap(safeDivide(sign, v * FOURTH_SQRT2) * sqrtUV);
+        uvs[index + 1] = remap(isNegligeable(u) ? Math.sign(v) * Math.sqrt(Math.abs(v)) : safeDivide(sign, u * FOURTH_SQRT2) * sqrtUV);
     }
 }
-function nonAxialHalfPinch(param) {
-    let { uvs, index, u, v, radius } = param;
+function nonAxialHalfPinch({ uvs, index, u, v, radius }) {
     const u2 = u ** 2;
     const v2 = v ** 2;
     const sign = Math.sign(u * v);
     const uv2Sum = u2 + v2;
-    const sqrtUV = Math.sqrt((1 - safeSqrt(1 - 4 * u2 * v2 * uv2Sum ** 2)) / (2 * uv2Sum));
+    const sqrtUV = Math.sqrt(safeDivide(1 - safeSqrt(1 - 4 * u2 * v2 * uv2Sum ** 2), 2 * uv2Sum));
     if (isNegligeable(v)) {
         uvs[index] = remap(Math.sign(u) * u2);
-        uvs[index + 1] = remap(sign / u * sqrtUV);
+        uvs[index + 1] = remap(safeDivide(sign, u) * sqrtUV);
     } else {
-        uvs[index] = remap(sign / v * sqrtUV);
-        uvs[index + 1] = remap(isNegligeable(u) ? Math.sign(v) * v2 : sign / u * sqrtUV);
+        uvs[index] = remap(safeDivide(sign, v) * sqrtUV);
+        uvs[index + 1] = remap(isNegligeable(u) ? Math.sign(v) * v2 : safeDivide(sign, u) * sqrtUV);
     }
 }
 // Variations of elliptical
-function squelched(param) {
-    let { uvs, index, u, v, radius, t } = param;
+function squelched({ uvs, index, u, v, radius, t }) {
     uvs[index] = [
         HALF_PI,
         TAU - HALF_PI
@@ -635,8 +614,7 @@ function squelched(param) {
         Math.PI
     ].includes(t) ? 0.5 : remap(v / Math.sqrt(1 - u ** 2));
 }
-function squelchedVertical(param) {
-    let { uvs, index, u, v, radius, t } = param;
+function squelchedVertical({ uvs, index, u, v, radius, t }) {
     uvs[index] = remap(u);
     uvs[index + 1] = [
         0,
@@ -644,8 +622,7 @@ function squelchedVertical(param) {
         Math.PI
     ].includes(t) ? 0.5 : remap(v / Math.sqrt(1 - u ** 2));
 }
-function squelchedHorizontal(param) {
-    let { uvs, index, u, v, radius, t } = param;
+function squelchedHorizontal({ uvs, index, u, v, radius, t }) {
     uvs[index] = [
         HALF_PI,
         TAU - HALF_PI
@@ -662,6 +639,7 @@ var mappings = /*#__PURE__*/Object.freeze({
   lamé: lamé,
   nonAxial2Pinch: nonAxial2Pinch,
   nonAxialHalfPinch: nonAxialHalfPinch,
+  polar: polar,
   radial: radial,
   rectangular: rectangular,
   squelched: squelched,
@@ -681,35 +659,35 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @property {number} [innerSegments=16]
  * @property {number} [theta=TAU]
  * @property {number} [thetaOffset=0]
+ * @property {boolean} [mergeCentroid=true]
  * @property {Function} [mapping=mappings.elliptical]
  */ /**
  * @alias module:ellipse
  * @param {EllipseOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function ellipse(param) {
-    let { sx = 1, sy = 0.5, radius = 0.5, segments = 32, innerSegments = 16, theta = TAU, thetaOffset = 0, mapping = elliptical, equation = (param)=>{
-        let { rx, ry, cosTheta, sinTheta } = param;
-        return [
-            rx * cosTheta,
-            ry * sinTheta
-        ];
-    } } = param === undefined ? {} : param;
+ */ function ellipse({ sx = 1, sy = 0.5, radius = 0.5, segments = 32, innerSegments = 16, theta = TAU, thetaOffset = 0, innerRadius = 0, mergeCentroid = true, mapping = elliptical, equation = ({ rx, ry, cosTheta, sinTheta })=>[
+        rx * cosTheta,
+        ry * sinTheta
+    ] } = {}) {
     checkArguments(arguments);
-    const size = 1 + (segments + 1) + (innerSegments - 1) * (segments + 1);
+    const size = mergeCentroid ? 1 + (segments + 1) + (innerSegments - 1) * (segments + 1) : (segments + 1) * (innerSegments + 1);
     const positions = new Float32Array(size * 3);
     const normals = new Float32Array(size * 3);
     const uvs = new Float32Array(size * 2);
-    const cells = new (getCellsTypedArray(size))(segments * 3 + (innerSegments - 1) * segments * 6);
-    normals[2] = 1;
-    uvs[0] = 0.5;
-    uvs[1] = 0.5;
-    let vertexIndex = 1;
+    const cells = new (getCellsTypedArray(size))(mergeCentroid ? segments * 3 + (innerSegments - 1) * segments * 6 : size * 6);
+    if (mergeCentroid) {
+        normals[2] = 1;
+        uvs[0] = 0.5;
+        uvs[1] = 0.5;
+    }
+    let vertexIndex = mergeCentroid ? 1 : 0;
     let cellIndex = 0;
-    for(let j = 0; j < innerSegments; j++){
-        const s = (j + 1) / innerSegments;
-        const r = radius * s;
+    for(let j = vertexIndex; j <= innerSegments; j++){
+        const radiusRatio = j / innerSegments;
+        const r = innerRadius + (radius - innerRadius) * radiusRatio;
         for(let i = 0; i <= segments; i++, vertexIndex++){
-            const t = i / segments * theta + thetaOffset;
+            const thetaRatio = i / segments;
+            const t = thetaOffset + thetaRatio * theta;
             const cosTheta = Math.cos(t);
             const sinTheta = Math.sin(t);
             const [x, y] = equation({
@@ -717,7 +695,7 @@ var mappings = /*#__PURE__*/Object.freeze({
                 ry: sy * r,
                 cosTheta,
                 sinTheta,
-                s,
+                s: radiusRatio,
                 t
             });
             positions[vertexIndex * 3] = x;
@@ -726,9 +704,11 @@ var mappings = /*#__PURE__*/Object.freeze({
             mapping({
                 uvs,
                 index: vertexIndex * 2,
-                u: s * cosTheta,
-                v: s * sinTheta,
+                u: radiusRatio * cosTheta,
+                v: radiusRatio * sinTheta,
                 radius,
+                radiusRatio,
+                thetaRatio,
                 t,
                 // For rectangular
                 x,
@@ -737,22 +717,29 @@ var mappings = /*#__PURE__*/Object.freeze({
                 sy
             });
             if (i < segments) {
-                if (j === 0) {
+                if (mergeCentroid && j === 1) {
                     cells[cellIndex] = i + 1;
                     cells[cellIndex + 1] = i + 2;
                     cellIndex += 3;
-                } else if (j < innerSegments) {
-                    const a = 1 + (j - 1) * (segments + 1) + i;
-                    const b = a + segments + 1;
-                    const c = a + segments + 2;
-                    const d = a + 1;
-                    cells[cellIndex] = a;
-                    cells[cellIndex + 1] = b;
-                    cells[cellIndex + 2] = d;
-                    cells[cellIndex + 3] = b;
-                    cells[cellIndex + 4] = c;
-                    cells[cellIndex + 5] = d;
-                    cellIndex += 6;
+                } else {
+                    let a;
+                    if (mergeCentroid) {
+                        a = 1 + (j - 2) * (segments + 1) + i;
+                    } else if (j < innerSegments) {
+                        a = j * (segments + 1) + i;
+                    }
+                    if (a !== undefined) {
+                        const b = a + segments + 1;
+                        const c = a + segments + 2;
+                        const d = a + 1;
+                        cells[cellIndex] = a;
+                        cells[cellIndex + 1] = b;
+                        cells[cellIndex + 2] = d;
+                        cells[cellIndex + 3] = b;
+                        cells[cellIndex + 4] = c;
+                        cells[cellIndex + 5] = d;
+                        cellIndex += 6;
+                    }
                 }
             }
         }
@@ -772,13 +759,13 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @property {number} [innerSegments=16]
  * @property {number} [theta=TAU]
  * @property {number} [thetaOffset=0]
+ * @property {boolean} [mergeCentroid=true]
  * @property {Function} [mapping=mappings.concentric]
  */ /**
  * @alias module:disc
  * @param {DiscOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function disc(param) {
-    let { radius = 0.5, segments = 32, innerSegments = 16, theta = TAU, thetaOffset = 0, mapping = concentric } = param === undefined ? {} : param;
+ */ function disc({ radius = 0.5, segments = 32, innerSegments = 16, theta = TAU, thetaOffset = 0, mergeCentroid = true, mapping = concentric } = {}) {
     checkArguments(arguments);
     return ellipse({
         sx: 1,
@@ -788,6 +775,7 @@ var mappings = /*#__PURE__*/Object.freeze({
         innerSegments,
         theta,
         thetaOffset,
+        mergeCentroid,
         mapping
     });
 }
@@ -801,6 +789,7 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @property {number} [innerSegments=16]
  * @property {number} [theta=TAU]
  * @property {number} [thetaOffset=0]
+ * @property {boolean} [mergeCentroid=true]
  * @property {Function} [mapping=mappings.lamé]
  * @property {number} [m=2]
  * @property {number} [n=m]
@@ -812,8 +801,7 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @alias module:superellipse
  * @param {SuperellipseOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function superellipse(param) {
-    let { sx = 1, sy = 0.5, radius = 0.5, segments = 32, innerSegments = 16, theta = TAU, thetaOffset = 0, mapping = lamé, m = 2, n = m } = param === undefined ? {} : param;
+ */ function superellipse({ sx = 1, sy = 0.5, radius = 0.5, segments = 32, innerSegments = 16, theta = TAU, thetaOffset = 0, mergeCentroid = true, mapping = lamé, m = 2, n = m } = {}) {
     checkArguments(arguments);
     return ellipse({
         sx,
@@ -823,14 +811,12 @@ var mappings = /*#__PURE__*/Object.freeze({
         innerSegments,
         theta,
         thetaOffset,
+        mergeCentroid,
         mapping,
-        equation: (param)=>{
-            let { rx, ry, cosTheta, sinTheta } = param;
-            return [
+        equation: ({ rx, ry, cosTheta, sinTheta })=>[
                 rx * Math.abs(cosTheta) ** (2 / m) * Math.sign(cosTheta),
                 ry * Math.abs(sinTheta) ** (2 / n) * Math.sign(sinTheta)
-            ];
-        }
+            ]
     });
 }
 
@@ -843,6 +829,7 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @property {number} [innerSegments=16]
  * @property {number} [theta=TAU]
  * @property {number} [thetaOffset=0]
+ * @property {boolean} [mergeCentroid=true]
  * @property {Function} [mapping=mappings.fgSquircular]
  * @property {number} [squareness=0.95] Squareness (0 < s <= 1)
  */ /**
@@ -852,8 +839,7 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @alias module:squircle
  * @param {SquircleOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function squircle(param) {
-    let { sx = 1, sy = 1, radius = 0.5, segments = 128, innerSegments = 16, theta = TAU, thetaOffset = 0, mapping = fgSquircular, squareness = 0.95 } = param === undefined ? {} : param;
+ */ function squircle({ sx = 1, sy = 1, radius = 0.5, segments = 128, innerSegments = 16, theta = TAU, thetaOffset = 0, mergeCentroid = true, mapping = fgSquircular, squareness = 0.95 } = {}) {
     checkArguments(arguments);
     return ellipse({
         sx,
@@ -863,9 +849,9 @@ var mappings = /*#__PURE__*/Object.freeze({
         innerSegments,
         theta,
         thetaOffset,
+        mergeCentroid,
         mapping,
-        equation: (param)=>{
-            let { rx, ry, cosTheta, sinTheta, t } = param;
+        equation: ({ rx, ry, cosTheta, sinTheta, t })=>{
             // Fix singularities
             // https://codereview.stackexchange.com/questions/233496/handling-singularities-in-squircle-parametric-equations
             if (t === 0 || t === TAU) {
@@ -901,6 +887,8 @@ var mappings = /*#__PURE__*/Object.freeze({
 
 /**
  * @typedef {object} AnnulusOptions
+ * @property {number} [sx=1]
+ * @property {number} [sy=1]
  * @property {number} [radius=0.5]
  * @property {number} [segments=32]
  * @property {number} [innerSegments=16]
@@ -912,59 +900,20 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @alias module:annulus
  * @param {AnnulusOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function annulus(param) {
-    let { radius = 0.5, segments = 32, innerSegments = 16, theta = TAU, thetaOffset = 0, innerRadius = radius * 0.5, mapping = concentric } = param === undefined ? {} : param;
+ */ function annulus({ sx = 1, sy = 1, radius = 0.5, segments = 32, innerSegments = 16, theta = TAU, thetaOffset = 0, innerRadius = radius * 0.5, mapping = concentric } = {}) {
     checkArguments(arguments);
-    const size = (segments + 1) * (innerSegments + 1);
-    const positions = new Float32Array(size * 3);
-    const normals = new Float32Array(size * 3);
-    const uvs = new Float32Array(size * 2);
-    const cells = new (getCellsTypedArray(size))(size * 6);
-    let vertexIndex = 0;
-    let cellIndex = 0;
-    for(let j = 0; j <= innerSegments; j++){
-        const r = innerRadius + (radius - innerRadius) * (j / innerSegments);
-        const s = (j + 1) / (innerSegments + 1);
-        for(let i = 0; i <= segments; i++, vertexIndex++){
-            const t = i / segments * theta + thetaOffset;
-            const cosTheta = Math.cos(t);
-            const sinTheta = Math.sin(t);
-            const x = r * cosTheta;
-            const y = r * sinTheta;
-            positions[vertexIndex * 3] = x;
-            positions[vertexIndex * 3 + 1] = y;
-            normals[vertexIndex * 3 + 2] = 1;
-            mapping({
-                uvs,
-                index: vertexIndex * 2,
-                u: s * cosTheta,
-                v: s * sinTheta,
-                radius,
-                t,
-                x,
-                y
-            });
-            if (i < segments && j < innerSegments) {
-                const a = j * (segments + 1) + i;
-                const b = a + segments + 1;
-                const c = a + segments + 2;
-                const d = a + 1;
-                cells[cellIndex] = a;
-                cells[cellIndex + 1] = b;
-                cells[cellIndex + 2] = d;
-                cells[cellIndex + 3] = b;
-                cells[cellIndex + 4] = c;
-                cells[cellIndex + 5] = d;
-                cellIndex += 6;
-            }
-        }
-    }
-    return {
-        positions,
-        normals,
-        uvs,
-        cells
-    };
+    return ellipse({
+        sx,
+        sy,
+        radius,
+        segments,
+        innerSegments,
+        theta,
+        thetaOffset,
+        innerRadius,
+        mergeCentroid: false,
+        mapping
+    });
 }
 
 /**
@@ -974,6 +923,7 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @property {number} [innerSegments=16]
  * @property {number} [theta=TAU]
  * @property {number} [thetaOffset=0]
+ * @property {boolean} [mergeCentroid=true]
  * @property {Function} [mapping=mappings.concentric]
  * @property {number} [n=3]
  */ /**
@@ -982,8 +932,7 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @alias module:reuleux
  * @param {ReuleuxOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function reuleux(param) {
-    let { radius = 0.5, segments = 32, innerSegments = 16, theta = TAU, thetaOffset = 0, mapping = concentric, n = 3 } = param === undefined ? {} : param;
+ */ function reuleux({ radius = 0.5, segments = 32, innerSegments = 16, theta = TAU, thetaOffset = 0, mergeCentroid = true, mapping = concentric, n = 3 } = {}) {
     checkArguments(arguments);
     const cosN = 2 * Math.cos(Math.PI / (2 * n));
     const PIoverN = Math.PI / n;
@@ -995,14 +944,12 @@ var mappings = /*#__PURE__*/Object.freeze({
         innerSegments,
         theta,
         thetaOffset,
+        mergeCentroid,
         mapping,
-        equation: (param)=>{
-            let { rx, ry, t } = param;
-            return [
+        equation: ({ rx, ry, t })=>[
                 rx * (cosN * Math.cos(0.5 * (t + PIoverN * (2 * Math.floor(n * t / TAU) + 1))) - Math.cos(PIoverN * (2 * Math.floor(n * t / TAU) + 1))),
                 ry * (cosN * Math.sin(0.5 * (t + PIoverN * (2 * Math.floor(n * t / TAU) + 1))) - Math.sin(PIoverN * (2 * Math.floor(n * t / TAU) + 1)))
-            ];
-        }
+            ]
     });
 }
 
@@ -1018,8 +965,7 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @alias module:cube
  * @param {CubeOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function cube(param) {
-    let { sx = 1, sy = sx, sz = sx, nx = 1, ny = nx, nz = nx } = param === undefined ? {} : param;
+ */ function cube({ sx = 1, sy = sx, sz = sx, nx = 1, ny = nx, nz = nx } = {}) {
     checkArguments(arguments);
     const size = (nx + 1) * (ny + 1) * 2 + (nx + 1) * (nz + 1) * 2 + (nz + 1) * (ny + 1) * 2;
     const geometry = {
@@ -1059,8 +1005,7 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @alias module:roundedCube
  * @param {RoundedCubeOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function roundedCube(param) {
-    let { sx = 1, sy = sx, sz = sx, nx = 1, ny = nx, nz = nx, radius = sx * 0.25, roundSegments = 8, edgeSegments = 1 } = param === undefined ? {} : param;
+ */ function roundedCube({ sx = 1, sy = sx, sz = sx, nx = 1, ny = nx, nz = nx, radius = sx * 0.25, roundSegments = 8, edgeSegments = 1 } = {}) {
     checkArguments(arguments);
     const size = (nx + 1) * (ny + 1) * 2 + (nx + 1) * (nz + 1) * 2 + (nz + 1) * (ny + 1) * 2 + (roundSegments + 1) * (roundSegments + 1) * 24 + (roundSegments + 1) * (edgeSegments + 1) * 24;
     const geometry = {
@@ -1335,8 +1280,7 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @alias module:ellipsoid
  * @param {EllipsoidOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function ellipsoid(param) {
-    let { radius = 1, nx = 32, ny = 16, rx = 0.5, ry = 0.25, rz = ry, theta = Math.PI, thetaOffset = 0, phi = TAU, phiOffset = 0 } = param === undefined ? {} : param;
+ */ function ellipsoid({ radius = 1, nx = 32, ny = 16, rx = 0.5, ry = 0.25, rz = ry, theta = Math.PI, thetaOffset = 0, phi = TAU, phiOffset = 0 } = {}) {
     checkArguments(arguments);
     const size = (ny + 1) * (nx + 1);
     const positions = new Float32Array(size * 3);
@@ -1406,8 +1350,7 @@ var mappings = /*#__PURE__*/Object.freeze({
  * @alias module:sphere
  * @param {SphereOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function sphere(param) {
-    let { radius = 0.5, nx = 32, ny = 16, theta, thetaOffset, phi, phiOffset } = param === undefined ? {} : param;
+ */ function sphere({ radius = 0.5, nx = 32, ny = 16, theta, thetaOffset, phi, phiOffset } = {}) {
     checkArguments(arguments);
     return ellipsoid({
         radius,
@@ -1431,8 +1374,7 @@ const f = 0.5 + Math.sqrt(5) / 2;
  * @alias module:icosphere
  * @param {IcosphereOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function icosphere(param) {
-    let { radius = 0.5, subdivisions = 2 } = param === undefined ? {} : param;
+ */ function icosphere({ radius = 0.5, subdivisions = 2 } = {}) {
     checkArguments(arguments);
     if (subdivisions > 10) throw new Error("Max subdivisions is 10.");
     const T = Math.pow(4, subdivisions);
@@ -1591,8 +1533,7 @@ const f = 0.5 + Math.sqrt(5) / 2;
  * @alias module:cylinder
  * @param {CylinderOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function cylinder(param) {
-    let { height = 1, radius = 0.25, nx = 16, ny = 1, radiusApex = radius, capSegments = 1, capApex = true, capBase = true, capBaseSegments = capSegments, phi = TAU } = param === undefined ? {} : param;
+ */ function cylinder({ height = 1, radius = 0.25, nx = 16, ny = 1, radiusApex = radius, capSegments = 1, capApex = true, capBase = true, capBaseSegments = capSegments, phi = TAU } = {}) {
     checkArguments(arguments);
     let capCount = 0;
     if (capApex) capCount += capSegments;
@@ -1718,8 +1659,7 @@ const f = 0.5 + Math.sqrt(5) / 2;
  * @alias module:cone
  * @param {ConeOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function cone(param) {
-    let { height, radius, nx, ny, capSegments, capBase, phi } = param === undefined ? {} : param;
+ */ function cone({ height, radius, nx, ny, capSegments, capBase, phi } = {}) {
     checkArguments(arguments);
     return cylinder({
         height,
@@ -1746,8 +1686,7 @@ const f = 0.5 + Math.sqrt(5) / 2;
  * @alias module:capsule
  * @param {CapsuleOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function capsule(param) {
-    let { height = 0.5, radius = 0.25, nx = 16, ny = 1, roundSegments = 16, phi = TAU } = param === undefined ? {} : param;
+ */ function capsule({ height = 0.5, radius = 0.25, nx = 16, ny = 1, roundSegments = 16, phi = TAU } = {}) {
     checkArguments(arguments);
     const ringsBody = ny + 1;
     const ringsCap = roundSegments * 2;
@@ -1822,8 +1761,7 @@ const f = 0.5 + Math.sqrt(5) / 2;
  * @alias module:torus
  * @param {TorusOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function torus(param) {
-    let { radius = 0.4, segments = 64, minorRadius = 0.1, minorSegments = 32, theta = TAU, thetaOffset = 0, phi = TAU, phiOffset = 0 } = param === undefined ? {} : param;
+ */ function torus({ radius = 0.4, segments = 64, minorRadius = 0.1, minorSegments = 32, theta = TAU, thetaOffset = 0, phi = TAU, phiOffset = 0 } = {}) {
     checkArguments(arguments);
     const size = (minorSegments + 1) * (segments + 1);
     const positions = new Float32Array(size * 3);
@@ -1886,8 +1824,7 @@ const f = 0.5 + Math.sqrt(5) / 2;
  * @alias module:tetrahedron
  * @param {TetrahedronOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function tetrahedron(param) {
-    let { radius = 0.5 } = param === undefined ? {} : param;
+ */ function tetrahedron({ radius = 0.5 } = {}) {
     checkArguments(arguments);
     return cylinder({
         height: radius * 1.5,
@@ -1908,8 +1845,7 @@ const f = 0.5 + Math.sqrt(5) / 2;
  * @alias module:icosahedron
  * @param {IcosahedronOptions} [options={}]
  * @returns {import("../types.js").SimplicialComplex}
- */ function icosahedron(param) {
-    let { radius } = param === undefined ? {} : param;
+ */ function icosahedron({ radius } = {}) {
     checkArguments(arguments);
     return icosphere({
         subdivisions: 0,

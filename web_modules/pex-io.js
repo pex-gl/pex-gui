@@ -5,48 +5,35 @@
  * @param {RequestInfo} url
  * @param {RequestInit} options
  * @returns {Promise<string>}
- */ const loadText = async (url, options)=>{
-    if (options === undefined) options = {};
-    return await (await ok(await fetch(url, options))).text();
-};
+ */ const loadText = async (url, options = {})=>await (await ok(await fetch(url, options))).text();
 /**
  * Load an item and parse the Response as json.
  * @function
  * @param {RequestInfo} url
  * @param {RequestInit} options
  * @returns {Promise<JSON>}
- */ const loadJson = async (url, options)=>{
-    if (options === undefined) options = {};
-    return await (await ok(await fetch(url, options))).json();
-};
+ */ const loadJson = async (url, options = {})=>await (await ok(await fetch(url, options))).json();
 /**
  * Load an item and parse the Response as arrayBuffer.
  * @function
  * @param {RequestInfo} url
  * @param {RequestInit} options
  * @returns {Promise<ArrayBuffer>}
- */ const loadArrayBuffer = async (url, options)=>{
-    if (options === undefined) options = {};
-    return await (await ok(await fetch(url, options))).arrayBuffer();
-};
+ */ const loadArrayBuffer = async (url, options = {})=>await (await ok(await fetch(url, options))).arrayBuffer();
 /**
  * Load an item and parse the Response as blob.
  * @function
  * @param {RequestInfo} url
  * @param {RequestInit} options
  * @returns {Promise<Blob>}
- */ const loadBlob = async (url, options)=>{
-    if (options === undefined) options = {};
-    return await (await ok(await fetch(url, options))).blob();
-};
+ */ const loadBlob = async (url, options = {})=>await (await ok(await fetch(url, options))).blob();
 /**
  * Load an item, parse the Response as blob and create a HTML Image.
  * @function
  * @param {string | import("./types.js").ImageOptions} urlOrOpts
  * @param {RequestInit} options
  * @returns {Promise<HTMLImageElement>}
- */ const loadImage = async (urlOrOpts, options)=>{
-    if (options === undefined) options = {};
+ */ const loadImage = async (urlOrOpts, options = {})=>{
     const img = new Image();
     let src = urlOrOpts;
     if (urlOrOpts.url) {

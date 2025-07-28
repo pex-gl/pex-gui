@@ -1,8 +1,8 @@
-import { e as fromDirection$1, g as fromPointToPoint$1, c as create$6, E as EPSILON, a as clamp } from './_chunks/mat4-DkKmQtAV.js';
-export { m as mat4, u as utils } from './_chunks/mat4-DkKmQtAV.js';
-import { k as create$5 } from './_chunks/vec3-DW1VLBq6.js';
-export { v as vec2, o as vec3 } from './_chunks/vec3-DW1VLBq6.js';
-export { a as avec3 } from './_chunks/avec3-CX_9gCVx.js';
+import { e as fromDirection$1, c as create$6, g as fromPointToPoint$1, E as EPSILON, a as clamp } from './_chunks/mat4-BMae_E06.js';
+export { m as mat4, u as utils } from './_chunks/mat4-BMae_E06.js';
+import { k as create$5 } from './_chunks/vec3-CvFdREJM.js';
+export { v as vec2, o as vec3 } from './_chunks/vec3-CvFdREJM.js';
+export { a as avec3 } from './_chunks/avec3-CDF_7XV4.js';
 
 /** @module mat2x3 */ /**
  * Returns a 2x3 identity matrix, a short form for a 3x3 matrix with the last row ignored.
@@ -520,8 +520,7 @@ var mat3 = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").vec4} a
  * @param {number} [precision=4]
  * @returns {string}
- */ function toString$3(a, precision) {
-    if (precision === undefined) precision = 4;
+ */ function toString$3(a, precision = 4) {
     const scale = 10 ** precision;
     // prettier-ignore
     return `[${Math.floor(a[0] * scale) / scale}, ${Math.floor(a[1] * scale) / scale}, ${Math.floor(a[2] * scale) / scale}, ${Math.floor(a[3] * scale) / scale}]`;
@@ -745,8 +744,7 @@ const TEMP_VEC2 = create$5();
  * @param {number} i
  * @param {number} [precision=4]
  * @returns {string}
- */ function toString$2(a, i, precision) {
-    if (precision === undefined) precision = 4;
+ */ function toString$2(a, i, precision = 4) {
     const scale = 10 ** precision;
     // prettier-ignore
     return `[${Math.floor(a[i * 2] * scale) / scale}, ${Math.floor(a[i * 2 + 1] * scale) / scale}]`;
@@ -936,8 +934,7 @@ const TEMP_VEC4 = create$2();
  * @param {number} i
  * @param {number} [precision=4]
  * @returns {string}
- */ function toString$1(a, i, precision) {
-    if (precision === undefined) precision = 4;
+ */ function toString$1(a, i, precision = 4) {
     const scale = 10 ** precision;
     // prettier-ignore
     return `[${Math.floor(a[i * 4] * scale) / scale}, ${Math.floor(a[i * 4 + 1] * scale) / scale}, ${Math.floor(a[i * 4 + 2] * scale) / scale}, ${Math.floor(a[i * 4 + 3] * scale) / scale}]`;

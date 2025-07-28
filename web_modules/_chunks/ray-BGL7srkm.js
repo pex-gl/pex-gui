@@ -1,4 +1,4 @@
-import { f as set, g as dot, s as sub, b as add, a as scale, j as cross, l as length, t as toString$1, h as create$1 } from './vec3-DW1VLBq6.js';
+import { h as create$1, f as set, g as dot, s as sub, b as add, a as scale, j as cross, l as length, t as toString$1 } from './vec3-CvFdREJM.js';
 
 /**
  * Enum for different intersections values
@@ -44,10 +44,7 @@ const EPSILON = 1e-6;
  * @param {import("./types.js").plane} plane
  * @param {import("./types.js").vec3} out
  * @returns {number}
- */ function hitTestPlane(param, param1, out) {
-    let [origin, direction] = param;
-    let [point, normal] = param1;
-    if (out === undefined) out = create$1();
+ */ function hitTestPlane([origin, direction], [point, normal], out = create$1()) {
     set(TEMP_0, origin);
     set(TEMP_1, direction);
     const dotDirectionNormal = dot(TEMP_1, normal);
@@ -65,10 +62,7 @@ const EPSILON = 1e-6;
  * @param {import("./types.js").triangle} triangle
  * @param {import("./types.js").vec3} out
  * @returns {number}
- */ function hitTestTriangle(param, param1, out) {
-    let [origin, direction] = param;
-    let [p0, p1, p2] = param1;
-    if (out === undefined) out = create$1();
+ */ function hitTestTriangle([origin, direction], [p0, p1, p2], out = create$1()) {
     // get triangle edge vectors and plane normal
     const u = sub(set(TEMP_0, p1), p0);
     const v = sub(set(TEMP_1, p2), p0);
@@ -86,7 +80,7 @@ const EPSILON = 1e-6;
     // get intersect point of ray with triangle plane
     const r = a / b;
     // ray goes away from triangle
-    if (r < -1e-6) return Intersections.NoIntersect;
+    if (r < -EPSILON) return Intersections.NoIntersect;
     // for a segment, also test if (r > 1.0) => no intersect
     // intersect point of ray and plane
     const I = add(set(TEMP_4, origin), scale(set(TEMP_5, direction), r));
@@ -99,9 +93,9 @@ const EPSILON = 1e-6;
     const D = uv * uv - uu * vv;
     // get and test parametric coords
     const s = (uv * wv - vv * wu) / D;
-    if (s < -1e-6 || s > 1.0 + EPSILON) return Intersections.NoIntersect;
+    if (s < -EPSILON || s > 1.0 + EPSILON) return Intersections.NoIntersect;
     const t = (uv * wu - uu * wv) / D;
-    if (t < -1e-6 || s + t > 1.0 + EPSILON) return Intersections.NoIntersect;
+    if (t < -EPSILON || s + t > 1.0 + EPSILON) return Intersections.NoIntersect;
     set(out, u);
     scale(out, s);
     add(out, scale(set(TEMP_7, v), t));
@@ -114,8 +108,7 @@ const EPSILON = 1e-6;
  * @param {import("./types.js").ray} ray
  * @param {import("./types.js").aabb} aabb
  * @returns {boolean}
- */ function hitTestAABB(param, aabb) {
-    let [origin, direction] = param;
+ */ function hitTestAABB([origin, direction], aabb) {
     const dirFracx = 1.0 / direction[0];
     const dirFracy = 1.0 / direction[1];
     const dirFracz = 1.0 / direction[2];
@@ -146,8 +139,7 @@ const EPSILON = 1e-6;
  * @param {import("./types.js").ray} a
  * @param {number} [precision=4]
  * @returns {string}
- */ function toString(a, precision) {
-    if (precision === undefined) precision = 4;
+ */ function toString(a, precision = 4) {
     // prettier-ignore
     return `[${toString$1(a[0], precision)}, ${toString$1(a[1], precision)}]`;
 }

@@ -50,10 +50,7 @@
 /**
  * @deprecated Use "remap()"
  * @ignore
- */ function map() {
-    for(var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++){
-        args[_key] = arguments[_key];
-    }
+ */ function map(...args) {
     return remap(...args);
 }
 /**
@@ -395,8 +392,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").mat4} a
  * @param {import("./types.js").vec3} v
  * @returns {import("./types.js").mat4}
- */ function translate(a, param) {
-    let [x, y, z] = param;
+ */ function translate(a, [x, y, z]) {
     a[12] += a[0] * x + a[4] * y + a[8] * z;
     a[13] += a[1] * x + a[5] * y + a[9] * z;
     a[14] += a[2] * x + a[6] * y + a[10] * z;
@@ -409,8 +405,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").Radians} r
  * @param {import("./types.js").vec3} v
  * @returns {import("./types.js").mat4}
- */ function rotate(a, r, param) {
-    let [x, y, z] = param;
+ */ function rotate(a, r, [x, y, z]) {
     let len = Math.sqrt(x * x + y * y + z * z);
     if (len < EPSILON) {
         return null;
@@ -462,8 +457,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").mat4} a
  * @param {import("./types.js").vec3} v
  * @returns {import("./types.js").mat4}
- */ function scale(a, param) {
-    let [x, y, z] = param;
+ */ function scale(a, [x, y, z]) {
     a[0] *= x;
     a[1] *= x;
     a[2] *= x;
@@ -659,10 +653,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").vec3} to
  * @param {import("./types.js").vec3} [up=Y_UP]
  * @returns {import("./types.js").mat4}
- */ function lookAt(a, param, param1, param2) {
-    let [eyex, eyey, eyez] = param;
-    let [targetx, targety, targetz] = param1;
-    let [upx, upy, upz] = param2 === undefined ? Y_UP : param2;
+ */ function lookAt(a, [eyex, eyey, eyez], [targetx, targety, targetz], [upx, upy, upz] = Y_UP) {
     if (Math.abs(eyex - targetx) < EPSILON && Math.abs(eyey - targety) < EPSILON && Math.abs(eyez - targetz) < EPSILON) {
         return identity(a);
     }
@@ -718,19 +709,17 @@ var utils = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").vec3} direction
  * @param {import("./types.js").vec3} [up=Y_UP]
  * @returns {import("./types.js").mat4}
- */ function fromDirection(a, param, param1) {
-    let [z0, z1, z2] = param;
-    let [upx, upy, upz] = param1 === undefined ? Y_UP : param1;
-    let len = z0 * z0 + z1 * z1 + z2 * z2;
+ */ function fromDirection(a, [dir0, dir1, dir2], [upx, upy, upz] = Y_UP) {
+    let len = dir0 * dir0 + dir1 * dir1 + dir2 * dir2;
     if (len > 0) {
         len = 1 / Math.sqrt(len);
-        z0 *= len;
-        z1 *= len;
-        z2 *= len;
+        dir0 *= len;
+        dir1 *= len;
+        dir2 *= len;
     }
-    let x0 = upy * z2 - upz * z1;
-    let x1 = upz * z0 - upx * z2;
-    let x2 = upx * z1 - upy * z0;
+    let x0 = upy * dir2 - upz * dir1;
+    let x1 = upz * dir0 - upx * dir2;
+    let x2 = upx * dir1 - upy * dir0;
     len = x0 * x0 + x1 * x1 + x2 * x2;
     if (len > 0) {
         len = 1 / Math.sqrt(len);
@@ -738,9 +727,9 @@ var utils = /*#__PURE__*/Object.freeze({
         x1 *= len;
         x2 *= len;
     }
-    upx = z1 * x2 - z2 * x1;
-    upy = z2 * x0 - z0 * x2;
-    upz = z0 * x1 - z1 * x0;
+    upx = dir1 * x2 - dir2 * x1;
+    upy = dir2 * x0 - dir0 * x2;
+    upz = dir0 * x1 - dir1 * x0;
     len = upx * upx + upy * upy + upz * upz;
     if (len > 0) {
         len = 1 / Math.sqrt(len);
@@ -756,9 +745,9 @@ var utils = /*#__PURE__*/Object.freeze({
     a[5] = upy;
     a[6] = upz;
     a[7] = 0;
-    a[8] = z0;
-    a[9] = z1;
-    a[10] = z2;
+    a[8] = dir0;
+    a[9] = dir1;
+    a[10] = dir2;
     a[11] = 0;
     a[12] = 0;
     a[13] = 0;
@@ -773,9 +762,7 @@ var utils = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").vec3} to
  * @param {import("./types.js").vec3} [up=Y_UP]
  * @returns {import("./types.js").mat4}
- */ function fromPointToPoint(a, param, param1, up) {
-    let [fromX, fromY, fromZ] = param;
-    let [toX, toY, toZ] = param1;
+ */ function fromPointToPoint(a, [fromX, fromY, fromZ], [toX, toY, toZ], up) {
     return fromDirection(a, [
         toX - fromX,
         toY - fromY,

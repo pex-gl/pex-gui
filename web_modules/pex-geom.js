@@ -1,6 +1,6 @@
-import { t as toString$3, f as set$2, s as sub, n as normalize, g as dot, h as create$3, i as toString$4 } from './_chunks/vec3-DW1VLBq6.js';
-import { s as set3 } from './_chunks/avec3-CX_9gCVx.js';
-export { r as ray } from './_chunks/ray-bLshgWN6.js';
+import { t as toString$3, f as set$2, s as sub, n as normalize, g as dot, h as create$3, i as toString$4 } from './_chunks/vec3-CvFdREJM.js';
+import { s as set3 } from './_chunks/avec3-CDF_7XV4.js';
+export { r as ray } from './_chunks/ray-BGL7srkm.js';
 
 /**
  * Creates a new bounding box.
@@ -70,6 +70,7 @@ export { r as ray } from './_chunks/ray-bLshgWN6.js';
  * @param {import("./types.js").vec3[] | import("./types.js").TypedArray} points
  * @returns {import("./types.js").aabb}
  */ function fromPoints$1(a, points) {
+    empty$1(a);
     const isFlatArray = !points[0]?.length;
     const l = points.length / (isFlatArray ? 3 : 1);
     for(let i = 0; i < l; i++){
@@ -86,10 +87,9 @@ export { r as ray } from './_chunks/ray-bLshgWN6.js';
  * @param {import("./types.js").aabb} a
  * @param {import("./types.js").vec3[]} [points]
  * @returns {import("./types.js").vec3[]}
- */ function getCorners$1(a, points) {
-    if (points === undefined) points = Array.from({
-        length: 8
-    }, ()=>[]);
+ */ function getCorners$1(a, points = Array.from({
+    length: 8
+}, ()=>[])) {
     set3(points[0], 0, a[0][0], a[0][1], a[0][2]);
     set3(points[1], 0, a[1][0], a[0][1], a[0][2]);
     set3(points[2], 0, a[1][0], a[0][1], a[1][2]);
@@ -105,12 +105,11 @@ export { r as ray } from './_chunks/ray-bLshgWN6.js';
  * @param {import("./types.js").aabb} a
  * @param {import("./types.js").vec3} out
  * @returns {import("./types.js").vec3}
- */ function center$1(a, out) {
-    if (out === undefined) out = [
-        0,
-        0,
-        0
-    ];
+ */ function center$1(a, out = [
+    0,
+    0,
+    0
+]) {
     out[0] = (a[0][0] + a[1][0]) / 2;
     out[1] = (a[0][1] + a[1][1]) / 2;
     out[2] = (a[0][2] + a[1][2]) / 2;
@@ -121,12 +120,11 @@ export { r as ray } from './_chunks/ray-bLshgWN6.js';
  * @param {import("./types.js").aabb} a
  * @param {import("./types.js").vec3} out
  * @returns {import("./types.js").vec3}
- */ function size$1(a, out) {
-    if (out === undefined) out = [
-        0,
-        0,
-        0
-    ];
+ */ function size$1(a, out = [
+    0,
+    0,
+    0
+]) {
     out[0] = Math.abs(a[1][0] - a[0][0]);
     out[1] = Math.abs(a[1][1] - a[0][1]);
     out[2] = Math.abs(a[1][2] - a[0][2]);
@@ -137,8 +135,7 @@ export { r as ray } from './_chunks/ray-bLshgWN6.js';
  * @param {import("./types.js").aabb} a
  * @param {import("./types.js").vec3} p
  * @returns {boolean}
- */ function containsPoint$1(a, param) {
-    let [x, y, z] = param;
+ */ function containsPoint$1(a, [x, y, z]) {
     return x >= a[0][0] && x <= a[1][0] && y >= a[0][1] && y <= a[1][1] && z >= a[0][2] && z <= a[1][2];
 }
 /**
@@ -165,8 +162,7 @@ export { r as ray } from './_chunks/ray-bLshgWN6.js';
  * @param {import("./types.js").vec3} p
  * @param {number} [i=0] offset in the point array
  * @returns {import("./types.js").vec3}
- */ function includePoint$1(a, p, i) {
-    if (i === undefined) i = 0;
+ */ function includePoint$1(a, p, i = 0) {
     a[0][0] = Math.min(a[0][0], p[i + 0]);
     a[0][1] = Math.min(a[0][1], p[i + 1]);
     a[0][2] = Math.min(a[0][2], p[i + 2]);
@@ -180,8 +176,7 @@ export { r as ray } from './_chunks/ray-bLshgWN6.js';
  * @param {import("./types.js").aabb} a
  * @param {number} [precision=4]
  * @returns {string}
- */ function toString$2(a, precision) {
-    if (precision === undefined) precision = 4;
+ */ function toString$2(a, precision = 4) {
     // prettier-ignore
     return `[${toString$3(a[0], precision)}, ${toString$3(a[1], precision)}]`;
 }
@@ -235,8 +230,7 @@ const TEMP_0 = create$3();
  * @param {import("./types.js").plane} plane
  * @param {import("./types.js").vec3} point
  * @returns {number}
- */ function side(param, point) {
-    let [planePoint, planeNormal] = param;
+ */ function side([planePoint, planeNormal], point) {
     set$2(TEMP_0, planePoint);
     sub(TEMP_0, point);
     normalize(TEMP_0);
@@ -250,8 +244,7 @@ const TEMP_0 = create$3();
  * @param {import("./types.js").plane} a
  * @param {number} [precision=4]
  * @returns {string}
- */ function toString$1(a, precision) {
-    if (precision === undefined) precision = 4;
+ */ function toString$1(a, precision = 4) {
     // prettier-ignore
     return `[${toString$3(a[0], precision)}, ${toString$3(a[1], precision)}]`;
 }
@@ -334,8 +327,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").rect} a
  * @param {import("./types.js").vec2[]} points
  * @returns {import("./types.js").vec2[]}
- */ function getCorners(a, points) {
-    if (points === undefined) points = [];
+ */ function getCorners(a, points = []) {
     points[0] = a[0].slice();
     points[1] = [
         a[0][1],
@@ -375,8 +367,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").rect} a
  * @param {import("./types.js").vec2} out
  * @returns {import("./types.js").vec2}
- */ function size(a, out) {
-    if (out === undefined) out = [];
+ */ function size(a, out = []) {
     out[0] = width(a);
     out[1] = height(a);
     return out;
@@ -407,8 +398,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").rect} a
  * @param {import("./types.js").vec2} p
  * @returns {import("./types.js").rect}
- */ function setPosition(a, param) {
-    let [x, y] = param;
+ */ function setPosition(a, [x, y]) {
     const w = width(a);
     const h = height(a);
     a[0][0] = x;
@@ -422,8 +412,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").rect} a
  * @param {import("./types.js").vec2} out
  * @returns {import("./types.js").rect}
- */ function center(a, out) {
-    if (out === undefined) out = [];
+ */ function center(a, out = []) {
     out[0] = a[0][0] + width(a) * 0.5;
     out[1] = a[0][1] + height(a) * 0.5;
     return out;
@@ -433,8 +422,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").rect} a
  * @param {import("./types.js").vec2} p
  * @returns {boolean}
- */ function containsPoint(a, param) {
-    let [x, y] = param;
+ */ function containsPoint(a, [x, y]) {
     return x >= a[0][0] && x <= a[1][0] && y >= a[0][1] && y <= a[1][1];
 }
 /**
@@ -450,8 +438,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").rect} a
  * @param {import("./types.js").vec2} p
  * @returns {import("./types.js").rect}
- */ function includePoint(a, param) {
-    let [x, y] = param;
+ */ function includePoint(a, [x, y]) {
     const minx = a[0][0];
     const miny = a[0][1];
     const maxx = a[1][0];
@@ -505,8 +492,7 @@ var plane = /*#__PURE__*/Object.freeze({
  * @param {import("./types.js").rect} a
  * @param {number} [precision=4]
  * @returns {string}
- */ function toString(a, precision) {
-    if (precision === undefined) precision = 4;
+ */ function toString(a, precision = 4) {
     // prettier-ignore
     return `[${toString$4(a[0], precision)}, ${toString$4(a[1], precision)}]`;
 }

@@ -1,4 +1,4 @@
-import { h as create } from './vec3-DW1VLBq6.js';
+import { h as create } from './vec3-CvFdREJM.js';
 
 const TEMP_VEC3 = create();
 /**
@@ -275,8 +275,7 @@ const TEMP_VEC3 = create();
  * @param {number} i
  * @param {number} [precision=4]
  * @returns {string}
- */ function toString(a, i, precision) {
-    if (precision === undefined) precision = 4;
+ */ function toString(a, i, precision = 4) {
     const scale = 10 ** precision;
     // prettier-ignore
     return `[${Math.floor(a[i * 3] * scale) / scale}, ${Math.floor(a[i * 3 + 1] * scale) / scale}, ${Math.floor(a[i * 3 + 2] * scale) / scale}]`;
