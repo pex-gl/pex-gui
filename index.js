@@ -1149,6 +1149,7 @@ class GUI {
         item.options &&
         (item.options.update || Number.isFinite(item.options.interval))
       ) {
+        item.prev ??= 0;
         item.options.update?.(item, now);
 
         const dt = now - item.prev;
