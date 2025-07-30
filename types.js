@@ -16,6 +16,7 @@
  * @property {boolean} [theme={}] See [theme file]{@link https://github.com/pex-gl/pex-gui/blob/main/theme.js} for all options.
  * @property {number} [scale=1]
  * @property {boolean} [responsive=true] Adapts to canvas dimension.
+ * @property {boolean} [overlay=false] Sets canvas CSS pointer-events to "none" and adds a DOM div overlay with children sized to interacitve areas. Allows pointer events to pass through non-interactive areas of the GUI.
  */
 
 /** @typedef {import("pex-context").ctx} ctx  */

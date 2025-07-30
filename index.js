@@ -48,6 +48,7 @@ class GUI {
       theme = {},
       scale = 1,
       responsive = true,
+      overlay = false,
       renderer,
     } = {},
   ) {
@@ -188,9 +189,25 @@ class GUI {
       };
     }
 
-    this.canvas.addEventListener("pointerdown", this.onPointerDown.bind(this));
-    this.canvas.addEventListener("pointermove", this.onPointerMove.bind(this));
-    this.canvas.addEventListener("pointerup", this.onPointerUp.bind(this));
+    if (overlay) {
+      this.overlay = {
+        container: document.createElement("div"),
+        initialPointerEvents: this.canvas.style.pointerEvents,
+      };
+      this.canvas.style.pointerEvents = "none";
+      this.canvas.after(this.overlay.container);
+    } else {
+      this.canvas.addEventListener(
+        "pointerdown",
+        this.onPointerDown.bind(this),
+      );
+      this.canvas.addEventListener(
+        "pointermove",
+        this.onPointerMove.bind(this),
+      );
+      this.canvas.addEventListener("pointerup", this.onPointerUp.bind(this));
+    }
+
     window.addEventListener("keydown", this.onKeyDown.bind(this));
   }
 
@@ -1115,6 +1132,39 @@ class GUI {
     return this.canvas.height / this.canvas.clientHeight;
   }
 
+  initOverlayItem(item) {
+    const overlayItem = document.createElement("div");
+    Object.assign(overlayItem.style, {
+      position: "absolute",
+      pointerEvents: "all",
+    });
+
+    overlayItem.addEventListener("pointerdown", this.onPointerDown.bind(this));
+    overlayItem.addEventListener("pointermove", this.onPointerMove.bind(this));
+    overlayItem.addEventListener("pointerup", this.onPointerUp.bind(this));
+
+    item.dispose = () => {
+      overlayItem.removeEventListener("pointerdown");
+      overlayItem.removeEventListener("pointermove");
+      overlayItem.removeEventListener("pointerup");
+      overlayItem.remove();
+    };
+    this.overlay.container.appendChild(overlayItem);
+
+    item.overlayItem = overlayItem;
+  }
+
+  updateOverlayItem({ activeArea, overlayItem }) {
+    const scaledActiveArea = this.getScaledActiveArea(activeArea);
+
+    Object.assign(overlayItem.style, {
+      left: `${this.x + scaledActiveArea[0][0]}px`,
+      top: `${this.y + scaledActiveArea[0][1]}px`,
+      width: `${rect.width(scaledActiveArea)}px`,
+      height: `${rect.height(scaledActiveArea)}px`,
+    });
+  }
+
   /**
    * Renders the GUI. Should be called at the end of the frame.
    */
@@ -1151,6 +1201,33 @@ class GUI {
         );
       } else {
         this.#scale = this.scale;
+      }
+
+      if (this.overlay) {
+        const { left, top, width, height } =
+          this.canvas.getBoundingClientRect();
+
+        Object.assign(this.overlay.container.style, {
+          position: "fixed",
+          pointerEvents: "none",
+          left: `${this.x + left + window.scrollX}px`,
+          top: `${this.y + top + window.scrollY}px`,
+          width: `${width}px`,
+          height: `${height}px`,
+        });
+
+        for (let i = 0; i < this.items.length; i++) {
+          const item = this.items[i];
+
+          if (
+            item.activeArea &&
+            rect.width(item.activeArea) &&
+            rect.height(item.activeArea)
+          ) {
+            if (!item.overlayItem) this.initOverlayItem(item);
+            this.updateOverlayItem(item);
+          }
+        }
       }
     }
 
@@ -1255,10 +1332,15 @@ class GUI {
    * Remove events listeners, empty list of controls and dispose of the gui's resources.
    */
   dispose() {
-    this.canvas.removeEventListener("pointerdown", this.onPointerDown);
-    this.canvas.removeEventListener("pointermove", this.onPointerMove);
-    this.canvas.removeEventListener("pointerup", this.onPointerUp);
-    window.removeEventListener("keydown", this.onKeyDown);
+    if (this.overlay) {
+      this.canvas.style.pointerEvents = this.overlay.initialPointerEvents;
+      this.overlay.container.remove();
+    } else {
+      this.canvas.removeEventListener("pointerdown", this.onPointerDown);
+      this.canvas.removeEventListener("pointermove", this.onPointerMove);
+      this.canvas.removeEventListener("pointerup", this.onPointerUp);
+      window.removeEventListener("keydown", this.onKeyDown);
+    }
 
     for (let i = 0; i < this.items.length; i++) {
       this.items[i].dispose?.();
