@@ -1095,6 +1095,34 @@ class GUI {
     return ctrl;
   }
 
+  /**
+   * Remove controls
+   * @param {GUIControl | GUIControl[]} items
+   */
+  remove(items) {
+    items = Array.isArray(items) ? items : [items];
+    this.items = this.items.filter((item) => {
+      const itemToRemove = items.find((i) => i === item);
+      if (itemToRemove) itemToRemove.dispose?.();
+      return !itemToRemove;
+    });
+  }
+
+  /**
+   * Move a control after another
+   * @param {GUIControl} item
+   * @param {GUIControl} targetItem
+   */
+  moveAfter(item, targetItem) {
+    const fromIndex = this.items.findIndex((i) => i === item);
+    const toIndex = this.items.findIndex((i) => i === targetItem);
+
+    if (fromIndex !== -1 && toIndex !== -1) {
+      const [item] = this.items.splice(fromIndex, 1);
+      this.items.splice(toIndex + 1, 0, item);
+    }
+  }
+
   // Update
   isAnyItemDirty(items) {
     let dirty = false;
