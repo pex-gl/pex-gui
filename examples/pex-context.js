@@ -81,7 +81,7 @@ gui.addRadioList(
   "Type",
   ExampleState,
   "currentGeometry",
-  ExampleState.geometries
+  ExampleState.geometries,
 );
 gui.addParam("Torus Size", ExampleState, "size", { min: 0.1, max: 2 }, () => {
   const torus = createTorus({
@@ -101,7 +101,7 @@ gui.addTexture2DList(
   "currentTexture",
   State.textures.map((tex, index) => {
     return { texture: tex, value: index };
-  })
+  }),
 );
 
 const clearCmd = {

@@ -33,7 +33,7 @@ const addGUI = async (
   options = {},
   width = DEFAULT_WIDTH,
   height = DEFAULT_HEIGHT,
-  pixelRatio = devicePixelRatio
+  pixelRatio = devicePixelRatio,
 ) => {
   addText(title, "p");
 
@@ -69,36 +69,36 @@ addButton("Multiply all by two", () => {
 
 addSeparator();
 addText(
-  "Default render at the same size regardless of the canvas size or pixel ratio unless it overflows the canvas viewport"
+  "Default render at the same size regardless of the canvas size or pixel ratio unless it overflows the canvas viewport",
 );
 await addGUI(
-  "Default ({ responsive: true, scale: 1, pixelRatio: devicePixelRatio })"
+  "Default ({ responsive: true, scale: 1, pixelRatio: devicePixelRatio })",
 );
 await addGUI(
   "Default with canvas at double size",
   undefined,
   DEFAULT_WIDTH * 2,
-  DEFAULT_HEIGHT * 2
+  DEFAULT_HEIGHT * 2,
 );
 await addGUI(
   "Default with canvas at half size",
   undefined,
   DEFAULT_WIDTH / 2,
-  DEFAULT_HEIGHT / 2
+  DEFAULT_HEIGHT / 2,
 );
 await addGUI(
   "Default with canvas dimensions at multiplied by a ratio of 1",
   undefined,
   undefined,
   undefined,
-  1
+  1,
 );
 await addGUI(
   "Default with canvas dimensions at multiplied by a ratio of 0.5",
   undefined,
   undefined,
   undefined,
-  0.5
+  0.5,
 );
 
 addSeparator();
@@ -129,7 +129,7 @@ await addGUI(
   "No responsive overflowing",
   { responsive: false },
   DEFAULT_WIDTH / 2,
-  DEFAULT_HEIGHT / 2
+  DEFAULT_HEIGHT / 2,
 );
 await addGUI(
   "No responsive overflowing and renderer at pixelRatio 0.5",
@@ -138,7 +138,7 @@ await addGUI(
     pixelRatio: 0.5,
   },
   DEFAULT_WIDTH / 2,
-  DEFAULT_HEIGHT / 2
+  DEFAULT_HEIGHT / 2,
 );
 
 addSeparator();
@@ -148,7 +148,7 @@ await addGUI(
   "No responsive, hardcoded scale at 0.5",
   { responsive: false, scale: 0.5 },
   DEFAULT_WIDTH / 2,
-  DEFAULT_HEIGHT / 2
+  DEFAULT_HEIGHT / 2,
 );
 await addGUI(
   "No responsive, hardcoded scale at 0.5 and renderer at pixelRatio 0.5",
@@ -158,7 +158,7 @@ await addGUI(
     pixelRatio: 0.5,
   },
   DEFAULT_WIDTH / 2,
-  DEFAULT_HEIGHT / 2
+  DEFAULT_HEIGHT / 2,
 );
 
 requestAnimationFrame(function frame() {
