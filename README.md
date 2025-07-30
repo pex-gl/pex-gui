@@ -231,7 +231,7 @@ GUI controls for PEX.
   - [.addColumn(title, [width])](#GUI+addColumn) ⇒ <code>GUIControl</code>
   - [.addHeader(title)](#GUI+addHeader) ⇒ <code>GUIControl</code>
   - [.addSeparator()](#GUI+addSeparator) ⇒ <code>GUIControl</code>
-  - [.addLabel(title)](#GUI+addLabel) ⇒ <code>GUIControl</code>
+  - [.addLabel(title, [options])](#GUI+addLabel) ⇒ <code>GUIControl</code>
   - [.addParam(title, contextObject, attributeName, [options], onChange)](#GUI+addParam) ⇒ <code>GUIControl</code>
   - [.addButton(title, onClick)](#GUI+addButton) ⇒ <code>GUIControl</code>
   - [.addRadioList(title, contextObject, attributeName, items, onChange)](#GUI+addRadioList) ⇒ <code>GUIControl</code>
@@ -241,6 +241,8 @@ GUI controls for PEX.
   - [.addGraph(title, options)](#GUI+addGraph) ⇒ <code>GUIControl</code>
   - [.addFPSMeeter()](#GUI+addFPSMeeter) ⇒ <code>GUIControl</code>
   - [.addStats(title, [options])](#GUI+addStats) ⇒ <code>GUIControl</code>
+  - [.remove(items)](#GUI+remove)
+  - [.moveAfter(item, targetItem)](#GUI+moveAfter)
   - [.draw()](#GUI+draw)
   - [.serialize()](#GUI+serialize) ⇒ <code>object</code>
   - [.deserialize(data)](#GUI+deserialize)
@@ -307,15 +309,16 @@ Add some breathing space between controls.
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 <a name="GUI+addLabel"></a>
 
-### guI.addLabel(title) ⇒ <code>GUIControl</code>
+### guI.addLabel(title, [options]) ⇒ <code>GUIControl</code>
 
 Add a text label. Can be multiple line.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param | Type                |
-| ----- | ------------------- |
-| title | <code>string</code> |
+| Param     | Type                                                 | Default         |
+| --------- | ---------------------------------------------------- | --------------- |
+| title     | <code>string</code>                                  |                 |
+| [options] | [<code>GUIControlOptions</code>](#GUIControlOptions) | <code>{}</code> |
 
 **Example**
 
@@ -528,6 +531,31 @@ Add an updatable object stats visualiser.
 | title     | <code>string</code> |                                                              |
 | [options] | <code>object</code> | An object with an update() function to update control.stats. |
 
+<a name="GUI+remove"></a>
+
+### guI.remove(items)
+
+Remove controls
+
+**Kind**: instance method of [<code>GUI</code>](#GUI)
+
+| Param | Type                                                             |
+| ----- | ---------------------------------------------------------------- |
+| items | <code>GUIControl</code> \| <code>Array.&lt;GUIControl&gt;</code> |
+
+<a name="GUI+moveAfter"></a>
+
+### guI.moveAfter(item, targetItem)
+
+Move a control after another
+
+**Kind**: instance method of [<code>GUI</code>](#GUI)
+
+| Param      | Type                    |
+| ---------- | ----------------------- |
+| item       | <code>GUIControl</code> |
+| targetItem | <code>GUIControl</code> |
+
 <a name="GUI+draw"></a>
 
 ### guI.draw()
@@ -568,17 +596,20 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 **Kind**: global typedef
 **Properties**
 
-| Name         | Type                           | Default        | Description                                                                         |
-| ------------ | ------------------------------ | -------------- | ----------------------------------------------------------------------------------- |
-| [min]        | <code>number</code>            | <code>0</code> |                                                                                     |
-| [max]        | <code>number</code>            | <code>0</code> |                                                                                     |
-| [type]       | <code>&quot;color&quot;</code> |                | Interpret an array as color.                                                        |
-| [colorSpace] | <code>string</code>            |                | Display a color as values of a pex-color color space.                               |
-| [alpha]      | <code>boolean</code>           |                | Add a 4th slider for colors.                                                        |
-| [palette]    | <code>HTMLImageElement</code>  |                | Draw a palette image as color picker.                                               |
-| [flipEnvMap] | <code>boolean</code>           |                | Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped. |
-| [flipY]      | <code>boolean</code>           |                | Flip texture 2D vertically.                                                         |
-| [level]      | <code>number</code>            |                | Level of detail for cube textures.                                                  |
+| Name         | Type                           | Default           | Description                                                                         |
+| ------------ | ------------------------------ | ----------------- | ----------------------------------------------------------------------------------- |
+| [min]        | <code>number</code>            | <code>0</code>    |                                                                                     |
+| [max]        | <code>number</code>            | <code>0</code>    |                                                                                     |
+| [type]       | <code>&quot;color&quot;</code> |                   | Interpret an array as color.                                                        |
+| [colorSpace] | <code>string</code>            |                   | Display a color as values of a pex-color color space.                               |
+| [alpha]      | <code>boolean</code>           |                   | Add a 4th slider for colors.                                                        |
+| [palette]    | <code>HTMLImageElement</code>  |                   | Draw a palette image as color picker.                                               |
+| [flipEnvMap] | <code>boolean</code>           |                   | Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped. |
+| [flipY]      | <code>boolean</code>           |                   | Flip texture 2D vertically.                                                         |
+| [level]      | <code>number</code>            |                   | Level of detail for cube textures.                                                  |
+| [update]     | <code>function</code>          |                   | An update(item, now) function to update labels and stats.                           |
+| [redraw]     | <code>function</code>          |                   | A redraw(item) function to be called when interval has passed.                      |
+| [interval]   | <code>number</code>            | <code>2000</code> | The interval between redraw(item).                                                  |
 
 <a name="GUIOptions"></a>
 
@@ -587,12 +618,13 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 **Kind**: global typedef
 **Properties**
 
-| Name         | Type                 | Default                              | Description                                                                             |
-| ------------ | -------------------- | ------------------------------------ | --------------------------------------------------------------------------------------- |
-| [pixelRatio] | <code>boolean</code> | <code>window.devicePixelRatio</code> |                                                                                         |
-| [theme]      | <code>boolean</code> | <code>{}</code>                      | See [theme file](https://github.com/pex-gl/pex-gui/blob/main/theme.js) for all options. |
-| [scale]      | <code>number</code>  | <code>1</code>                       |                                                                                         |
-| [responsive] | <code>boolean</code> | <code>true</code>                    | Adapts to canvas dimension.                                                             |
+| Name         | Type                 | Default                              | Description                                                                                                                                                                           |
+| ------------ | -------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [pixelRatio] | <code>boolean</code> | <code>window.devicePixelRatio</code> |                                                                                                                                                                                       |
+| [theme]      | <code>boolean</code> | <code>{}</code>                      | See [theme file](https://github.com/pex-gl/pex-gui/blob/main/theme.js) for all options.                                                                                               |
+| [scale]      | <code>number</code>  | <code>1</code>                       |                                                                                                                                                                                       |
+| [responsive] | <code>boolean</code> | <code>true</code>                    | Adapts to canvas dimension.                                                                                                                                                           |
+| [overlay]    | <code>boolean</code> | <code>false</code>                   | Sets canvas CSS pointer-events to "none" and adds a DOM div overlay with children sized to interacitve areas. Allows pointer events to pass through non-interactive areas of the GUI. |
 
 <a name="ctx"></a>
 

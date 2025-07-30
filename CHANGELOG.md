@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+# [3.2.0](https://github.com/pex-gl/pex-gui/compare/v3.1.3...v3.2.0) (2025-07-30)
+
+
+### Bug Fixes
+
+* add removeEventListener callbacks for overlay items ([0855f18](https://github.com/pex-gl/pex-gui/commit/0855f180b3d6d28b59b56373943c0dacdab101ca))
+* default item.prev to 0 for updatable controls ([16bd0da](https://github.com/pex-gl/pex-gui/commit/16bd0da9039a53424795dd09fca8fd9ed6e98420))
+* handle tabs without column ([f777066](https://github.com/pex-gl/pex-gui/commit/f777066c2dfd6a8c2e5c47927f2ce074c8377eb8))
+
+
+### Features
+
+* add overlay option for pass through canvasses ([e97e8e3](https://github.com/pex-gl/pex-gui/commit/e97e8e378086beccdb9dc5e47b6158662fd36116))
+* add remove and moveAfter ([5b7055c](https://github.com/pex-gl/pex-gui/commit/5b7055cc6d16b72473dbb0edbcf6185a0e3f2ffb))
+* allow columns without title ([13c99a9](https://github.com/pex-gl/pex-gui/commit/13c99a9876d44fd91e45c57d9fa89705416a8880))
+* allow update/interval/redraw on labels ([78888e6](https://github.com/pex-gl/pex-gui/commit/78888e6d603f2e3944f7808f0b1ffb70d06c2111))
+* extend active area for toggle and checkbox ([a0102db](https://github.com/pex-gl/pex-gui/commit/a0102dbaac4c1e9e2975ec7adf89507cde8cb5c1))
+* extract pointer offset in pointer events ([81d6ddd](https://github.com/pex-gl/pex-gui/commit/81d6ddd11de1adb94f6bfd917229bac8dea75dfd))
+* update stats and label line height ([dfa5511](https://github.com/pex-gl/pex-gui/commit/dfa55114a1cadec0713342ef9627edd384770fba))
+
+
+
 ## [3.1.3](https://github.com/pex-gl/pex-gui/compare/v3.1.2...v3.1.3) (2025-04-11)
 
 
