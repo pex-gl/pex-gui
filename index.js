@@ -68,7 +68,7 @@ class GUI {
 
     this.x = 0;
     this.y = 0;
-    this.mousePos = [0, 0];
+    this.pointerOffset = [0, 0];
     this.items = [];
 
     // Create renderer
@@ -250,6 +250,12 @@ class GUI {
     return { imageStartY };
   }
 
+  setPointerOffset(event, target = event.currentTarget || event.srcElement) {
+    const { left, top } = target.getBoundingClientRect();
+    this.pointerOffset[0] = event.clientX - left - this.x;
+    this.pointerOffset[1] = event.clientY - top - this.y;
+  }
+
   // Event handlers
   onPointerDown(event) {
     if (!this.enabled) return;
@@ -263,8 +269,7 @@ class GUI {
 
     this.activeControl = null;
 
-    this.mousePos[0] = event.offsetX - this.x;
-    this.mousePos[1] = event.offsetY - this.y;
+    this.setPointerOffset(event, this.canvas, this.pointerOffset);
 
     for (let i = 0; i < this.items.length; i++) {
       const prevTabs = this.items.filter(
@@ -277,7 +282,7 @@ class GUI {
 
       const aa = this.getScaledActiveArea(this.items[i].activeArea);
 
-      if (rect.containsPoint(aa, this.mousePos)) {
+      if (rect.containsPoint(aa, this.pointerOffset)) {
         this.activeControl = this.items[i];
 
         this.activeControl.active = true;
@@ -295,7 +300,7 @@ class GUI {
             !this.activeControl.contextObject[this.activeControl.attributeName],
           );
         } else if (this.activeControl.type === "radiolist") {
-          const hitY = this.mousePos[1] - aa[0][1];
+          const hitY = this.pointerOffset[1] - aa[0][1];
           const hitItemIndex = Math.floor(
             (this.activeControl.items.length * hitY) / aaHeight,
           );
@@ -313,7 +318,7 @@ class GUI {
             if (
               rect.containsPoint(
                 this.getScaledActiveArea(item.activeArea),
-                this.mousePos,
+                this.pointerOffset,
               )
             ) {
               clickedItem = item;
@@ -330,8 +335,8 @@ class GUI {
               aa,
               aaWidth,
               aaHeight,
-              this.mousePos[0],
-              this.mousePos[1],
+              this.pointerOffset[0],
+              this.pointerOffset[1],
             );
             if (paletteResult.clicked) {
               this.activeControl.clickedPalette = true;
@@ -351,8 +356,7 @@ class GUI {
   onPointerMove(event) {
     if (!this.enabled) return;
 
-    const mx = event.offsetX - this.x;
-    const my = event.offsetY - this.y;
+    this.setPointerOffset(event, this.canvas, this.pointerOffset);
 
     if (this.activeControl) {
       const aa = this.getScaledActiveArea(this.activeControl.activeArea);
@@ -367,7 +371,7 @@ class GUI {
       if (isSlider || isMultiSlider || isColor) {
         const aaWidth = rect.width(aa);
         const aaHeight = rect.height(aa);
-        value = (mx - aa[0][0]) / aaWidth;
+        value = (this.pointerOffset[0] - aa[0][0]) / aaWidth;
         value = utils.clamp(value, 0, 1);
 
         let slidersHeight = aaHeight;
@@ -384,8 +388,8 @@ class GUI {
               aa,
               aaWidth,
               aaHeight,
-              mx,
-              my,
+              this.pointerOffset[0],
+              this.pointerOffset[1],
             );
             slidersHeight = paletteResult.imageStartY;
             if (paletteResult.clicked) {
@@ -402,7 +406,9 @@ class GUI {
         }
 
         if (isMultiSlider || isColor) {
-          index = Math.floor((numSliders * (my - aa[0][1])) / slidersHeight);
+          index = Math.floor(
+            (numSliders * (this.pointerOffset[1] - aa[0][1])) / slidersHeight,
+          );
           if (!isNaN(this.activeControl.clickedSlider)) {
             index = this.activeControl.clickedSlider;
           } else {
