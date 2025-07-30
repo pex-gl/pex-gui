@@ -139,7 +139,7 @@ class CanvasRenderer {
         } else {
           if (needInitialDy && item.type !== "column") {
             needInitialDy = false;
-            dy += tabHeight;
+            dy += tabHeight + padding * 3;
           }
         }
         needInitialDy = false;
