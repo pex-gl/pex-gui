@@ -1144,9 +1144,9 @@ class GUI {
     overlayItem.addEventListener("pointerup", this.onPointerUp.bind(this));
 
     item.dispose = () => {
-      overlayItem.removeEventListener("pointerdown");
-      overlayItem.removeEventListener("pointermove");
-      overlayItem.removeEventListener("pointerup");
+      overlayItem.removeEventListener("pointerdown", this.onPointerDown);
+      overlayItem.removeEventListener("pointermove", this.onPointerMove);
+      overlayItem.removeEventListener("pointerup", this.onPointerUp);
       overlayItem.remove();
     };
     this.overlay.container.appendChild(overlayItem);
