@@ -199,13 +199,13 @@ class CanvasRenderer {
         eh =
           Object.values(item.stats)
             .map((value) => String(value).split("\n").length)
-            .reduce((a, b) => a + b, 0) * titleHeight;
+            .reduce((a, b) => a + b, 0) * itemHeight;
         if (item.title !== "") eh += titleHeight;
       } else if (item.type === "label") {
-        eh = item.title.split("\n").length * titleHeight;
+        eh = item.title.split("\n").length * itemHeight + padding * 0.5;
       }
 
-      const needsPadding = !["column", "label"].includes(item.type);
+      const needsPadding = item.type !== "column";
 
       // Draw background
       if (item.type === "separator") {
@@ -383,12 +383,10 @@ class CanvasRenderer {
             ctx.lineWidth = 1;
             shrink = padding;
           }
-          if (!item.items[j].activeArea) {
-            item.items[j].activeArea = [
-              [0, 0],
-              [0, 0],
-            ];
-          }
+          item.items[j].activeArea ||= [
+            [0, 0],
+            [0, 0],
+          ];
           rectSet4(
             item.items[j].activeArea,
             itemX + shrink,
@@ -535,7 +533,7 @@ class CanvasRenderer {
             ctx.fillText(
               j === 0 ? `${name}: ${lineValue}` : lineValue,
               x + textPadding * 2,
-              dy + textY + titleHeight * lineIndex,
+              dy + textY + itemHeight * lineIndex,
             );
             lineIndex++;
           }
@@ -544,7 +542,7 @@ class CanvasRenderer {
         ctx.fillStyle = this.theme.color;
         const lines = item.title.split("\n");
         for (let i = 0; i < lines.length; i++) {
-          ctx.fillText(lines[i], x + textPadding, dy + textY + titleHeight * i);
+          ctx.fillText(lines[i], x + textPadding, dy + textY + itemHeight * i);
         }
       } else if (item.type === "separator") {
         // Nothing to draw, just increase the gap.
