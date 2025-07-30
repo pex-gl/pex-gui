@@ -9,6 +9,9 @@
  * @property {boolean} [flipEnvMap] Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped.
  * @property {boolean} [flipY] Flip texture 2D vertically.
  * @property {number} [level] Level of detail for cube textures.
+ * @property {Function} [update] An update(item, now) function to update labels and stats.
+ * @property {Function} [redraw] A redraw(item) function to be called when interval has passed.
+ * @property {number} [interval=2000] The interval between redraw(item).
  */
 /**
  * @typedef {object} GUIOptions

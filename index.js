@@ -615,6 +615,7 @@ class GUI {
   /**
    * Add a text label. Can be multiple line.
    * @param {string} title
+   * @param {import("./types.js").GUIControlOptions} [options={}]
    * @returns {GUIControl}
    *
    * @example
@@ -622,7 +623,7 @@ class GUI {
    * gui.addLabel("Multiline\nLabel");
    * ```
    */
-  addLabel(title) {
+  addLabel(title, options) {
     const ctrl = new GUIControl({
       type: "label",
       title,
@@ -635,6 +636,7 @@ class GUI {
         this.title = title;
         this.dirty = true;
       },
+      options,
     });
     this.items.push(ctrl);
     return ctrl;
@@ -1114,7 +1116,11 @@ class GUI {
 
     for (let i = 0; i < this.items.length; i++) {
       const item = this.items[i];
-      if (item.type === "graph" || item.type === "stats") {
+
+      if (
+        item.options &&
+        (item.options.update || Number.isFinite(item.options.interval))
+      ) {
         item.options.update?.(item, now);
 
         const dt = now - item.prev;
