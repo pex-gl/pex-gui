@@ -7,6 +7,7 @@ export default async function addAllControls(gui, ctx) {
     plask: { image: `examples/assets/plask.png` },
     pex: { image: `examples/assets/pex.png` },
     noise: { image: `examples/assets/noise.png` },
+    normal: { image: `examples/assets/normal.jpg` },
     posx: { image: `examples/assets/pisa/pisa_posx.jpg` },
     negx: { image: `examples/assets/pisa/pisa_negx.jpg` },
     posy: { image: `examples/assets/pisa/pisa_posy.jpg` },
@@ -17,7 +18,7 @@ export default async function addAllControls(gui, ctx) {
 
   const isPexGl = ctx.gl;
 
-  const images = [res.plask, res.pex, res.noise];
+  const images = [res.plask, res.pex, res.noise, res.normal];
 
   const State = {
     currentRadioListChoice: 0,
@@ -40,6 +41,7 @@ export default async function addAllControls(gui, ctx) {
           data: [res.posx, res.negx, res.posy, res.negy, res.posz, res.negz],
           width: 64,
           height: 64,
+          pixelFormat: ctx.PixelFormat.SRGB8_ALPHA8,
         })
       : null,
     currentTexture: 0,
@@ -51,10 +53,13 @@ export default async function addAllControls(gui, ctx) {
             height: image.height,
             flipY: true,
             wrap: ctx.Wrap.Repeat,
-            encoding: ctx.Encoding.SRGB,
             mipmap: true,
             min: ctx.Filter.LinearMipmapLinear,
             aniso: 16,
+            pixelFormat:
+              image === res.normal
+                ? ctx.PixelFormat.RGBA8
+                : ctx.PixelFormat.SRGB8_ALPHA8,
           }),
         )
       : images,

@@ -14,7 +14,6 @@ class PexContextRenderer extends CanvasRenderer {
       width: opts[0],
       height: opts[1],
       pixelFormat: ctx.PixelFormat.RGBA8,
-      encoding: ctx.Encoding.SRGB,
     });
   }
 

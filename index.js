@@ -154,7 +154,10 @@ class GUI {
           viewport: this.viewport,
           uniforms: {
             uTexture: texture,
-            uTextureEncoding: texture.encoding,
+            uCorrectGamma: [
+              ctx.PixelFormat.SRGB8,
+              ctx.PixelFormat.SRGB8_ALPHA8,
+            ].includes(texture.pixelFormat),
             uViewport: this.viewport,
             uRect: rect,
           },
@@ -166,7 +169,10 @@ class GUI {
           viewport: this.viewport,
           uniforms: {
             uTexture: texture,
-            uTextureEncoding: texture.encoding,
+            uCorrectGamma: [
+              ctx.PixelFormat.SRGB8,
+              ctx.PixelFormat.SRGB8_ALPHA8,
+            ].includes(texture.pixelFormat),
             uViewport: this.viewport,
             uRect: rect,
             uLevel: level,

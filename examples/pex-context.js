@@ -4,6 +4,7 @@ import { mat4, quat } from "pex-math";
 import { torus as createTorus, cube as createCube } from "primitive-geometry";
 
 import createGUI from "../index.js";
+import GAMMA from "../shaders/chunks/gamma.glsl.js";
 
 import allControls from "./all-controls.js";
 
@@ -21,26 +22,30 @@ const ExampleState = {
 const vert = /* glsl */ `
 attribute vec2 aTexCoord;
 attribute vec3 aPosition;
+
 uniform mat4 uProjectionMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uModelMatrix;
+
 varying vec2 vTexCoord;
+
 void main() {
   vTexCoord = aTexCoord;
   gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
 }
 `;
 
-const frag = /* glsl */ `
-#ifdef GL_ES
-precision mediump float;
-#endif
+const frag = /* glsl */ `precision mediump float;
 
-varying vec2 vTexCoord;
 uniform sampler2D uTexture;
 uniform vec2 uRepeat;
+
+varying vec2 vTexCoord;
+
+${GAMMA}
+
 void main() {
-  gl_FragColor = texture2D(uTexture, vTexCoord * uRepeat);
+  gl_FragColor = toGamma(texture2D(uTexture, vTexCoord * uRepeat));
 }`;
 
 const ctx = createContext({ pixelRatio: devicePixelRatio });
