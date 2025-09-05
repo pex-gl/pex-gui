@@ -37,14 +37,14 @@
     "release": "snowdev release"
   },
   "dependencies": {
-    "pex-color": "^2.2.0",
+    "pex-color": "^2.3.0",
     "pex-geom": "^3.1.0",
     "pex-math": "^4.1.2"
   },
   "devDependencies": {
-    "es-module-shims": "2.6.1",
-    "pex-cam": "^3.0.0-alpha.1",
-    "pex-context": "^3.2.0",
+    "es-module-shims": "2.6.2",
+    "pex-cam": "^3.0.1",
+    "pex-context": "^4.0.0",
     "pex-io": "^3.0.2",
     "primitive-geometry": "^2.11.0"
   },

@@ -48,7 +48,7 @@ import { h as hitTestPlane } from './_chunks/ray-BGL7srkm.js';
 
 /**
  * A class to create a perspective camera
- * @extends Camera
+ * @augments Camera
  */ class PerspectiveCamera extends Camera {
     static get DEFAULT_OPTIONS() {
         return {
@@ -148,7 +148,7 @@ import { h as hitTestPlane } from './_chunks/ray-BGL7srkm.js';
 
 /**
  * A class to create an orthographic camera
- * @extends Camera
+ * @augments Camera
  */ class OrthographicCamera extends Camera {
     static get DEFAULT_OPTIONS() {
         return {
@@ -430,9 +430,11 @@ var eventOffset = /*@__PURE__*/ getDefaultExportFromCjs(mouseEventOffset_1);
         // Move position according to distance and target
         scale(position, this.currentDistance);
         add(position, target);
-        if (this.camera.zoom) this.camera.set({
-            zoom: length(position)
-        });
+        if (this.camera.zoom !== undefined) {
+            this.camera.set({
+                zoom: length(position)
+            });
+        }
         this.camera.set({
             position
         });
@@ -586,4 +588,4 @@ var eventOffset = /*@__PURE__*/ getDefaultExportFromCjs(mouseEventOffset_1);
  * @returns {OrbiterControls}
  */ const orbiter = (opts)=>new OrbiterControls(opts);
 
-export { orbiter, orthographic, perspective };
+export { OrbiterControls, OrthographicCamera, PerspectiveCamera, orbiter, orthographic, perspective };
