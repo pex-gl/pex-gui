@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+# [3.3.0](https://github.com/pex-gl/pex-gui/compare/v3.2.0...v3.3.0) (2025-09-05)
+
+
+### Features
+
+* add support for pex-context v4 ([07dad11](https://github.com/pex-gl/pex-gui/commit/07dad11e66ace9f580ff9a14d69b712f4711ae65))
+
+
+
 # [3.2.0](https://github.com/pex-gl/pex-gui/compare/v3.1.3...v3.2.0) (2025-07-30)
 
 
