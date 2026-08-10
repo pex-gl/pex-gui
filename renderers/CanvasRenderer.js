@@ -27,9 +27,11 @@ function makePaletteImage(item, w, img) {
 }
 
 class CanvasRenderer {
-  constructor({ width, height, pixelRatio = devicePixelRatio, theme }) {
+  constructor({ ctx, width, height, pixelRatio = devicePixelRatio, theme }) {
     this.pixelRatio = pixelRatio;
     this.theme = theme;
+
+    this.targetContext = ctx;
 
     this.canvas = document.createElement("canvas");
     this.canvas.width = width * this.pixelRatio;
@@ -581,6 +583,20 @@ class CanvasRenderer {
 
   getTexture() {
     return this.canvas;
+  }
+
+  drawTexture2d(viewport, { texture, rect, flipY }) {
+    const ctx = this.targetContext;
+    const x = rect[0] + viewport[0] * this.pixelRatio;
+    const y = rect[1] + viewport[1] * this.pixelRatio;
+    const width = rect[2] - rect[0];
+    const height = rect[3] - rect[1];
+
+    ctx.save();
+    ctx.translate(x + width / 2, y + height / 2);
+    if (flipY) ctx.scale(1, -1);
+    ctx.drawImage(texture, -width / 2, -height / 2, width, height);
+    ctx.restore();
   }
 
   dispose() {

@@ -6,10 +6,6 @@ import { CanvasRenderer, PexContextRenderer } from "./renderers/index.js";
 import GUIControl from "./GUIControl.js";
 import DEFAULT_THEME from "./theme.js";
 
-import VERT from "./shaders/main.vert.js";
-import TEXTURE_CUBE_FRAG from "./shaders/texture-cube.frag.js";
-import TEXTURE_2D_FRAG from "./shaders/texture-2d.frag.js";
-
 const isArrayLike = (value) =>
   Array.isArray(value) || ArrayBuffer.isView(value);
 
@@ -85,115 +81,6 @@ class GUI {
         pixelRatio: this.#pixelRatio,
         theme: this.theme,
       });
-
-    if (isPexContext) {
-      const attributes = {
-        aPosition: {
-          buffer: ctx.vertexBuffer([
-            [-1, -1],
-            [1, -1],
-            [1, 1],
-            [-1, 1],
-          ]),
-        },
-        aTexCoord0: {
-          buffer: ctx.vertexBuffer([
-            [0, 0],
-            [1, 0],
-            [1, 1],
-            [0, 1],
-          ]),
-        },
-      };
-
-      const indices = {
-        buffer: ctx.indexBuffer([
-          [0, 1, 2],
-          [0, 2, 3],
-        ]),
-      };
-
-      const pipelineOptions = {
-        depthTest: false,
-        depthWrite: false,
-        blend: true,
-        blendSrcRGBFactor: ctx.BlendFactor.SrcAlpha,
-        blendSrcAlphaFactor: ctx.BlendFactor.One,
-        blendDstRGBFactor: ctx.BlendFactor.OneMinusSrcAlpha,
-        blendDstAlphaFactor: ctx.BlendFactor.One,
-      };
-
-      const drawTexture2dCmd = {
-        name: "gui_drawTexture2d",
-        pipeline: ctx.pipeline({
-          vert: VERT,
-          frag: TEXTURE_2D_FRAG,
-          ...pipelineOptions,
-        }),
-        attributes,
-        indices,
-      };
-
-      const drawTextureCubeCmd = {
-        name: "gui_drawTextureCube",
-        pipeline: ctx.pipeline({
-          vert: VERT,
-          frag: TEXTURE_CUBE_FRAG,
-          ...pipelineOptions,
-        }),
-        attributes,
-        indices,
-        uniforms: {
-          uFlipEnvMap: 1,
-        },
-      };
-
-      this.drawTexture2d = ({ texture, rect, flipY }) => {
-        if (flipY) [rect[1], rect[3]] = [rect[3], rect[1]];
-        ctx.submit(drawTexture2dCmd, {
-          viewport: this.viewport,
-          uniforms: {
-            uTexture: texture,
-            uCorrectGamma: [
-              ctx.PixelFormat.SRGB8,
-              ctx.PixelFormat.SRGB8_ALPHA8,
-            ].includes(texture.pixelFormat),
-            uViewport: this.viewport,
-            uRect: rect,
-          },
-        });
-      };
-
-      this.drawTextureCube = ({ texture, rect, level, flipEnvMap }) => {
-        ctx.submit(drawTextureCubeCmd, {
-          viewport: this.viewport,
-          uniforms: {
-            uTexture: texture,
-            uCorrectGamma: [
-              ctx.PixelFormat.SRGB8,
-              ctx.PixelFormat.SRGB8_ALPHA8,
-            ].includes(texture.pixelFormat),
-            uViewport: this.viewport,
-            uRect: rect,
-            uLevel: level,
-            uFlipEnvMap: flipEnvMap || 1,
-          },
-        });
-      };
-    } else {
-      this.drawTexture2d = ({ texture, rect, flipY }) => {
-        const x = rect[0] + this.x * pixelRatio;
-        const y = rect[1] + this.y * pixelRatio;
-        const width = rect[2] - rect[0];
-        const height = rect[3] - rect[1];
-
-        ctx.save();
-        ctx.translate(x + width / 2, y + height / 2);
-        if (flipY) ctx.scale(1, -1);
-        ctx.drawImage(texture, -width / 2, -height / 2, width, height);
-        ctx.restore();
-      };
-    }
 
     if (overlay) {
       this.overlay = {
@@ -1272,7 +1159,7 @@ class GUI {
       }
     }
 
-    this.drawTexture2d({
+    this.renderer.drawTexture2d(this.viewport, {
       texture,
       rect: [
         0,
@@ -1314,7 +1201,7 @@ class GUI {
         if (texture.flipY) {
           [bounds[1], bounds[3]] = [bounds[3], bounds[1]];
         }
-        this.drawTexture2d({
+        this.renderer.drawTexture2d(this.viewport, {
           texture,
           rect: bounds,
           flipY,
@@ -1331,7 +1218,7 @@ class GUI {
           item.activeArea[1][0] * scale,
           item.activeArea[0][1] * scale,
         ];
-        this.drawTextureCube({
+        this.renderer.drawTextureCube(this.viewport, {
           texture: item.contextObject
             ? item.contextObject[item.attributeName]
             : item.texture,
