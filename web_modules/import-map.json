@@ -8,8 +8,11 @@
     "pex-color": "./pex-color.js",
     "pex-context": "./pex-context.js",
     "pex-geom": "./pex-geom.js",
+    "pex-gpu": "./pex-gpu.js",
+    "pex-gpu/internals": "./pex-gpu/internals.js",
     "pex-io": "./pex-io.js",
     "pex-math": "./pex-math.js",
-    "primitive-geometry": "./primitive-geometry.js"
+    "primitive-geometry": "./primitive-geometry.js",
+    "pex-gui": "../index.js"
   }
 }

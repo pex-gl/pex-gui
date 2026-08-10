@@ -38,20 +38,21 @@
   },
   "dependencies": {
     "pex-color": "^2.3.0",
-    "pex-geom": "^3.1.0",
-    "pex-math": "^4.1.2"
+    "pex-geom": "^3.1.1",
+    "pex-math": "^4.3.2"
   },
   "devDependencies": {
-    "es-module-shims": "2.6.2",
+    "es-module-shims": "2.8.4",
     "pex-cam": "^3.0.1",
-    "pex-context": "^4.0.0",
-    "pex-io": "^3.0.2",
+    "pex-context": "^4.1.0",
+    "pex-gpu": "^0.0.1",
+    "pex-io": "^3.2.0",
     "primitive-geometry": "^2.11.0"
   },
   "engines": {
     "node": ">=22.0.0",
     "npm": ">=10.5.1",
-    "snowdev": ">=2.5.x"
+    "snowdev": ">=3.0.0-alpha.1"
   },
   "snowdev": {
     "files": "{*.js,*(renderers|shaders)/**/*.js}"
