@@ -104,6 +104,17 @@ class PexContextRenderer extends CanvasRenderer {
     ].includes(texture.pixelFormat);
   }
 
+  isTexture(value) {
+    return (
+      Object.prototype.hasOwnProperty.call(value, "class") &&
+      value.class === "texture"
+    );
+  }
+
+  isTextureCube(texture) {
+    return texture.target === this.#ctx.gl.TEXTURE_CUBE_MAP;
+  }
+
   drawTexture2d(viewport, { texture, rect, flipY }) {
     if (flipY) {
       const y0 = rect[1];

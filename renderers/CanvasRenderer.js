@@ -585,6 +585,18 @@ class CanvasRenderer {
     return this.canvas;
   }
 
+  isTexture(value) {
+    return (
+      value instanceof HTMLImageElement ||
+      value instanceof SVGImageElement ||
+      value instanceof HTMLVideoElement ||
+      value instanceof HTMLCanvasElement ||
+      value instanceof ImageBitmap ||
+      value instanceof OffscreenCanvas ||
+      (typeof VideoFrame !== "undefined" && value instanceof VideoFrame)
+    );
+  }
+
   drawTexture2d(viewport, { texture, rect, flipY }) {
     const ctx = this.targetContext;
     const x = rect[0] + viewport[0] * this.pixelRatio;
