@@ -115,7 +115,7 @@ class GUI {
       this.canvas.addEventListener("pointerup", this.onPointerUp.bind(this));
     }
 
-    window.addEventListener("keydown", this.onKeyDown.bind(this));
+    addEventListener("keydown", this.onKeyDown.bind(this));
   }
 
   // Helpers
@@ -185,10 +185,10 @@ class GUI {
     if (!this.enabled) return;
 
     this.items.forEach((item) => {
-      if (item.type === "text" && item.focus) {
-        item.focus = false;
-        item.dirty = true;
-      }
+      if (!(item.type === "text" && item.focus)) return;
+
+      item.focus = false;
+      item.dirty = true;
     });
 
     this.activeControl = null;
@@ -199,7 +199,7 @@ class GUI {
       const prevTabs = this.items.filter(
         ({ type }, index) => index < i && type === "tab",
       );
-      const parentTab = prevTabs[prevTabs.length - 1];
+      const parentTab = prevTabs.at(-1);
       if (parentTab && !parentTab.current && this.items[i].type !== "tab") {
         continue;
       }
@@ -285,7 +285,7 @@ class GUI {
     if (this.activeControl) {
       const aa = this.getScaledActiveArea(this.activeControl.activeArea);
 
-      let value = 0;
+      let value;
       let index = 0;
 
       const isSlider = this.activeControl.type === "slider";
@@ -333,10 +333,10 @@ class GUI {
           index = Math.floor(
             (numSliders * (this.pointerOffset[1] - aa[0][1])) / slidersHeight,
           );
-          if (!isNaN(this.activeControl.clickedSlider)) {
-            index = this.activeControl.clickedSlider;
-          } else {
+          if (isNaN(this.activeControl.clickedSlider)) {
             this.activeControl.clickedSlider = index;
+          } else {
+            index = this.activeControl.clickedSlider;
           }
         }
 
@@ -354,25 +354,25 @@ class GUI {
   }
 
   onPointerUp() {
-    if (this.activeControl) {
-      this.activeControl.active = false;
-      this.activeControl.dirty = true;
-      this.activeControl.clickedSlider = undefined;
-      this.activeControl.clickedPalette = undefined;
-      this.activeControl = null;
-    }
+    if (!this.activeControl) return;
+
+    this.activeControl.active = false;
+    this.activeControl.dirty = true;
+    this.activeControl.clickedSlider = undefined;
+    this.activeControl.clickedPalette = undefined;
+    this.activeControl = null;
   }
 
   onKeyDown(event) {
-    const focusedItem = this.items.filter(
+    const focusedItem = this.items.find(
       ({ type, focus }) => type === "text" && focus,
-    )[0];
+    );
     if (!focusedItem) return;
 
     switch (event.key) {
       case "Backspace": {
         const str = focusedItem.contextObject[focusedItem.attributeName];
-        focusedItem.contextObject[focusedItem.attributeName] = str.substr(
+        focusedItem.contextObject[focusedItem.attributeName] = str.slice(
           0,
           Math.max(0, str.length - 1),
         );
@@ -388,7 +388,7 @@ class GUI {
       }
     }
 
-    const c = event.key.charCodeAt(0);
+    const c = event.key.codePointAt(0);
     if (event.key.length === 1 && c >= 32 && c <= 126) {
       focusedItem.contextObject[focusedItem.attributeName] += event.key;
       focusedItem.dirty = true;
@@ -601,35 +601,33 @@ class GUI {
     if (this.renderer.isTexture?.(value)) {
       const texture = value;
 
-      if (this.renderer.isTextureCube?.(texture)) {
-        ctrl = new GUIControl({
-          type: "textureCube",
-          title,
-          contextObject,
-          attributeName,
-          texture,
-          options: options || { flipEnvMap: 1 },
-          activeArea: [
-            [0, 0],
-            [0, 0],
-          ],
-          dirty: true,
-        });
-      } else {
-        ctrl = new GUIControl({
-          type: "texture2D",
-          title,
-          contextObject,
-          attributeName,
-          texture,
-          options,
-          activeArea: [
-            [0, 0],
-            [0, 0],
-          ],
-          dirty: true,
-        });
-      }
+      ctrl = this.renderer.isTextureCube?.(texture)
+        ? new GUIControl({
+            type: "textureCube",
+            title,
+            contextObject,
+            attributeName,
+            texture,
+            options: options || { flipEnvMap: 1 },
+            activeArea: [
+              [0, 0],
+              [0, 0],
+            ],
+            dirty: true,
+          })
+        : new GUIControl({
+            type: "texture2D",
+            title,
+            contextObject,
+            attributeName,
+            texture,
+            options,
+            activeArea: [
+              [0, 0],
+              [0, 0],
+            ],
+            dirty: true,
+          });
       this.items.push(ctrl);
       return ctrl;
     } else if (value === false || value === true) {
@@ -714,6 +712,7 @@ class GUI {
       this.items.push(ctrl);
       return ctrl;
     }
+    return ctrl;
   }
 
   /**
@@ -1042,8 +1041,8 @@ class GUI {
    * @param {GUIControl} targetItem
    */
   moveAfter(item, targetItem) {
-    const fromIndex = this.items.findIndex((i) => i === item);
-    const toIndex = this.items.findIndex((i) => i === targetItem);
+    const fromIndex = this.items.indexOf(item);
+    const toIndex = this.items.indexOf(targetItem);
 
     if (fromIndex !== -1 && toIndex !== -1) {
       const [item] = this.items.splice(fromIndex, 1);
@@ -1055,10 +1054,10 @@ class GUI {
   isAnyItemDirty(items) {
     let dirty = false;
     items.forEach((item) => {
-      if (item.dirty) {
-        item.dirty = false;
-        dirty = true;
-      }
+      if (!item.dirty) return;
+
+      item.dirty = false;
+      dirty = true;
     });
     return dirty;
   }
@@ -1112,7 +1111,7 @@ class GUI {
       overlayItem.removeEventListener("pointerup", this.onPointerUp);
       overlayItem.remove();
     };
-    this.overlay.container.appendChild(overlayItem);
+    this.overlay.container.append(overlayItem);
 
     item.overlayItem = overlayItem;
   }
@@ -1152,17 +1151,13 @@ class GUI {
     if (this.isAnyItemDirty(this.items) || resized || this.renderer.dirty) {
       this.renderer.draw(this.items);
 
-      if (this.responsive) {
-        this.#scale = Math.min(
-          Math.min(
+      this.#scale = this.responsive
+        ? Math.min(
             this.canvas.clientWidth / rendererWidth,
             this.canvas.clientHeight / rendererHeight,
-          ),
-          this.scale,
-        );
-      } else {
-        this.#scale = this.scale;
-      }
+            this.scale,
+          )
+        : this.scale;
 
       if (this.overlay) {
         const { left, top, width, height } =
@@ -1214,7 +1209,7 @@ class GUI {
         const prevTabs = items.filter(
           ({ type }, index) => index < i && type === "tab",
         );
-        const parentTab = prevTabs[prevTabs.length - 1];
+        const parentTab = prevTabs.at(-1);
         if (parentTab && !parentTab.current) {
           continue;
         }
@@ -1284,10 +1279,10 @@ class GUI {
    */
   deserialize(data) {
     this.items.forEach((item) => {
-      if (data[item.title] !== undefined) {
-        item.setSerializedValue(data[item.title]);
-        item.dirty = true;
-      }
+      if (data[item.title] === undefined) return;
+
+      item.setSerializedValue(data[item.title]);
+      item.dirty = true;
     });
   }
 
@@ -1303,7 +1298,7 @@ class GUI {
       this.canvas.removeEventListener("pointerdown", this.onPointerDown);
       this.canvas.removeEventListener("pointermove", this.onPointerMove);
       this.canvas.removeEventListener("pointerup", this.onPointerUp);
-      window.removeEventListener("keydown", this.onKeyDown);
+      removeEventListener("keydown", this.onKeyDown);
     }
 
     for (let i = 0; i < this.items.length; i++) {

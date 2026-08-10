@@ -128,19 +128,18 @@ class CanvasRenderer {
       if (Number.isFinite(item.x)) dx = item.x;
       if (Number.isFinite(item.y)) dy = item.y;
 
-      let eh = itemHeight;
       if (item.type === "tab") continue;
+      let eh = itemHeight;
 
       if (tabs.length > 0) {
         const prevTabs = items.filter(
           ({ type }, index) => index < i && type === "tab",
         );
-        const parentTab = prevTabs[prevTabs.length - 1];
+        const parentTab = prevTabs.at(-1);
         if (parentTab && !parentTab.current) {
           continue;
         } else {
           if (needInitialDy && item.type !== "column") {
-            needInitialDy = false;
             dy += tabHeight + padding * 3;
           }
         }
@@ -149,7 +148,6 @@ class CanvasRenderer {
 
       const x = dx + padding;
       const width = w - padding * 2;
-      const textY = titleHeight / 2 + fontCapOffset;
 
       // Compute item height
       if (item.type === "column") {
@@ -217,6 +215,8 @@ class CanvasRenderer {
         ctx.fillRect(dx, dy, w, eh + (needsPadding ? padding : 0));
       }
 
+      const textY = titleHeight / 2 + fontCapOffset;
+
       // Draw item
       if (item.type === "slider") {
         const y = dy + titleHeight;
@@ -283,9 +283,9 @@ class CanvasRenderer {
               makePaletteImage(item, w, item.options.palette);
             } else {
               const img = new Image();
-              img.onload = () => {
+              img.addEventListener("load", () => {
                 makePaletteImage(item, w, img);
-              };
+              });
               img.src = item.options.palette;
             }
           }
@@ -513,7 +513,7 @@ class CanvasRenderer {
         ctx.stroke();
 
         ctx.fillText(
-          `${item.title}: ${item.options.format(item.values[item.values.length - 1])}`,
+          `${item.title}: ${item.options.format(item.values.at(-1))}`,
           x + textPadding,
           dy + textY,
         );
@@ -563,8 +563,8 @@ class CanvasRenderer {
     maxWidth = Math.max(maxWidth, tabs.length * (w + gap));
 
     if (maxWidth && maxHeight) {
-      maxWidth = (maxWidth * this.pixelRatio) | 0;
-      maxHeight = (maxHeight * this.pixelRatio) | 0;
+      maxWidth = Math.trunc(maxWidth * this.pixelRatio);
+      maxHeight = Math.trunc(maxHeight * this.pixelRatio);
       if (this.canvas.width !== maxWidth) {
         this.canvas.width = maxWidth;
         this.dirty = true;
