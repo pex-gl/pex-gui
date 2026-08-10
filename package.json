@@ -2,6 +2,7 @@
   "name": "pex-gui",
   "version": "3.3.0",
   "description": "GUI controls for PEX.",
+  "sideEffects": false,
   "keywords": [
     "pex",
     "gui",
@@ -29,8 +30,8 @@
       "default": "./index.js"
     }
   },
-  "main": "index.js",
-  "types": "types/index.d.ts",
+  "main": "./index.js",
+  "types": "./types/index.d.ts",
   "scripts": {
     "build": "snowdev build",
     "dev": "snowdev dev",
@@ -42,7 +43,7 @@
     "pex-math": "^4.3.2"
   },
   "devDependencies": {
-    "es-module-shims": "2.8.4",
+    "es-module-shims": "^2.8.4",
     "pex-cam": "^3.0.1",
     "pex-context": "^4.1.0",
     "pex-gpu": "^0.0.1",
