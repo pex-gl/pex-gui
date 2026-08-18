@@ -16,13 +16,21 @@ const BLEND = {
 
 const correctGamma = (texture) => (texture.format?.includes("srgb") ? 1 : 0);
 
+const isDepth = (texture) => !!texture.format?.startsWith("depth");
+
+const LINEAR_DEPTH = { near: 0, far: 1 };
+
 class PexGPURenderer extends CanvasRenderer {
   #ctx;
   #texture;
   #retired = [];
   #sampler;
+  #depthSampler;
+  #depthAspectViews = new WeakMap();
   #drawTexture2dCmd;
   #drawTextureCubeCmd;
+  #drawTextureDepth2dCmd;
+  #drawTextureDepthCubeCmd;
 
   constructor(opts) {
     super(opts);
@@ -46,29 +54,39 @@ class PexGPURenderer extends CanvasRenderer {
     });
 
     this.#sampler = gpu.createSampler(ctx, { filter: "linear" });
+    this.#depthSampler = gpu.createSampler(ctx, { filter: "nearest" });
 
-    this.#drawTexture2dCmd = {
-      label: "gui_drawTexture2d",
-      pipeline: {
-        label: "gui_texture2d",
-        vertex: TEXTURE_2D_WGSL,
-        fragment: TEXTURE_2D_WGSL,
-        blend: BLEND,
-      },
-      attributes,
-      indices,
+    const drawCommand = (label, source, depth) => {
+      const wgsl = source({ depth });
+      return {
+        label: `gui_draw${label}`,
+        pipeline: {
+          label: `gui_${label}`,
+          vertex: wgsl,
+          fragment: wgsl,
+          blend: BLEND,
+        },
+        attributes,
+        indices,
+      };
     };
-    this.#drawTextureCubeCmd = {
-      label: "gui_drawTextureCube",
-      pipeline: {
-        label: "gui_textureCube",
-        vertex: TEXTURE_CUBE_WGSL,
-        fragment: TEXTURE_CUBE_WGSL,
-        blend: BLEND,
-      },
-      attributes,
-      indices,
-    };
+
+    this.#drawTexture2dCmd = drawCommand("texture2d", TEXTURE_2D_WGSL, false);
+    this.#drawTextureCubeCmd = drawCommand(
+      "textureCube",
+      TEXTURE_CUBE_WGSL,
+      false,
+    );
+    this.#drawTextureDepth2dCmd = drawCommand(
+      "textureDepth2d",
+      TEXTURE_2D_WGSL,
+      true,
+    );
+    this.#drawTextureDepthCubeCmd = drawCommand(
+      "textureDepthCube",
+      TEXTURE_CUBE_WGSL,
+      true,
+    );
 
     // Eager so getTexture() is valid from the first frame (afterDraw resizes it).
     this.#texture = gpu.createTexture(ctx, {
@@ -82,12 +100,8 @@ class PexGPURenderer extends CanvasRenderer {
     const { width, height } = this.canvas;
     if (!width || !height) return;
 
-    // draw() reads getTexture() before calling us, so the previous texture is
-    // still referenced by the current frame's encoder: dispose it next frame,
-    // once that submit has gone through.
     while (this.#retired.length) this.#retired.pop().dispose();
 
-    // pex-gpu textures are immutable-size: recreate when the GUI canvas grows.
     if (this.#texture.width !== width || this.#texture.height !== height) {
       this.#retired.push(this.#texture);
       this.#texture = gpu.createTexture(this.#ctx, {
@@ -116,39 +130,64 @@ class PexGPURenderer extends CanvasRenderer {
   }
 
   isTextureCube(texture) {
-    return texture.dimension === "cube";
+    return texture.viewDimension === "cube";
   }
 
-  drawTexture2d(viewport, { texture, rect, flipY }) {
+  #depthBinding(texture) {
+    if (!texture.format.includes("stencil")) return texture;
+
+    let view = this.#depthAspectViews.get(texture);
+    if (!view) {
+      view = texture.texture.createView({ aspect: "depth-only" });
+      this.#depthAspectViews.set(texture, view);
+    }
+    return view;
+  }
+
+  drawTexture2d(viewport, { texture, rect, flipY, near, far }) {
     if (flipY) {
       const y0 = rect[1];
       rect[1] = rect[3];
       rect[3] = y0;
     }
 
-    this.#drawTexture2dCmd.viewport = viewport;
-    this.#drawTexture2dCmd.uniforms = {
-      params: { viewport, rect, correctGamma: correctGamma(texture) },
-      uSampler: this.#sampler,
-      uTexture: texture,
+    const depth = isDepth(texture);
+    const cmd = depth ? this.#drawTextureDepth2dCmd : this.#drawTexture2dCmd;
+    cmd.viewport = viewport;
+    cmd.uniforms = {
+      params: {
+        viewport,
+        rect,
+        correctGamma: correctGamma(texture),
+        near: near ?? LINEAR_DEPTH.near,
+        far: far ?? LINEAR_DEPTH.far,
+      },
+      uSampler: depth ? this.#depthSampler : this.#sampler,
+      uTexture: depth ? this.#depthBinding(texture) : texture,
     };
-    gpu.submit(this.#ctx, this.#drawTexture2dCmd);
+    gpu.submit(this.#ctx, cmd);
   }
 
-  drawTextureCube(viewport, { texture, rect, level, flipEnvMap }) {
-    this.#drawTextureCubeCmd.viewport = viewport;
-    this.#drawTextureCubeCmd.uniforms = {
+  drawTextureCube(viewport, { texture, rect, level, flipEnvMap, near, far }) {
+    const depth = isDepth(texture);
+    const cmd = depth
+      ? this.#drawTextureDepthCubeCmd
+      : this.#drawTextureCubeCmd;
+    cmd.viewport = viewport;
+    cmd.uniforms = {
       params: {
         viewport,
         rect,
         correctGamma: correctGamma(texture),
         level: level ?? 0,
         flipEnvMap: flipEnvMap ?? 1,
+        near: near ?? LINEAR_DEPTH.near,
+        far: far ?? LINEAR_DEPTH.far,
       },
-      uSampler: this.#sampler,
-      uTexture: texture,
+      uSampler: depth ? this.#depthSampler : this.#sampler,
+      uTexture: depth ? this.#depthBinding(texture) : texture,
     };
-    gpu.submit(this.#ctx, this.#drawTextureCubeCmd);
+    gpu.submit(this.#ctx, cmd);
   }
 
   dispose() {

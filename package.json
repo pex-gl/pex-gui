@@ -46,7 +46,7 @@
     "es-module-shims": "^2.8.4",
     "pex-cam": "^3.0.1",
     "pex-context": "^4.1.0",
-    "pex-gpu": "^0.0.1",
+    "pex-gpu": "^0.0.2",
     "pex-io": "^3.2.0",
     "primitive-geometry": "^2.11.0"
   },

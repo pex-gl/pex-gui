@@ -9,6 +9,8 @@
  * @property {boolean} [flipEnvMap] Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped.
  * @property {boolean} [flipY] Flip texture 2D vertically.
  * @property {number} [level] Level of detail for cube textures.
+ * @property {number} [near] Near plane of the projection that wrote a depth texture. Set it, with far, to linearise a perspective depth buffer for display; leave it out for an orthographic one, whose depth is already linear. Depth textures only, and only under WebGPU.
+ * @property {number} [far] Far plane of the projection that wrote a depth texture. See near.
  * @property {Function} [update] An update(item, now) function to update labels and stats.
  * @property {Function} [redraw] A redraw(item) function to be called when interval has passed.
  * @property {number} [interval=2000] The interval between redraw(item).

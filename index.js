@@ -1233,6 +1233,8 @@ class GUI {
           texture,
           rect: bounds,
           flipY,
+          near: item.options?.near,
+          far: item.options?.far,
         });
       };
       if (item.type === "texture2D") {
@@ -1256,6 +1258,8 @@ class GUI {
               ? item.options.level
               : 0,
           flipEnvMap: item.options.flipEnvMap,
+          near: item.options.near,
+          far: item.options.far,
         });
       }
     }

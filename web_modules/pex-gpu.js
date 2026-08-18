@@ -1,4 +1,4 @@
-import { A as debugGroupsEnabled, C as updateBuffer, D as PipelineCache, M as debugStats, O as debug, P as resetFrameCounters, S as isGpuBuffer, T as bytesPerTexel, _ as frameState, a as mergeReflections, b as BUFFER_USAGE_PRESETS, c as copyExternalImage, d as generateMipmaps, f as isGpuTexture, g as commandsState, j as debugLog, k as debugCounters, l as createTexture, m as updateTexture, n as buildBindGroups, p as paddedBytesPerRow, r as pipelineLayout, s as parseWGSL, t as resolveVertexState, w as alignTo, x as createBuffer, y as peekCommandsState } from "./_chunks/vertex-layout-DAqinQgQ.js";
+import { A as debugCounters, C as mergeReflections, D as bytesPerTexel, E as alignTo, F as resetFrameCounters, M as debugLog, N as debugStats, S as PipelineCache, T as parseWGSL, _ as peekCommandsState, a as copyExternalImage, b as isGpuBuffer, c as generateMipmaps, f as updateTexture, h as frameState, j as debugGroupsEnabled, k as debug, l as isGpuTexture, m as commandsState, n as buildBindGroups, o as createTexture, r as pipelineLayout, t as resolveVertexState, u as paddedBytesPerRow, v as BUFFER_USAGE_PRESETS, x as updateBuffer, y as createBuffer } from "./_chunks/vertex-layout-QPYeLM6Q.js";
 
 function resolveDepthStencilFormat(options) {
 	if (options.depthStencilFormat) return options.depthStencilFormat;
@@ -132,13 +132,88 @@ function resize(ctx, width, height, pixelRatio) {
 	}
 }
 /**
-* Render loop. Each frame creates a command encoder and acquires the canvas
-* texture; the encoder is finished and submitted after the callback returns.
-* Return `false` from the callback to stop the loop.
+* Open a recording segment: creates a command encoder, acquires the canvas
+* texture and resets the per-frame uniform ring allocator. submit() and other
+* declarative commands are only valid between a beginFrame()/endFrame() pair.
+*
+* Unlike {@link frame}, this doesn't touch requestAnimationFrame — call it from
+* any driving loop (a manual rAF loop, a fixed-timestep export loop, an async
+* pump awaiting backpressure from something else). `frame()` is a thin
+* convenience wrapper implemented on top of this pair for the common
+* display-synced case; reach for beginFrame()/endFrame() directly when a
+* frame's timing isn't display-refresh-driven — eg. rendering for precise video
+* export, where every rendered frame must be captured regardless of vsync.
+*
+* Segments don't nest: call endFrame() before opening another one.
+*
+* ```js
+* const segment = gpu.beginFrame(ctx);
+* gpu.submit(ctx, drawCmd);
+* gpu.endFrame(ctx);
+* ```
+*/
+function beginFrame(ctx, label = "pex-gpu frame") {
+	const state = getState(ctx);
+	const commands = commandsState(ctx);
+	if (commands.frame) throw new Error("pex-gpu: a frame segment is already open — call endFrame() before beginFrame() again");
+	resetFrameCounters(ctx.device);
+	const encoder = ctx.device.createCommandEncoder({ label });
+	const swapchainTexture = ctx.canvasContext.getCurrentTexture();
+	const canvasTexture = state.backbuffer?.texture ?? swapchainTexture;
+	const canvasView = state.backbuffer?.view ?? swapchainTexture.createView();
+	if (debugGroupsEnabled(ctx.device)) encoder.pushDebugGroup(label);
+	commands.allocator?.reset();
+	commands.frame = {
+		encoder,
+		swapchainTexture,
+		canvasView,
+		canvasDepthStencilCleared: false,
+		activePass: null,
+		activeComputePass: null
+	};
+	return {
+		encoder,
+		canvasTexture,
+		canvasView,
+		width: ctx.width,
+		height: ctx.height
+	};
+}
+/**
+* Close the segment opened by {@link beginFrame}: ends any pass left open,
+* flushes the uniform ring allocator, blits the preserveDrawingBuffer
+* backbuffer if enabled, and submits the encoder. Always submits — there's no
+* discard path, so every opened segment's work reaches the GPU.
+*/
+function endFrame(ctx) {
+	const state = getState(ctx);
+	const commands = commandsState(ctx);
+	const frame = commands.frame;
+	if (!frame) throw new Error("pex-gpu: endFrame() called without a matching beginFrame()");
+	commands.frame = null;
+	if (frame.activePass) frame.activePass.encoder.end();
+	if (frame.activeComputePass) frame.activeComputePass.encoder.end();
+	commands.allocator?.flush();
+	if (state.backbuffer) frame.encoder.copyTextureToTexture({ texture: state.backbuffer.texture }, { texture: frame.swapchainTexture }, {
+		width: ctx.width,
+		height: ctx.height
+	});
+	if (debugGroupsEnabled(ctx.device)) frame.encoder.popDebugGroup();
+	ctx.device.queue.submit([frame.encoder.finish()]);
+}
+/**
+* Render loop. Each frame is a {@link beginFrame}/{@link endFrame} segment synced
+* to requestAnimationFrame. Return `false` from the callback to stop the loop —
+* the stopping frame's work is still submitted.
 *
 * The callback can drive the encoder directly, submit() declarative commands,
-* or mix both — per-frame submit state (encoder tracking, the uniform ring
-* allocator) is managed here.
+* or mix both.
+*
+* The callback may be async: the segment stays open until it settles and the
+* next frame is only requested then, so two ticks never share an encoder and
+* everything drawn still lands in one command buffer. Await CPU work only — the
+* swapchain texture is acquired when the segment opens, so yielding long enough
+* for the browser to present would invalidate it.
 *
 * ```js
 * gpu.frame(ctx, ({ time }) => {
@@ -150,35 +225,28 @@ function resize(ctx, width, height, pixelRatio) {
 *   // ...
 *   pass.end();
 * });
+*
+* gpu.frame(ctx, async () => {
+*   await renderer.render(); // one segment, one submit
+*   gui.draw();
+* });
 * ```
 */
 function frame(ctx, callback) {
 	const state = getState(ctx);
-	const commands = commandsState(ctx);
 	state.running = true;
 	state.resized = false;
 	let startTime = -1;
 	let previousTimestamp = -1;
 	let frameIndex = 0;
-	const tick = (timestamp) => {
+	const tick = async (timestamp) => {
 		if (!state.running || !contextState.has(ctx)) return;
 		if (startTime === -1) startTime = previousTimestamp = timestamp;
 		const time = (timestamp - startTime) / 1e3;
 		const deltaTime = (timestamp - previousTimestamp) / 1e3;
 		previousTimestamp = timestamp;
-		resetFrameCounters(ctx.device);
-		const encoder = ctx.device.createCommandEncoder({ label: "pex-gpu frame" });
-		const swapchainTexture = ctx.canvasContext.getCurrentTexture();
-		const canvasTexture = state.backbuffer?.texture ?? swapchainTexture;
-		const canvasView = state.backbuffer?.view ?? swapchainTexture.createView();
-		const debugGroup = debugGroupsEnabled(ctx.device);
-		if (debugGroup) encoder.pushDebugGroup(`pex-gpu frame ${frameIndex}`);
 		const info = {
-			encoder,
-			canvasTexture,
-			canvasView,
-			width: ctx.width,
-			height: ctx.height,
+			...beginFrame(ctx, `pex-gpu frame ${frameIndex}`),
 			time,
 			deltaTime,
 			frame: frameIndex++,
@@ -186,34 +254,16 @@ function frame(ctx, callback) {
 			resized: state.resized
 		};
 		state.resized = false;
-		commands.allocator?.reset();
-		const currentFrame = {
-			encoder,
-			canvasView: info.canvasView,
-			canvasDepthStencilCleared: false,
-			activePass: null,
-			activeComputePass: null
-		};
-		commands.frame = currentFrame;
 		let result;
 		try {
-			result = callback(info);
+			result = await callback(info);
 		} finally {
-			if (currentFrame.activePass) currentFrame.activePass.encoder.end();
-			if (currentFrame.activeComputePass) currentFrame.activeComputePass.encoder.end();
-			commands.frame = null;
-			commands.allocator?.flush();
-			if (state.backbuffer) encoder.copyTextureToTexture({ texture: state.backbuffer.texture }, { texture: swapchainTexture }, {
-				width: ctx.width,
-				height: ctx.height
-			});
+			endFrame(ctx);
 		}
 		if (result === false) {
 			state.running = false;
 			return;
 		}
-		if (debugGroup) encoder.popDebugGroup();
-		ctx.device.queue.submit([encoder.finish()]);
 		requestAnimationFrame(tick);
 	};
 	requestAnimationFrame(tick);
@@ -324,13 +374,16 @@ function draw(ctx, active, cmd) {
 	const { reflection } = cached;
 	const vertexState = resolveVertexState(reflection.vertexInputs, cmd.attributes ?? {});
 	const stripIndexFormat = cmd.indices && def.topology?.endsWith("strip") ? cmd.indices.indexFormat : void 0;
-	const variantKey = `${active.key}|${vertexState.key}|${def.topology ?? ""},${def.cullMode ?? ""},${def.frontFace ?? ""},${stripIndexFormat ?? ""},${def.depthWriteEnabled ?? ""},${def.depthCompare ?? ""},${def.vertexEntryPoint ?? ""},${def.fragmentEntryPoint ?? ""}` + (def.blend || def.writeMask !== void 0 || def.stencilFront || def.stencilBack || def.stencilReadMask !== void 0 || def.stencilWriteMask !== void 0 ? `|${JSON.stringify([
+	const variantKey = `${active.key}|${vertexState.key}|${def.topology ?? ""},${def.cullMode ?? ""},${def.frontFace ?? ""},${stripIndexFormat ?? ""},${def.depthWriteEnabled ?? ""},${def.depthCompare ?? ""},${def.vertexEntryPoint ?? ""},${def.fragmentEntryPoint ?? ""}` + (def.constants ? `|c${JSON.stringify(def.constants)}` : "") + (def.blend || def.writeMask !== void 0 || def.stencilFront || def.stencilBack || def.stencilReadMask !== void 0 || def.stencilWriteMask !== void 0 || def.depthBias !== void 0 || def.depthBiasSlopeScale !== void 0 || def.depthBiasClamp !== void 0 ? `|${JSON.stringify([
 		def.blend,
 		def.writeMask,
 		def.stencilFront,
 		def.stencilBack,
 		def.stencilReadMask,
-		def.stencilWriteMask
+		def.stencilWriteMask,
+		def.depthBias,
+		def.depthBiasSlopeScale,
+		def.depthBiasClamp
 	])}` : "");
 	const pipeline = cached.variants.getOrInsertComputed(variantKey, () => {
 		const hasDepth = active.depthStencilFormat?.startsWith("depth");
@@ -353,6 +406,7 @@ function draw(ctx, active, cmd) {
 			...def.fragmentEntryPoint && { fragmentEntryPoint: def.fragmentEntryPoint },
 			buffers: vertexState.layouts,
 			targets,
+			...def.constants && { constants: def.constants },
 			primitive: {
 				topology: def.topology ?? "triangle-list",
 				cullMode: def.cullMode ?? "none",
@@ -363,6 +417,9 @@ function draw(ctx, active, cmd) {
 				format: active.depthStencilFormat,
 				depthWriteEnabled: hasDepth && !active.depthReadOnly ? def.depthWriteEnabled ?? false : false,
 				depthCompare: hasDepth ? def.depthCompare ?? (def.depthWriteEnabled ? "less-equal" : "always") : "always",
+				...def.depthBias !== void 0 && { depthBias: def.depthBias },
+				...def.depthBiasSlopeScale !== void 0 && { depthBiasSlopeScale: def.depthBiasSlopeScale },
+				...def.depthBiasClamp !== void 0 && { depthBiasClamp: def.depthBiasClamp },
 				...def.stencilFront && { stencilFront: def.stencilFront },
 				...def.stencilBack && { stencilBack: def.stencilBack },
 				...def.stencilReadMask !== void 0 && { stencilReadMask: def.stencilReadMask },
@@ -478,36 +535,42 @@ const withPassScope = (frame, slot, active, scope) => {
 	}
 };
 function submit(ctx, cmd, passScopeOrBatch) {
+	const ownsFrame = !commandsState(ctx).frame;
+	if (ownsFrame) beginFrame(ctx, cmd.label ? `pex-gpu submit "${cmd.label}"` : "pex-gpu submit");
 	const frame = frameState(ctx);
-	if ("dispatch" in cmd) {
-		if (frame.activePass) throw new Error("pex-gpu: cannot dispatch compute inside a render pass scope");
-		if (cmd.pass && frame.activeComputePass) throw new Error("pex-gpu: cannot begin a compute pass inside another compute pass scope");
-		const ownsPass = !frame.activeComputePass;
-		const active = frame.activeComputePass ?? beginComputePass(ctx, frame, cmd.pass, cmd.label);
-		try {
-			if (Array.isArray(passScopeOrBatch)) for (const override of passScopeOrBatch) dispatchCompute(ctx, active, mergeCommand(cmd, override));
-			else dispatchCompute(ctx, active, cmd);
-			if (typeof passScopeOrBatch === "function") withPassScope(frame, "activeComputePass", active, passScopeOrBatch);
-		} finally {
-			if (ownsPass) active.encoder.end();
+	try {
+		if ("dispatch" in cmd) {
+			if (frame.activePass) throw new Error("pex-gpu: cannot dispatch compute inside a render pass scope");
+			if (cmd.pass && frame.activeComputePass) throw new Error("pex-gpu: cannot begin a compute pass inside another compute pass scope");
+			const ownsPass = !frame.activeComputePass;
+			const active = frame.activeComputePass ?? beginComputePass(ctx, frame, cmd.pass, cmd.label);
+			try {
+				if (Array.isArray(passScopeOrBatch)) for (const override of passScopeOrBatch) dispatchCompute(ctx, active, mergeCommand(cmd, override));
+				else dispatchCompute(ctx, active, cmd);
+				if (typeof passScopeOrBatch === "function") withPassScope(frame, "activeComputePass", active, passScopeOrBatch);
+			} finally {
+				if (ownsPass) active.encoder.end();
+			}
+		} else {
+			if (frame.activeComputePass) throw new Error("pex-gpu: cannot begin a render pass inside a compute pass scope");
+			if (cmd.pass && frame.activePass) throw new Error("pex-gpu: cannot begin a render pass inside another render pass scope");
+			const ownsPass = !frame.activePass;
+			const active = frame.activePass ?? beginPass(ctx, frame, cmd.pass);
+			try {
+				if ("bundles" in cmd) {
+					if (Array.isArray(passScopeOrBatch)) throw new TypeError("pex-gpu: bundle commands do not support batch variants");
+					debugCounters(ctx.device).frame.bundles += cmd.bundles.length;
+					debugLog(ctx.device, "commands", () => `executeBundles${cmd.label ? ` "${cmd.label}"` : ""} (${cmd.bundles.length})`);
+					active.encoder.executeBundles(cmd.bundles);
+				} else if (Array.isArray(passScopeOrBatch)) for (const override of passScopeOrBatch) draw(ctx, active, mergeCommand(cmd, override));
+				else if (cmd.pipeline) draw(ctx, active, cmd);
+				if (typeof passScopeOrBatch === "function") withPassScope(frame, "activePass", active, passScopeOrBatch);
+			} finally {
+				if (ownsPass) active.encoder.end();
+			}
 		}
-	} else {
-		if (frame.activeComputePass) throw new Error("pex-gpu: cannot begin a render pass inside a compute pass scope");
-		if (cmd.pass && frame.activePass) throw new Error("pex-gpu: cannot begin a render pass inside another render pass scope");
-		const ownsPass = !frame.activePass;
-		const active = frame.activePass ?? beginPass(ctx, frame, cmd.pass);
-		try {
-			if ("bundles" in cmd) {
-				if (Array.isArray(passScopeOrBatch)) throw new TypeError("pex-gpu: bundle commands do not support batch variants");
-				debugCounters(ctx.device).frame.bundles += cmd.bundles.length;
-				debugLog(ctx.device, "commands", () => `executeBundles${cmd.label ? ` "${cmd.label}"` : ""} (${cmd.bundles.length})`);
-				active.encoder.executeBundles(cmd.bundles);
-			} else if (Array.isArray(passScopeOrBatch)) for (const override of passScopeOrBatch) draw(ctx, active, mergeCommand(cmd, override));
-			else if (cmd.pipeline) draw(ctx, active, cmd);
-			if (typeof passScopeOrBatch === "function") withPassScope(frame, "activePass", active, passScopeOrBatch);
-		} finally {
-			if (ownsPass) active.encoder.end();
-		}
+	} finally {
+		if (ownsFrame) endFrame(ctx);
 	}
 }
 
@@ -673,7 +736,7 @@ function createTimestampQuery(ctx, count = 2) {
 			if (mapPending) return null;
 			mapPending = true;
 			try {
-				await null;
+				await new Promise((resolve) => setTimeout(resolve, 0));
 				await readBuffer.mapAsync(GPUMapMode.READ);
 				const timestamps = new BigInt64Array(readBuffer.getMappedRange().slice(0));
 				readBuffer.unmap();
@@ -722,4 +785,4 @@ function createRenderBundle(ctx, formats, record) {
 	return encoder.finish({ label });
 }
 
-export { BUFFER_USAGE_PRESETS, copyExternalImage, createBuffer, createContext, createRenderBundle, createSampler, createTexture, createTimestampQuery, debug, debugStats, defineCommand, definePass, definePipeline, frame, generateMipmaps, isGpuBuffer, isGpuTexture, readBuffer, readTexture, resize, submit, updateBuffer, updateTexture };
+export { BUFFER_USAGE_PRESETS, beginFrame, copyExternalImage, createBuffer, createContext, createRenderBundle, createSampler, createTexture, createTimestampQuery, debug, debugStats, defineCommand, definePass, definePipeline, endFrame, frame, generateMipmaps, isGpuBuffer, isGpuTexture, readBuffer, readTexture, resize, submit, updateBuffer, updateTexture };
