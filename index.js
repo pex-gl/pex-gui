@@ -878,7 +878,7 @@ class GUI {
    *
    * @param {string} title
    * @param {import("pex-context").textureCube} texture
-   * @param {{ flipEnvMap: number; level: number }} options
+   * @param {import("./types.js").GUIControlOptions} options
    * @returns {GUIControl}
    */
   addTextureCube(title, texture, options) {
@@ -1235,6 +1235,7 @@ class GUI {
           flipY,
           near: item.options?.near,
           far: item.options?.far,
+          layer: item.options?.layer,
         });
       };
       if (item.type === "texture2D") {
@@ -1260,6 +1261,7 @@ class GUI {
           flipEnvMap: item.options.flipEnvMap,
           near: item.options.near,
           far: item.options.far,
+          layer: item.options.layer,
         });
       }
     }

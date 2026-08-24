@@ -26,7 +26,7 @@ class PexGPURenderer extends CanvasRenderer {
   #retired = [];
   #sampler;
   #depthSampler;
-  #depthAspectViews = new WeakMap();
+  #views = new WeakMap();
   #drawTexture2dCmd;
   #drawTextureCubeCmd;
   #drawTextureDepth2dCmd;
@@ -130,21 +130,52 @@ class PexGPURenderer extends CanvasRenderer {
   }
 
   isTextureCube(texture) {
-    return texture.viewDimension === "cube";
+    return (
+      texture.viewDimension === "cube" || texture.viewDimension === "cube-array"
+    );
   }
 
-  #depthBinding(texture) {
-    if (!texture.format.includes("stencil")) return texture;
+  /**
+   * What to bind for `uTexture`, which the preview shaders declare as a plain
+   * `2d`/`cube` texture. A view is built only when the default one cannot be
+   * bound: a stencil-carrying format needs the depth aspect, and a layered
+   * texture needs a single slice picked out of it.
+   *
+   * Cached per texture and layer. pex-gpu keys its bind group cache by view
+   * identity, so a view built per frame would leak a bind group per frame.
+   */
+  #binding(texture, layer = 0) {
+    const cubeArray = texture.viewDimension === "cube-array";
+    const layered = cubeArray || texture.viewDimension === "2d-array";
+    // Not every source is a GpuTexture — drawTexture2d also takes images.
+    const aspect = texture.format?.includes("stencil")
+      ? "depth-only"
+      : undefined;
+    if (!layered && !aspect) return texture;
 
-    let view = this.#depthAspectViews.get(texture);
+    let views = this.#views.get(texture);
+    if (!views) {
+      views = new Map();
+      this.#views.set(texture, views);
+    }
+
+    let view = views.get(layer);
     if (!view) {
-      view = texture.texture.createView({ aspect: "depth-only" });
-      this.#depthAspectViews.set(texture, view);
+      view = texture.texture.createView({
+        ...(aspect && { aspect }),
+        // A cube-array layer is one cube, so six array layers wide.
+        ...(layered && {
+          dimension: cubeArray ? "cube" : "2d",
+          baseArrayLayer: cubeArray ? layer * 6 : layer,
+          arrayLayerCount: cubeArray ? 6 : 1,
+        }),
+      });
+      views.set(layer, view);
     }
     return view;
   }
 
-  drawTexture2d(viewport, { texture, rect, flipY, near, far }) {
+  drawTexture2d(viewport, { texture, rect, flipY, near, far, layer }) {
     if (flipY) {
       const y0 = rect[1];
       rect[1] = rect[3];
@@ -163,12 +194,15 @@ class PexGPURenderer extends CanvasRenderer {
         far: far ?? LINEAR_DEPTH.far,
       },
       uSampler: depth ? this.#depthSampler : this.#sampler,
-      uTexture: depth ? this.#depthBinding(texture) : texture,
+      uTexture: this.#binding(texture, layer),
     };
     gpu.submit(this.#ctx, cmd);
   }
 
-  drawTextureCube(viewport, { texture, rect, level, flipEnvMap, near, far }) {
+  drawTextureCube(
+    viewport,
+    { texture, rect, level, flipEnvMap, near, far, layer },
+  ) {
     const depth = isDepth(texture);
     const cmd = depth
       ? this.#drawTextureDepthCubeCmd
@@ -185,7 +219,7 @@ class PexGPURenderer extends CanvasRenderer {
         far: far ?? LINEAR_DEPTH.far,
       },
       uSampler: depth ? this.#depthSampler : this.#sampler,
-      uTexture: depth ? this.#depthBinding(texture) : texture,
+      uTexture: this.#binding(texture, layer),
     };
     gpu.submit(this.#ctx, cmd);
   }
