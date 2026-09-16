@@ -2,7 +2,6 @@
   "name": "pex-gui",
   "version": "3.3.0",
   "description": "GUI controls for PEX.",
-  "sideEffects": false,
   "keywords": [
     "pex",
     "gui",
@@ -23,6 +22,7 @@
   "contributors": [
     "Damien Seguin (https://github.com/dmnsgn)"
   ],
+  "sideEffects": false,
   "type": "module",
   "exports": {
     ".": {

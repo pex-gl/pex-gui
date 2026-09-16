@@ -766,7 +766,7 @@ class GUI {
    * @param {string} title
    * @param {object} contextObject
    * @param {string} attributeName
-   * @param {{ name: string; value: number }[]} items
+   * @param {import("./types.js").GUIControlRadioListItem[]} items
    * @param {Function} onChange
    * @returns {GUIControl}
    */
@@ -801,10 +801,7 @@ class GUI {
    * @param {string} title
    * @param {object} contextObject
    * @param {string} attributeName
-   * @param {{
-   *   texture: import("pex-context").texture | CanvasImageSource;
-   *   value: number;
-   * }[]} items
+   * @param {import("./types.js").GUIControlTexture2DItem[]} items
    * @param {number} [itemsPerRow=4]
    * @param {Function} onChange
    * @returns {GUIControl}

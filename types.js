@@ -25,6 +25,18 @@
  * @property {boolean} [overlay=false] Sets canvas CSS pointer-events to "none" and adds a DOM div overlay with children sized to interacitve areas. Allows pointer events to pass through non-interactive areas of the GUI.
  */
 
-/** @typedef {import("pex-context").ctx} ctx  */
+/**
+ * @typedef {object} GUIControlRadioListItem
+ * @property {string} name
+ * @property {number} value
+ */
+
+/**
+ * @typedef {object} GUIControlTexture2DItem
+ * @property {import("pex-context").texture | CanvasImageSource} name
+ * @property {number} value
+ */
+
+/** @typedef {import("pex-context").ctx} ctx */
 
 export {};
