@@ -192,6 +192,10 @@ gui.addStats("Object stats", {
 <dd></dd>
 <dt><a href="#GUIOptions">GUIOptions</a> : <code>object</code></dt>
 <dd></dd>
+<dt><a href="#GUIControlRadioListItem">GUIControlRadioListItem</a> : <code>object</code></dt>
+<dd></dd>
+<dt><a href="#GUIControlTexture2DItem">GUIControlTexture2DItem</a> : <code>object</code></dt>
+<dd></dd>
 <dt><a href="#ctx">ctx</a> : <code>module:pex-context~ctx</code></dt>
 <dd></dd>
 </dl>
@@ -396,13 +400,13 @@ Add a radio list with options.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param         | Type                                                     |
-| ------------- | -------------------------------------------------------- |
-| title         | <code>string</code>                                      |
-| contextObject | <code>object</code>                                      |
-| attributeName | <code>string</code>                                      |
-| items         | <code>Array.&lt;{name: string, value: number}&gt;</code> |
-| onChange      | <code>function</code>                                    |
+| Param         | Type                                                                           |
+| ------------- | ------------------------------------------------------------------------------ |
+| title         | <code>string</code>                                                            |
+| contextObject | <code>object</code>                                                            |
+| attributeName | <code>string</code>                                                            |
+| items         | [<code>Array.&lt;GUIControlRadioListItem&gt;</code>](#GUIControlRadioListItem) |
+| onChange      | <code>function</code>                                                          |
 
 **Example**
 
@@ -422,18 +426,19 @@ gui.addRadioList(
 
 ### guI.addTexture2DList(title, contextObject, attributeName, items, [itemsPerRow], onChange) ⇒ <code>GUIControl</code>
 
-Add a texture visualiser and selector for multiple textures (from pex-context) or images.
+Add a texture visualiser and selector for multiple textures (from
+pex-context) or images.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param         | Type                                                                                                 | Default        |
-| ------------- | ---------------------------------------------------------------------------------------------------- | -------------- |
-| title         | <code>string</code>                                                                                  |                |
-| contextObject | <code>object</code>                                                                                  |                |
-| attributeName | <code>string</code>                                                                                  |                |
-| items         | <code>Array.&lt;{texture: (module:pex-context~texture\|CanvasImageSource), value: number}&gt;</code> |                |
-| [itemsPerRow] | <code>number</code>                                                                                  | <code>4</code> |
-| onChange      | <code>function</code>                                                                                |                |
+| Param         | Type                                                                           | Default        |
+| ------------- | ------------------------------------------------------------------------------ | -------------- |
+| title         | <code>string</code>                                                            |                |
+| contextObject | <code>object</code>                                                            |                |
+| attributeName | <code>string</code>                                                            |                |
+| items         | [<code>Array.&lt;GUIControlTexture2DItem&gt;</code>](#GUIControlTexture2DItem) |                |
+| [itemsPerRow] | <code>number</code>                                                            | <code>4</code> |
+| onChange      | <code>function</code>                                                          |                |
 
 **Example**
 
@@ -445,8 +450,8 @@ gui.addTexture2DList("List", State, "currentTexture", textures.map((texture, val
 
 ### guI.addTexture2D(title, texture, options) ⇒ <code>GUIControl</code>
 
-Add a texture (from pex-context) or image visualiser.
-Notes: texture cannot be updated once created.
+Add a texture (from pex-context) or image visualiser. Notes: texture cannot
+be updated once created.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
@@ -466,16 +471,16 @@ gui.addTexture2D("Single", image);
 
 ### guI.addTextureCube(title, texture, options) ⇒ <code>GUIControl</code>
 
-Add a cube texture visualiser (from pex-context).
-Notes: texture cannot be updated once created.
+Add a cube texture visualiser (from pex-context). Notes: texture cannot be
+updated once created.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param   | Type                                        |
-| ------- | ------------------------------------------- |
-| title   | <code>string</code>                         |
-| texture | <code>module:pex-context~textureCube</code> |
-| options | <code>Object</code>                         |
+| Param   | Type                                                 |
+| ------- | ---------------------------------------------------- |
+| title   | <code>string</code>                                  |
+| texture | <code>module:pex-context~textureCube</code>          |
+| options | [<code>GUIControlOptions</code>](#GUIControlOptions) |
 
 **Example**
 
@@ -586,7 +591,8 @@ Deserialize a previously serialized data state GUI's state.
 
 ### guI.dispose()
 
-Remove events listeners, empty list of controls and dispose of the gui's resources.
+Remove events listeners, empty list of controls and dispose of the gui's
+resources.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 <a name="GUIControlOptions"></a>
@@ -596,20 +602,23 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 **Kind**: global typedef
 **Properties**
 
-| Name         | Type                           | Default           | Description                                                                         |
-| ------------ | ------------------------------ | ----------------- | ----------------------------------------------------------------------------------- |
-| [min]        | <code>number</code>            | <code>0</code>    |                                                                                     |
-| [max]        | <code>number</code>            | <code>0</code>    |                                                                                     |
-| [type]       | <code>&quot;color&quot;</code> |                   | Interpret an array as color.                                                        |
-| [colorSpace] | <code>string</code>            |                   | Display a color as values of a pex-color color space.                               |
-| [alpha]      | <code>boolean</code>           |                   | Add a 4th slider for colors.                                                        |
-| [palette]    | <code>HTMLImageElement</code>  |                   | Draw a palette image as color picker.                                               |
-| [flipEnvMap] | <code>boolean</code>           |                   | Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped. |
-| [flipY]      | <code>boolean</code>           |                   | Flip texture 2D vertically.                                                         |
-| [level]      | <code>number</code>            |                   | Level of detail for cube textures.                                                  |
-| [update]     | <code>function</code>          |                   | An update(item, now) function to update labels and stats.                           |
-| [redraw]     | <code>function</code>          |                   | A redraw(item) function to be called when interval has passed.                      |
-| [interval]   | <code>number</code>            | <code>2000</code> | The interval between redraw(item).                                                  |
+| Name         | Type                           | Default           | Description                                                                                                                                                                                                                                      |
+| ------------ | ------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [min]        | <code>number</code>            | <code>0</code>    |                                                                                                                                                                                                                                                  |
+| [max]        | <code>number</code>            | <code>0</code>    |                                                                                                                                                                                                                                                  |
+| [type]       | <code>&quot;color&quot;</code> |                   | Interpret an array as color.                                                                                                                                                                                                                     |
+| [colorSpace] | <code>string</code>            |                   | Display a color as values of a pex-color color space.                                                                                                                                                                                            |
+| [alpha]      | <code>boolean</code>           |                   | Add a 4th slider for colors.                                                                                                                                                                                                                     |
+| [palette]    | <code>HTMLImageElement</code>  |                   | Draw a palette image as color picker.                                                                                                                                                                                                            |
+| [flipEnvMap] | <code>boolean</code>           |                   | Should be 1 for dynamic cubemaps and -1 for cubemaps from file with X axis flipped.                                                                                                                                                              |
+| [flipY]      | <code>boolean</code>           |                   | Flip texture 2D vertically.                                                                                                                                                                                                                      |
+| [level]      | <code>number</code>            |                   | Level of detail for cube textures.                                                                                                                                                                                                               |
+| [layer]      | <code>number</code>            |                   | Which slice of a layered texture to display: an array index for a `2d-array`, a cube index for a `cube-array`. Ignored otherwise. WebGPU only.                                                                                                   |
+| [near]       | <code>number</code>            |                   | Near plane of the projection that wrote a depth texture. Set it, with far, to linearise a perspective depth buffer for display; leave it out for an orthographic one, whose depth is already linear. Depth textures only, and only under WebGPU. |
+| [far]        | <code>number</code>            |                   | Far plane of the projection that wrote a depth texture. See near.                                                                                                                                                                                |
+| [update]     | <code>function</code>          |                   | An update(item, now) function to update labels and stats.                                                                                                                                                                                        |
+| [redraw]     | <code>function</code>          |                   | A redraw(item) function to be called when interval has passed.                                                                                                                                                                                   |
+| [interval]   | <code>number</code>            | <code>2000</code> | The interval between redraw(item).                                                                                                                                                                                                               |
 
 <a name="GUIOptions"></a>
 
@@ -625,6 +634,30 @@ Remove events listeners, empty list of controls and dispose of the gui's resourc
 | [scale]      | <code>number</code>  | <code>1</code>                       |                                                                                                                                                                                       |
 | [responsive] | <code>boolean</code> | <code>true</code>                    | Adapts to canvas dimension.                                                                                                                                                           |
 | [overlay]    | <code>boolean</code> | <code>false</code>                   | Sets canvas CSS pointer-events to "none" and adds a DOM div overlay with children sized to interacitve areas. Allows pointer events to pass through non-interactive areas of the GUI. |
+
+<a name="GUIControlRadioListItem"></a>
+
+## GUIControlRadioListItem : <code>object</code>
+
+**Kind**: global typedef
+**Properties**
+
+| Name  | Type                |
+| ----- | ------------------- |
+| name  | <code>string</code> |
+| value | <code>number</code> |
+
+<a name="GUIControlTexture2DItem"></a>
+
+## GUIControlTexture2DItem : <code>object</code>
+
+**Kind**: global typedef
+**Properties**
+
+| Name  | Type                                                                      |
+| ----- | ------------------------------------------------------------------------- |
+| name  | <code>module:pex-context~texture</code> \| <code>CanvasImageSource</code> |
+| value | <code>number</code>                                                       |
 
 <a name="ctx"></a>
 

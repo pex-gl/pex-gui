@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+# [4.0.0](https://github.com/pex-gl/pex-gui/compare/v3.3.0...v4.0.0) (2026-09-16)
+
+
+### Features
+
+* add pex-gpu support ([1dde910](https://github.com/pex-gl/pex-gui/commit/1dde910667b1abb1c0d4cfd16f92fe6b78253d0a))
+* add support for texture with layer ([3744598](https://github.com/pex-gl/pex-gui/commit/374459886f879c63bebf537a479e629f485ad3e5))
+* add support for WebGPU depth textures ([3229e26](https://github.com/pex-gl/pex-gui/commit/3229e2618f3e5fcb06d7d4cbf4400845ec039986))
+
+
+
 # [3.3.0](https://github.com/pex-gl/pex-gui/compare/v3.2.0...v3.3.0) (2025-09-05)
 
 
