@@ -1,4 +1,4 @@
-import { A as debugCounters, C as mergeReflections, D as bytesPerTexel, E as alignTo, F as resetFrameCounters, M as debugLog, N as debugStats, S as PipelineCache, T as parseWGSL, _ as peekCommandsState, a as copyExternalImage, b as isGpuBuffer, c as generateMipmaps, f as updateTexture, h as frameState, j as debugGroupsEnabled, k as debug, l as isGpuTexture, m as commandsState, n as buildBindGroups, o as createTexture, r as pipelineLayout, t as resolveVertexState, u as paddedBytesPerRow, v as BUFFER_USAGE_PRESETS, x as updateBuffer, y as createBuffer } from "./_chunks/vertex-layout-QPYeLM6Q.js";
+import { C as resolveShaders, D as alignTo, E as parseWGSL, F as debug, I as debugCounters, L as debugGroupsEnabled, M as physicalExtent, N as texelCopyLayout, O as assertBlockAlignedOrigin, R as debugLog, S as PipelineCache, V as resetFrameCounters, _ as peekCommandsState, a as copyExternalImage, b as isGpuBuffer, c as generateMipmaps, f as updateTexture, h as frameState, l as isGpuTexture, m as commandsState, n as buildBindGroups, o as createTexture, r as pipelineLayout, t as resolveVertexState, v as BUFFER_USAGE_PRESETS, w as mergeReflections, x as updateBuffer, y as createBuffer, z as debugStats } from "./_chunks/vertex-layout-7Ek8fbYc.js";
 
 function resolveDepthStencilFormat(options) {
 	if (options.depthStencilFormat) return options.depthStencilFormat;
@@ -32,10 +32,23 @@ async function createContext(options = {}) {
 	const requestedFeatures = [...options.requiredFeatures ?? []];
 	const missingFeatures = requestedFeatures.filter((feature) => !adapter.features.has(feature));
 	if (missingFeatures.length) console.warn(`pex-gpu: unsupported features skipped: ${missingFeatures.join(", ")}`);
+	const grantedFeatures = new Set([...requestedFeatures, ...options.optionalFeatures ?? []].filter((feature) => adapter.features.has(feature)));
+	const supportedLimits = adapter.limits;
+	const clampedLimits = {};
+	for (const [name, value] of Object.entries(options.optionalLimits ?? {})) {
+		const supported = supportedLimits[name];
+		if (supported === void 0 || value === void 0) continue;
+		if (!Number.isFinite(value)) continue;
+		clampedLimits[name] = name.startsWith("min") ? Math.max(2 ** Math.floor(Math.log2(value)), supported) : Math.min(value, supported);
+	}
+	const requiredLimits = {
+		...clampedLimits,
+		...options.requiredLimits
+	};
 	const device = await adapter.requestDevice({
 		...options.label && { label: options.label },
-		requiredFeatures: requestedFeatures.filter((feature) => adapter.features.has(feature)),
-		...options.requiredLimits && { requiredLimits: options.requiredLimits },
+		requiredFeatures: [...grantedFeatures],
+		...Object.keys(requiredLimits).length > 0 && { requiredLimits },
 		...options.defaultQueue && { defaultQueue: options.defaultQueue }
 	});
 	(async () => {
@@ -51,10 +64,11 @@ async function createContext(options = {}) {
 	const canvasContext = canvas.getContext("webgpu");
 	if (!canvasContext) throw new Error("pex-gpu: could not get a webgpu canvas context");
 	const format = options.format ?? navigator.gpu.getPreferredCanvasFormat();
+	const alphaMode = options.alphaMode ?? "opaque";
 	canvasContext.configure({
 		device,
 		format,
-		alphaMode: options.alphaMode ?? "opaque",
+		alphaMode,
 		...options.usage ? { usage: options.usage } : options.preserveDrawingBuffer && { usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST },
 		...options.colorSpace && { colorSpace: options.colorSpace },
 		...options.toneMapping && { toneMapping: options.toneMapping },
@@ -70,6 +84,7 @@ async function createContext(options = {}) {
 		const commands = peekCommandsState(ctx);
 		if (commands) {
 			commands.allocator?.dispose();
+			commands.storageAllocator?.dispose();
 			commands.canvasDepthStencil?.dispose();
 			commands.bindGroupLayouts.clear();
 			commands.pipelineLayouts.clear();
@@ -86,6 +101,7 @@ async function createContext(options = {}) {
 		canvas,
 		canvasContext,
 		format,
+		alphaMode,
 		depthStencilFormat: resolveDepthStencilFormat(options),
 		pipelineCache: new PipelineCache(device),
 		pixelRatio: 1,
@@ -105,6 +121,7 @@ async function createContext(options = {}) {
 		backbuffer: null
 	});
 	resize(ctx, options.width ?? (options.canvas ? canvas.clientWidth : window.innerWidth), options.height ?? (options.canvas ? canvas.clientHeight : window.innerHeight), options.pixelRatio ?? 1);
+	console.info(`pex-gpu ✔`);
 	return ctx;
 }
 /**
@@ -163,6 +180,7 @@ function beginFrame(ctx, label = "pex-gpu frame") {
 	const canvasView = state.backbuffer?.view ?? swapchainTexture.createView();
 	if (debugGroupsEnabled(ctx.device)) encoder.pushDebugGroup(label);
 	commands.allocator?.reset();
+	commands.storageAllocator?.reset();
 	commands.frame = {
 		encoder,
 		swapchainTexture,
@@ -194,6 +212,7 @@ function endFrame(ctx) {
 	if (frame.activePass) frame.activePass.encoder.end();
 	if (frame.activeComputePass) frame.activeComputePass.encoder.end();
 	commands.allocator?.flush();
+	commands.storageAllocator?.flush();
 	if (state.backbuffer) frame.encoder.copyTextureToTexture({ texture: state.backbuffer.texture }, { texture: frame.swapchainTexture }, {
 		width: ctx.width,
 		height: ctx.height
@@ -205,6 +224,10 @@ function endFrame(ctx) {
 * Render loop. Each frame is a {@link beginFrame}/{@link endFrame} segment synced
 * to requestAnimationFrame. Return `false` from the callback to stop the loop —
 * the stopping frame's work is still submitted.
+*
+* Paced: at most {@link FrameOptions.maxFramesInFlight} frames may be in flight,
+* so a scene the GPU cannot keep up with drops frames instead of accumulating
+* submissions.
 *
 * The callback can drive the encoder directly, submit() declarative commands,
 * or mix both.
@@ -232,15 +255,22 @@ function endFrame(ctx) {
 * });
 * ```
 */
-function frame(ctx, callback) {
+function frame(ctx, callback, options = {}) {
 	const state = getState(ctx);
 	state.running = true;
 	state.resized = false;
 	let startTime = -1;
 	let previousTimestamp = -1;
 	let frameIndex = 0;
+	const maxFramesInFlight = Math.max(1, options.maxFramesInFlight ?? 2);
+	const paced = Number.isFinite(maxFramesInFlight);
+	const inFlight = [];
 	const tick = async (timestamp) => {
 		if (!state.running || !contextState.has(ctx)) return;
+		while (inFlight.length >= maxFramesInFlight) {
+			await inFlight.shift();
+			if (!state.running || !contextState.has(ctx)) return;
+		}
 		if (startTime === -1) startTime = previousTimestamp = timestamp;
 		const time = (timestamp - startTime) / 1e3;
 		const deltaTime = (timestamp - previousTimestamp) / 1e3;
@@ -260,6 +290,7 @@ function frame(ctx, callback) {
 		} finally {
 			endFrame(ctx);
 		}
+		if (paced) inFlight.push(ctx.device.queue.onSubmittedWorkDone().catch(() => {}));
 		if (result === false) {
 			state.running = false;
 			return;
@@ -361,20 +392,22 @@ function draw(ctx, active, cmd) {
 	const { pipeline: def } = cmd;
 	if (!def) throw new Error(`pex-gpu: render command${cmd.label ? ` "${cmd.label}"` : ""} has no pipeline`);
 	const cached = commandsState(ctx).renderPipelines.getOrInsertComputed(def, () => {
-		const fragment = def.fragment && def.fragment !== def.vertex ? def.fragment : void 0;
-		const reflection = fragment ? mergeReflections(parseWGSL(def.vertex), parseWGSL(fragment)) : parseWGSL(def.vertex);
+		const { vertex: vertexSource, fragment: fragmentSource } = resolveShaders(def);
+		const reflection = fragmentSource && fragmentSource !== vertexSource ? mergeReflections(parseWGSL(vertexSource), parseWGSL(fragmentSource)) : parseWGSL(vertexSource);
 		const { layout, key } = pipelineLayout(ctx, reflection);
 		return {
+			vertexSource,
+			fragmentSource,
 			reflection,
 			layout,
 			layoutKey: key,
 			variants: /* @__PURE__ */ new Map()
 		};
 	});
-	const { reflection } = cached;
+	const { reflection, vertexSource, fragmentSource } = cached;
 	const vertexState = resolveVertexState(reflection.vertexInputs, cmd.attributes ?? {});
 	const stripIndexFormat = cmd.indices && def.topology?.endsWith("strip") ? cmd.indices.indexFormat : void 0;
-	const variantKey = `${active.key}|${vertexState.key}|${def.topology ?? ""},${def.cullMode ?? ""},${def.frontFace ?? ""},${stripIndexFormat ?? ""},${def.depthWriteEnabled ?? ""},${def.depthCompare ?? ""},${def.vertexEntryPoint ?? ""},${def.fragmentEntryPoint ?? ""}` + (def.constants ? `|c${JSON.stringify(def.constants)}` : "") + (def.blend || def.writeMask !== void 0 || def.stencilFront || def.stencilBack || def.stencilReadMask !== void 0 || def.stencilWriteMask !== void 0 || def.depthBias !== void 0 || def.depthBiasSlopeScale !== void 0 || def.depthBiasClamp !== void 0 ? `|${JSON.stringify([
+	const variantKey = `${active.key}|${vertexState.key}|${def.topology ?? ""},${def.cullMode ?? ""},${def.frontFace ?? ""},${stripIndexFormat ?? ""},${def.depthWriteEnabled ?? ""},${def.depthCompare ?? ""},${def.vertexEntryPoint ?? ""},${def.fragmentEntryPoint ?? ""},${def.alphaToCoverage ?? ""}` + (def.constants ? `|c${JSON.stringify(def.constants)}` : "") + (def.blend || def.writeMask !== void 0 || def.stencilFront || def.stencilBack || def.stencilReadMask !== void 0 || def.stencilWriteMask !== void 0 || def.depthBias !== void 0 || def.depthBiasSlopeScale !== void 0 || def.depthBiasClamp !== void 0 ? `|${JSON.stringify([
 		def.blend,
 		def.writeMask,
 		def.stencilFront,
@@ -389,7 +422,7 @@ function draw(ctx, active, cmd) {
 		const hasDepth = active.depthStencilFormat?.startsWith("depth");
 		const blend = def.blend;
 		const writeMask = def.writeMask;
-		const targets = def.fragment ? active.colorFormats.map((format, index) => {
+		const targets = fragmentSource ? active.colorFormats.map((format, index) => {
 			if (!format) return null;
 			const targetBlend = Array.isArray(blend) ? blend[index] : blend;
 			const targetWriteMask = Array.isArray(writeMask) ? writeMask[index] : writeMask;
@@ -400,8 +433,8 @@ function draw(ctx, active, cmd) {
 			};
 		}) : [];
 		return ctx.pipelineCache.getRenderPipeline({
-			vertex: def.vertex,
-			...def.fragment && { fragment: def.fragment },
+			vertex: vertexSource,
+			...fragmentSource && { fragment: fragmentSource },
 			...def.vertexEntryPoint && { vertexEntryPoint: def.vertexEntryPoint },
 			...def.fragmentEntryPoint && { fragmentEntryPoint: def.fragmentEntryPoint },
 			buffers: vertexState.layouts,
@@ -425,7 +458,10 @@ function draw(ctx, active, cmd) {
 				...def.stencilReadMask !== void 0 && { stencilReadMask: def.stencilReadMask },
 				...def.stencilWriteMask !== void 0 && { stencilWriteMask: def.stencilWriteMask }
 			} },
-			...active.sampleCount > 1 && { multisample: { count: active.sampleCount } },
+			...active.sampleCount > 1 && { multisample: {
+				count: active.sampleCount,
+				...def.alphaToCoverage && { alphaToCoverageEnabled: true }
+			} },
 			layout: cached.layout,
 			layoutKey: cached.layoutKey,
 			...def.label && { label: def.label }
@@ -614,7 +650,9 @@ function createSampler(ctx, options = {}) {
 }
 
 /**
-* Asynchronously read pixels back from a texture (eg. for picking).
+* Asynchronously read pixels back from a texture (eg. for picking). The source
+* needs a `usage` including COPY_SRC. Compressed formats read back as their raw
+* block bytes, the region rounded out to whole blocks.
 *
 * ```js
 * const [r, g, b, a] = await gpu.readTexture(ctx, pickingTexture, {
@@ -626,40 +664,39 @@ function createSampler(ctx, options = {}) {
 * ```
 */
 async function readTexture(ctx, source, options = {}) {
-	const { x = 0, y = 0, width = source.width, height = source.height } = options;
-	const texelBytes = bytesPerTexel(source.format);
-	const bytesPerRow = paddedBytesPerRow(width, source.format);
+	const mipLevel = options.mipLevel ?? 0;
+	const { x = 0, y = 0, width = Math.max(1, source.width >> mipLevel), height = Math.max(1, source.height >> mipLevel) } = options;
+	const origin = [
+		x,
+		y,
+		options.layer ?? 0
+	];
+	assertBlockAlignedOrigin(source.format, origin);
+	const { bytesPerRow: rowBytes, rowsPerImage } = texelCopyLayout(source.format, width, height);
+	const bytesPerRow = alignTo(rowBytes, 256);
 	const readback = ctx.device.createBuffer({
 		label: "pex-gpu readback",
-		size: bytesPerRow * height,
+		size: bytesPerRow * rowsPerImage,
 		usage: BUFFER_USAGE_PRESETS.readback
 	});
 	const encoder = ctx.device.createCommandEncoder({ label: "pex-gpu readTexture" });
 	encoder.copyTextureToBuffer({
 		texture: source.texture,
-		mipLevel: options.mipLevel ?? 0,
-		origin: [
-			x,
-			y,
-			options.layer ?? 0
-		]
+		mipLevel,
+		origin
 	}, {
 		buffer: readback,
 		bytesPerRow,
-		rowsPerImage: height
-	}, {
-		width,
-		height
-	});
+		rowsPerImage
+	}, physicalExtent(source.format, width, height));
 	ctx.device.queue.submit([encoder.finish()]);
 	await readback.mapAsync(GPUMapMode.READ);
 	const mapped = new Uint8Array(readback.getMappedRange());
-	const rowBytes = width * texelBytes;
-	const pixels = new Uint8Array(rowBytes * height);
-	for (let row = 0; row < height; row++) pixels.set(mapped.subarray(row * bytesPerRow, row * bytesPerRow + rowBytes), row * rowBytes);
+	const data = new Uint8Array(rowBytes * rowsPerImage);
+	for (let row = 0; row < rowsPerImage; row++) data.set(mapped.subarray(row * bytesPerRow, row * bytesPerRow + rowBytes), row * rowBytes);
 	readback.unmap();
 	readback.destroy();
-	return pixels;
+	return data;
 }
 /**
 * Asynchronously read a buffer back to the CPU.

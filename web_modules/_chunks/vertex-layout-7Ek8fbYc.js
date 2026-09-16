@@ -190,12 +190,106 @@ const BYTES_PER_TEXEL = {
 };
 /**
 * Bytes per texel for a supported texture format. Throws for
-* unsupported/compressed formats.
+* unsupported/compressed formats — compressed data is measured in blocks, see
+* {@link blockInfo}.
 */
 function bytesPerTexel(format) {
 	const bytes = BYTES_PER_TEXEL[format];
 	if (!bytes) throw new Error(`pex-gpu: unsupported texture data format "${format}"`);
 	return bytes;
+}
+const BLOCK_BYTES = {
+	"bc1-rgba-unorm": 8,
+	"bc1-rgba-unorm-srgb": 8,
+	"bc2-rgba-unorm": 16,
+	"bc2-rgba-unorm-srgb": 16,
+	"bc3-rgba-unorm": 16,
+	"bc3-rgba-unorm-srgb": 16,
+	"bc4-r-unorm": 8,
+	"bc4-r-snorm": 8,
+	"bc5-rg-unorm": 16,
+	"bc5-rg-snorm": 16,
+	"bc6h-rgb-ufloat": 16,
+	"bc6h-rgb-float": 16,
+	"bc7-rgba-unorm": 16,
+	"bc7-rgba-unorm-srgb": 16,
+	"etc2-rgb8unorm": 8,
+	"etc2-rgb8unorm-srgb": 8,
+	"etc2-rgb8a1unorm": 8,
+	"etc2-rgb8a1unorm-srgb": 8,
+	"etc2-rgba8unorm": 16,
+	"etc2-rgba8unorm-srgb": 16,
+	"eac-r11unorm": 8,
+	"eac-r11snorm": 8,
+	"eac-rg11unorm": 16,
+	"eac-rg11snorm": 16
+};
+const ASTC_BLOCK = /^astc-(\d+)x(\d+)-unorm(-srgb)?$/;
+/**
+* Block footprint of a compressed format, or `undefined` for uncompressed ones
+* — which is also the test for "is this format block-compressed".
+*/
+function blockInfo(format) {
+	const bytes = BLOCK_BYTES[format];
+	if (bytes) return {
+		width: 4,
+		height: 4,
+		bytes
+	};
+	const astc = ASTC_BLOCK.exec(format);
+	if (astc) return {
+		width: Number(astc[1]),
+		height: Number(astc[2]),
+		bytes: 16
+	};
+}
+/** Whether `format` stores texels in compressed blocks. */
+const isCompressedFormat = (format) => blockInfo(format) !== void 0;
+/**
+* Row pitch for a `writeTexture` of `width`x`height` texels. Compressed formats
+* are measured in whole blocks, partial blocks at the edge counting as full
+* ones. `queue.writeTexture` imposes no 256-byte row alignment (that is a
+* `copyBufferToTexture` rule), so this is the tight pitch.
+*/
+function texelCopyLayout(format, width, height) {
+	const block = blockInfo(format);
+	if (!block) return {
+		bytesPerRow: bytesPerTexel(format) * width,
+		rowsPerImage: height
+	};
+	return {
+		bytesPerRow: Math.ceil(width / block.width) * block.bytes,
+		rowsPerImage: Math.ceil(height / block.height)
+	};
+}
+/**
+* Copy extent rounded up to whole blocks — the physical size a compressed
+* subresource occupies, which copy extents must match even when the logical mip
+* size is smaller. Identity for uncompressed formats.
+*/
+function physicalExtent(format, width, height) {
+	const block = blockInfo(format);
+	if (!block) return {
+		width,
+		height
+	};
+	return {
+		width: Math.ceil(width / block.width) * block.width,
+		height: Math.ceil(height / block.height) * block.height
+	};
+}
+/** Compressed textures are allocated in whole blocks. */
+function assertBlockAlignedSize(format, width, height) {
+	const block = blockInfo(format);
+	if (!block) return;
+	if (width % block.width || height % block.height) throw new Error(`pex-gpu: "${format}" requires ${block.width}×${block.height} block-aligned dimensions, got ${width}×${height}`);
+}
+/** Compressed copies must start on a block boundary. */
+function assertBlockAlignedOrigin(format, origin) {
+	const block = blockInfo(format);
+	if (!block) return;
+	const [x = 0, y = 0] = Array.isArray(origin) ? origin : [origin.x ?? 0, origin.y ?? 0];
+	if (x % block.width || y % block.height) throw new Error(`pex-gpu: "${format}" copies must start on a ${block.width}×${block.height} block boundary, got origin ${x},${y}`);
 }
 
 const SCALARS = {
@@ -413,6 +507,10 @@ const TEXTURE_TYPES = {
 		viewDimension: "cube",
 		depth: true
 	},
+	texture_depth_cube_array: {
+		viewDimension: "cube-array",
+		depth: true
+	},
 	texture_depth_multisampled_2d: {
 		viewDimension: "2d",
 		depth: true,
@@ -453,9 +551,16 @@ function parseBindings(source, structs, rawStructs, visibility) {
 		} else if (addressSpace?.startsWith("storage")) {
 			const readOnly = !addressSpace.includes("read_write");
 			const kind = readOnly ? "read-only-storage" : "storage";
+			const elementType = /^array<([^,]+)>$/.exec(type)?.[1];
+			const element = elementType && rawStructs.has(elementType) ? computeLayout(elementType, rawStructs, structs) : void 0;
 			bindings.push({
 				...base,
 				kind,
+				...element && {
+					arrayElementLayout: element,
+					arrayStride: alignTo(element.size, element.align),
+					minBindingSize: alignTo(element.size, element.align)
+				},
 				visibility: readOnly ? visibility : visibility & ~GPUShaderStage.VERTEX
 			});
 		} else if (type === "sampler" || type === "sampler_comparison") bindings.push({
@@ -568,7 +673,7 @@ function parseVertexInputs(paramsText, rawStructs) {
 			location,
 			type,
 			format: info.vertexFormat,
-			stride: info.size
+			arrayStride: info.size
 		});
 	};
 	for (const param of splitTopLevel(paramsText)) {
@@ -585,8 +690,11 @@ function parseVertexInputs(paramsText, rawStructs) {
 	}
 	return inputs.sort((a, b) => a.location - b.location);
 }
-function analyzeOverrides(code) {
-	const names = new Set([...code.matchAll(/\boverride\s+([A-Za-z_]\w*)/g)].map((match) => match[1]));
+/** An override declaration, so its own name doesn't read as a use. */
+const OVERRIDE_DECLARATION = /\boverride\s+[A-Za-z_]\w*[^;]*;/g;
+/** Likewise for a binding: ``@group`(n) `@binding`(n) var<space> name: type;`. */
+const BINDING_DECLARATION = /@group\s*\([^)]*\)\s*@binding\s*\([^)]*\)\s*var(?:<[^>]*>)?\s+[A-Za-z_]\w*\s*:[^;]*;/g;
+function analyzeReachability(code, names, declarations) {
 	if (!names.size) return {
 		names,
 		graph: /* @__PURE__ */ new Map(),
@@ -625,14 +733,14 @@ function analyzeOverrides(code) {
 		cursor = close + 1;
 	}
 	moduleScope += code.slice(cursor);
-	moduleScope = moduleScope.replace(/\boverride\s+[A-Za-z_]\w*[^;]*;/g, "");
+	moduleScope = moduleScope.replace(declarations, "");
 	return {
 		names,
 		graph,
 		moduleScopeUsed: new Set((moduleScope.match(/[A-Za-z_]\w*/g) ?? []).filter((id) => names.has(id)))
 	};
 }
-function reachableOverrides({ graph, moduleScopeUsed }, entryPoint) {
+function reachable({ graph, moduleScopeUsed }, entryPoint) {
 	const used = new Set(moduleScopeUsed);
 	const visited = /* @__PURE__ */ new Set();
 	const stack = [entryPoint];
@@ -642,7 +750,7 @@ function reachableOverrides({ graph, moduleScopeUsed }, entryPoint) {
 		visited.add(name);
 		const node = graph.get(name);
 		if (!node) continue;
-		for (const override of node.uses) used.add(override);
+		for (const name of node.uses) used.add(name);
 		for (const callee of node.calls) if (!visited.has(callee)) stack.push(callee);
 	}
 	return used;
@@ -656,10 +764,49 @@ function reachableOverrides({ graph, moduleScopeUsed }, entryPoint) {
 * reflection; the intermediate call graph is discarded.
 */
 function overridesByEntryPoint(code, entryPoints) {
-	const analysis = analyzeOverrides(code);
+	const analysis = analyzeReachability(code, new Set([...code.matchAll(/\boverride\s+([A-Za-z_]\w*)/g)].map((match) => match[1])), OVERRIDE_DECLARATION);
 	const overrides = /* @__PURE__ */ new Map();
-	for (const entryPoint of Object.values(entryPoints)) if (entryPoint) overrides.set(entryPoint, reachableOverrides(analysis, entryPoint));
+	for (const entryPoint of Object.values(entryPoints)) if (entryPoint) overrides.set(entryPoint, reachable(analysis, entryPoint));
 	return overrides;
+}
+const STAGE_FLAGS = {
+	vertex: GPUShaderStage.VERTEX,
+	fragment: GPUShaderStage.FRAGMENT,
+	compute: GPUShaderStage.COMPUTE
+};
+/**
+* Narrow storage bindings to the stages whose entry point actually reaches
+* them.
+*
+* One source serving both stages would otherwise claim every binding in both,
+* and storage buffers are the scarce budget: `maxStorageBuffersPerShaderStage`
+* defaults to 8, and compatibility mode allows none at all in the vertex stage.
+* Restricted to storage for that reason — textures and uniforms have room to
+* spare, and a wrong answer here costs a validation error rather than a slot.
+*
+* A binding no entry point reaches keeps its original visibility: that is dead
+* code, not a stage assignment, and zero visibility is a worse thing to hand a
+* layout than a redundant flag.
+*/
+function scopeStorageVisibility(code, entryPoints, bindings) {
+	const isStorage = (binding) => binding.kind === "storage" || binding.kind === "read-only-storage";
+	const names = new Set(bindings.filter(isStorage).map((b) => b.name));
+	if (!names.size) return bindings;
+	const analysis = analyzeReachability(code, names, BINDING_DECLARATION);
+	const stages = /* @__PURE__ */ new Map();
+	for (const [stage, entryPoint] of Object.entries(entryPoints)) {
+		if (!entryPoint) continue;
+		const flag = STAGE_FLAGS[stage];
+		for (const name of reachable(analysis, entryPoint)) stages.set(name, (stages.get(name) ?? 0) | flag);
+	}
+	return bindings.map((binding) => {
+		if (!isStorage(binding)) return binding;
+		const visibility = stages.get(binding.name);
+		return visibility ? {
+			...binding,
+			visibility: visibility & binding.visibility
+		} : binding;
+	});
 }
 /** Contents of every balanced parenthesis group, innermost first. */
 function* parenGroups(source) {
@@ -688,7 +835,7 @@ function markNonFilteringSamplers(source, bindings) {
 		nonFiltering: true
 	} : b);
 }
-/** Group bindings by @group index, sorted by binding number within each group. */
+/** Group bindings by `@group` index, sorted by binding number within each group. */
 function bindingsToGroups(bindings) {
 	const groups = /* @__PURE__ */ new Map();
 	for (const binding of bindings) groups.getOrInsertComputed(binding.group, () => []).push(binding);
@@ -711,7 +858,7 @@ function parseWGSL(source) {
 	if (entryPoints.vertex) visibility |= GPUShaderStage.VERTEX;
 	if (entryPoints.fragment) visibility |= GPUShaderStage.FRAGMENT;
 	if (entryPoints.compute) visibility |= GPUShaderStage.COMPUTE;
-	const bindings = markNonFilteringSamplers(stripped, parseBindings(stripped, structs, rawStructs, visibility));
+	const bindings = scopeStorageVisibility(stripped, entryPoints, markNonFilteringSamplers(stripped, parseBindings(stripped, structs, rawStructs, visibility)));
 	const vertexInputs = vertexParams.length ? parseVertexInputs(vertexParams[0], rawStructs) : [];
 	const reflection = {
 		bindings,
@@ -756,6 +903,15 @@ function mergeReflections(a, b) {
 	};
 }
 
+/**
+* Unfold either shader form into per-stage sources: a combined `shader` becomes
+* the same string on both stages, so the two spellings share cache entries. An
+* undefined fragment means a pipeline with no fragment stage.
+*/
+const resolveShaders = (shaders) => ({
+	vertex: shaders.shader ?? shaders.vertex,
+	fragment: shaders.shader ?? shaders.fragment
+});
 /**
 * Narrow a stage's constants to `referenced` — the overrides its entry point
 * actually uses (from reflection) — so a stage never receives a value for an
@@ -879,7 +1035,8 @@ var PipelineCache = class {
 		return result;
 	}
 	getRenderPipeline(source) {
-		const byState = this.#renderPipelines.getOrInsertComputed(source.vertex, () => /* @__PURE__ */ new Map()).getOrInsertComputed(source.fragment ?? "", () => /* @__PURE__ */ new Map());
+		const { vertex, fragment } = resolveShaders(source);
+		const byState = this.#renderPipelines.getOrInsertComputed(vertex, () => /* @__PURE__ */ new Map()).getOrInsertComputed(fragment ?? "", () => /* @__PURE__ */ new Map());
 		const state = JSON.stringify([
 			source.buffers,
 			source.targets,
@@ -896,22 +1053,22 @@ var PipelineCache = class {
 			created = true;
 			const label = source.label ?? "pex-gpu pipeline";
 			debugLog(this.#device, "resources", () => `createRenderPipeline "${label}" ${state}`);
-			const vertexModule = this.getShaderModule(source.vertex, source.label);
-			const fragmentModule = source.fragment ? this.getShaderModule(source.fragment, source.label) : void 0;
-			const vertexReflection = parseWGSL(source.vertex);
-			const fragmentReflection = source.fragment ? parseWGSL(source.fragment) : void 0;
+			const vertexModule = this.getShaderModule(vertex, source.label);
+			const fragmentModule = fragment ? this.getShaderModule(fragment, source.label) : void 0;
+			const vertexReflection = parseWGSL(vertex);
+			const fragmentReflection = fragment ? parseWGSL(fragment) : void 0;
 			const vertexEntryPoint = source.vertexEntryPoint ?? vertexReflection.entryPoints.vertex;
 			const fragmentEntryPoint = source.fragmentEntryPoint ?? fragmentReflection?.entryPoints.fragment;
 			const vertexConstants = scopeConstants(source.constants, vertexEntryPoint ? vertexReflection.overrides.get(vertexEntryPoint) : void 0);
 			const fragmentConstants = fragmentReflection && fragmentEntryPoint ? scopeConstants(source.constants, fragmentReflection.overrides.get(fragmentEntryPoint)) : void 0;
 			const stages = [{
 				stage: "vertex",
-				code: source.vertex,
+				code: vertex,
 				module: vertexModule
 			}];
-			if (fragmentModule && source.fragment) stages.push({
+			if (fragmentModule && fragment) stages.push({
 				stage: "fragment",
-				code: source.fragment,
+				code: fragment,
 				module: fragmentModule
 			});
 			return this.#captureValidation(label, () => this.#device.createRenderPipeline({
@@ -1087,30 +1244,36 @@ function updateBuffer(ctx, target, data, byteOffset = 0) {
 }
 
 /**
-* Per-frame uniform ring buffer. Each draw's uniform structs are packed into
-* CPU staging at 256-byte-aligned offsets, bound through bind groups with
-* dynamic offsets, and flushed with a single writeBuffer before submission.
+* Per-frame ring buffer. Each draw's structs are packed into CPU staging at
+* aligned offsets, bound through bind groups with dynamic offsets, and flushed
+* with a single writeBuffer before submission.
+*
+* One instance per binding kind: uniform and storage have different usage flags
+* and different minimum offset alignments, and a slice has to satisfy the one
+* it will be bound as.
 */
-var UniformAllocator = class {
+var RingAllocator = class {
 	buffer;
 	/** Incremented when the GPU buffer is replaced; part of bind group cache keys. */
 	generation = 0;
 	#device;
+	#kind;
 	#staging;
 	#cursor = 0;
 	#alignment;
 	#retired = [];
-	constructor(device, initialSize = 256 * 1024) {
+	constructor(device, kind = "uniform", initialSize = 256 * 1024) {
 		this.#device = device;
-		this.#alignment = device.limits.minUniformBufferOffsetAlignment;
+		this.#kind = kind;
+		this.#alignment = kind === "uniform" ? device.limits.minUniformBufferOffsetAlignment : device.limits.minStorageBufferOffsetAlignment;
 		this.#staging = new ArrayBuffer(initialSize);
 		this.buffer = this.#createBuffer(initialSize);
 	}
 	#createBuffer(size) {
 		return this.#device.createBuffer({
-			label: "pex-gpu uniforms",
+			label: `pex-gpu ${this.#kind === "uniform" ? "uniforms" : "storage"}`,
 			size,
-			usage: BUFFER_USAGE_PRESETS.uniform
+			usage: BUFFER_USAGE_PRESETS[this.#kind]
 		});
 	}
 	get staging() {
@@ -1131,7 +1294,7 @@ var UniformAllocator = class {
 		this.#retired.push(this.buffer);
 		this.buffer = this.#createBuffer(newSize);
 		this.generation++;
-		debugLog(this.#device, "resources", () => `uniform ring grown to ${newSize} bytes (generation ${this.generation})`);
+		debugLog(this.#device, "resources", () => `${this.#kind} ring grown to ${newSize} bytes (generation ${this.generation})`);
 		this.#staging = new ArrayBuffer(newSize);
 		this.#cursor = 0;
 	}
@@ -1164,6 +1327,7 @@ function commandsState(ctx) {
 		});
 		return {
 			allocator: null,
+			storageAllocator: null,
 			bindGroupLayouts: /* @__PURE__ */ new Map(),
 			pipelineLayouts: /* @__PURE__ */ new Map(),
 			bindGroups,
@@ -1231,6 +1395,12 @@ function estimatedBytesPerTexel(format) {
 		return 4;
 	}
 }
+/** Bytes one mip level occupies, compressed levels counted in whole blocks. */
+function levelByteSize(format, width, height) {
+	const block = blockInfo(format);
+	if (!block) return width * height * estimatedBytesPerTexel(format);
+	return Math.ceil(width / block.width) * Math.ceil(height / block.height) * block.bytes;
+}
 /**
 * Estimated memory footprint of a texture, in bytes — from an existing
 * {@link GpuTexture} or from a descriptor, so allocation can be budgeted before
@@ -1244,9 +1414,9 @@ function textureByteSize(descriptor) {
 	const layers = descriptor.depthOrArrayLayers ?? descriptor.depth ?? 1;
 	const mipLevelCount = descriptor.mipLevelCount ?? 1;
 	const sampleCount = descriptor.sampleCount ?? 1;
-	const texelBytes = estimatedBytesPerTexel(descriptor.format ?? "rgba8unorm");
+	const format = descriptor.format ?? "rgba8unorm";
 	let bytes = 0;
-	for (let level = 0; level < mipLevelCount; level++) bytes += Math.max(1, width >> level) * Math.max(1, height >> level) * layers * sampleCount * texelBytes;
+	for (let level = 0; level < mipLevelCount; level++) bytes += levelByteSize(format, Math.max(1, width >> level), Math.max(1, height >> level)) * layers * sampleCount;
 	return bytes;
 }
 const sourceSize = (source) => source instanceof HTMLVideoElement ? {
@@ -1268,6 +1438,7 @@ const isImageData = (data) => Array.isArray(data) ? typeof data[0] === "object" 
 const fullMipLevelCount = (width, height = 1) => 1 + Math.floor(Math.log2(Math.max(width, height)));
 /** Type guard for {@link GpuTexture} resource objects. */
 const isGpuTexture = (value) => typeof value === "object" && value !== null && "id" in value && "texture" in value;
+const compressedMipmapsError = (format) => /* @__PURE__ */ new Error(`pex-gpu: cannot render mipmaps into compressed format "${format}"; supply a pre-computed chain as \`mipLevels\` instead`);
 /**
 * Create a texture. Initial contents can be raw data or image sources —
 * dimensions, layer count and array view dimension are inferred from images.
@@ -1292,6 +1463,12 @@ const isGpuTexture = (value) => typeof value === "object" && value !== null && "
 *   data: faces,
 *   viewDimension: "cube",
 * });
+* const compressed = gpu.createTexture(ctx, {
+*   width,
+*   height,
+*   format: "bc7-rgba-unorm",
+*   mipLevels: levels,
+* });
 * ```
 */
 function createTexture(ctx, options) {
@@ -1302,9 +1479,12 @@ function createTexture(ctx, options) {
 	if (width === void 0) throw new Error("pex-gpu: createTexture requires a width or image data to infer it from");
 	const height = options.height ?? imageSize?.height ?? 1;
 	const depthOrArrayLayers = options.depth ?? options.depthOrArrayLayers ?? (images && images.length > 1 ? images.length : 1);
-	const mipLevelCount = options.mipLevelCount ?? (options.mipmap ? fullMipLevelCount(width, height) : 1);
+	const mipLevelCount = options.mipLevelCount ?? options.mipLevels?.length ?? (options.mipmap ? fullMipLevelCount(width, height) : 1);
 	const dimension = options.dimension ?? "2d";
 	const viewDimension = options.viewDimension ?? (images && Array.isArray(options.data) ? "2d-array" : void 0) ?? (dimension === "2d" && depthOrArrayLayers > 1 ? "2d-array" : dimension);
+	assertBlockAlignedSize(format, width, height);
+	if (options.mipmap && options.mipLevels) throw new Error("pex-gpu: createTexture takes either mipLevels or mipmap, not both");
+	if (options.mipmap && isCompressedFormat(format)) throw compressedMipmapsError(format);
 	const texture = ctx.device.createTexture({
 		size: {
 			width,
@@ -1315,7 +1495,7 @@ function createTexture(ctx, options) {
 		mipLevelCount,
 		sampleCount: options.sampleCount ?? 1,
 		dimension,
-		usage: options.usage ?? GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+		usage: options.usage ?? (isCompressedFormat(format) ? GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST : GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT),
 		...options.label && { label: options.label }
 	});
 	const counters = debugCounters(ctx.device).lifetime.textures;
@@ -1359,6 +1539,7 @@ function createTexture(ctx, options) {
 		...options.premultipliedAlpha !== void 0 && { premultipliedAlpha: options.premultipliedAlpha },
 		...options.colorSpace && { colorSpace: options.colorSpace }
 	});
+	else if (options.mipLevels) for (const [mipLevel, data] of options.mipLevels.entries()) updateTexture(ctx, result, data, { mipLevel });
 	else if (options.data) updateTexture(ctx, result, options.data);
 	if (options.mipmap) generateMipmaps(ctx, result);
 	return result;
@@ -1380,20 +1561,19 @@ function updateTexture(ctx, target, data, options = {}) {
 	const width = options.width ?? Math.max(1, target.width >> mipLevel);
 	const height = options.height ?? Math.max(1, target.height >> mipLevel);
 	const typed = toTextureData(data, target.format);
+	const origin = options.origin ?? [
+		0,
+		0,
+		0
+	];
+	assertBlockAlignedOrigin(target.format, origin);
+	const extent = physicalExtent(target.format, width, height);
 	ctx.device.queue.writeTexture({
 		texture: target.texture,
 		mipLevel,
-		origin: options.origin ?? [
-			0,
-			0,
-			0
-		]
-	}, typed, {
-		bytesPerRow: bytesPerTexel(target.format) * width,
-		rowsPerImage: height
-	}, {
-		width,
-		height,
+		origin
+	}, typed, texelCopyLayout(target.format, width, height), {
+		...extent,
 		depthOrArrayLayers: options.depthOrArrayLayers ?? 1
 	});
 }
@@ -1445,9 +1625,10 @@ const mipmapCache = /* @__PURE__ */ new WeakMap();
 * Generate the full mip chain of a 2D or 2D-array texture by downsampling each
 * level with a linear-filtered blit.
 */
-function generateMipmaps(ctx, target) {
+function generateMipmaps(ctx, target, options = {}) {
 	if (target.mipLevelCount < 2) return;
 	if (target.dimension === "3d") throw new Error("pex-gpu: generateMipmaps does not support 3D textures");
+	if (isCompressedFormat(target.format)) throw compressedMipmapsError(target.format);
 	const cache = mipmapCache.getOrInsertComputed(ctx.device, () => ({
 		sampler: ctx.device.createSampler({
 			minFilter: "linear",
@@ -1472,7 +1653,7 @@ function generateMipmaps(ctx, target) {
 			primitive: { topology: "triangle-list" }
 		});
 	});
-	const encoder = ctx.device.createCommandEncoder({ label: "pex-gpu mipmaps" });
+	const encoder = options.encoder ?? ctx.device.createCommandEncoder({ label: "pex-gpu mipmaps" });
 	for (let layer = 0; layer < target.depthOrArrayLayers; layer++) for (let level = 1; level < target.mipLevelCount; level++) {
 		const bindGroup = ctx.device.createBindGroup({
 			layout: pipeline.getBindGroupLayout(0),
@@ -1506,11 +1687,17 @@ function generateMipmaps(ctx, target) {
 		pass.draw(3);
 		pass.end();
 	}
-	ctx.device.queue.submit([encoder.finish()]);
+	if (!options.encoder) ctx.device.queue.submit([encoder.finish()]);
 }
-/** Row padding helper shared with readback: bytesPerRow aligned to 256. */
-const paddedBytesPerRow = (width, format) => alignTo(width * bytesPerTexel(format), 256);
+/**
+* Row pitch aligned to 256, the alignment `copyBufferToTexture` and
+* `copyTextureToBuffer` require (`queue.writeTexture` does not — see
+* {@link texelCopyLayout}). Compressed formats are measured in whole blocks.
+*/
+const paddedBytesPerRow = (width, format) => alignTo(texelCopyLayout(format, width, 1).bytesPerRow, 256);
 
+/** Written straight through; everything else is flattened first. */
+const isScalar = (value) => typeof value === "number" || typeof value === "boolean";
 const toFlatArray = (value) => Array.isArray(value) && Array.isArray(value[0]) ? value.flat() : value;
 const isIntegerType = (type) => /(^|<)[iu]32>?$/.test(type);
 function writeScalar(view, offset, type, value) {
@@ -1524,7 +1711,7 @@ function writeScalar(view, offset, type, value) {
 * mat3x3<f32> columns are 16-byte aligned, not 12.
 */
 function writeValue(view, offset, type, value) {
-	if (typeof value === "number" || typeof value === "boolean") {
+	if (isScalar(value)) {
 		writeScalar(view, offset, type, Number(value));
 		return;
 	}
@@ -1551,7 +1738,7 @@ function writeMember(view, member, value) {
 	}
 	if (member.arrayCount !== void 0 && member.arrayStride !== void 0) {
 		const elementType = /^array<(.+?)(?:,\s*\d+\s*)?>$/.exec(member.type)?.[1] ?? "f32";
-		const data = toFlatArray(typeof value === "number" || typeof value === "boolean" ? [Number(value)] : value);
+		const data = toFlatArray(isScalar(value) ? [Number(value)] : value);
 		const componentsPerElement = data.length / member.arrayCount;
 		for (let i = 0; i < member.arrayCount; i++) {
 			const element = Array.prototype.slice.call(data, i * componentsPerElement, (i + 1) * componentsPerElement);
@@ -1562,11 +1749,24 @@ function writeMember(view, member, value) {
 	writeValue(view, member.offset, member.type, value);
 }
 /**
+* Values reach here from an object the caller assembled, so a member holding an
+* `undefined` — a default that was never applied, a property read off the wrong
+* object — is the common mistake. Left to the writers it surfaces as a `length`
+* of undefined inside a DataView write, naming neither the struct nor the
+* member; a value of the wrong shape is worse still, writing nothing at all.
+*/
+function assertPackable(layout, member, value) {
+	const label = member.name ? `member "${member.name}" of struct "${layout.name}" (${member.type})` : `binding of type "${member.type}"`;
+	if (value === void 0 || value === null) throw new Error(`pex-gpu: ${label} is ${value}. Omit the key to leave the member unwritten.`);
+	if (!isScalar(value) && !Array.isArray(value) && !isTypedArray(value)) throw new Error(`pex-gpu: ${label} expects a number, boolean, array or typed array, got ${typeof value}`);
+}
+/**
 * Pack values into a struct layout inside `destination`.
 *
 * `values` is either an object keyed by member name, or — when the layout is a
 * synthetic single-value layout for a non-struct binding — the value itself.
-* Throws on unknown member names to surface typos early.
+* Throws on unknown member names, and on values that cannot be written, to
+* surface typos and missing defaults early.
 *
 * Known limitation: elements of `array<SomeStruct, N>` members are written
 * tightly packed — structs with internal padding (eg. two vec3f members) need
@@ -1575,12 +1775,14 @@ function writeMember(view, member, value) {
 function packStruct(destination, layout, values, byteOffset = 0) {
 	const view = new DataView(destination, byteOffset);
 	if (layout.members.length === 1 && layout.members[0].name === "") {
+		assertPackable(layout, layout.members[0], values);
 		writeMember(view, layout.members[0], values);
 		return;
 	}
 	for (const [name, value] of Object.entries(values)) {
 		const member = layout.members.find((candidate) => candidate.name === name);
 		if (!member) throw new Error(`pex-gpu: unknown member "${name}" in struct "${layout.name}" (members: ${layout.members.map((m) => m.name).join(", ")})`);
+		assertPackable(layout, member, value);
 		writeMember(view, member, value);
 	}
 }
@@ -1603,7 +1805,13 @@ function layoutEntry(binding) {
 		case "storage":
 		case "read-only-storage": return {
 			...base,
-			buffer: { type: binding.kind }
+			buffer: {
+				type: binding.kind,
+				...binding.arrayElementLayout && {
+					hasDynamicOffset: true,
+					minBindingSize: binding.minBindingSize
+				}
+			}
 		};
 		case "sampler": return {
 			...base,
@@ -1732,7 +1940,7 @@ function buildBindGroups(ctx, reflection, uniforms, overrides) {
 				case "uniform": {
 					const layout = binding.structLayout;
 					const values = uniformStructValues(binding, uniforms);
-					const allocator = state.allocator ??= new UniformAllocator(ctx.device);
+					const allocator = state.allocator ??= new RingAllocator(ctx.device);
 					const offset = allocator.allocate(layout.size);
 					debugCounters(ctx.device).frame.uniformBytes += layout.size;
 					packStruct(allocator.staging, layout, values, offset);
@@ -1749,7 +1957,28 @@ function buildBindGroups(ctx, reflection, uniforms, overrides) {
 				}
 				case "storage":
 				case "read-only-storage":
+					if (binding.arrayElementLayout && !isGpuBuffer(value)) {
+						if (!Array.isArray(value)) throw missingUniform(binding, " — expected an array or a storage GpuBuffer");
+						const element = binding.arrayElementLayout;
+						const stride = binding.arrayStride;
+						const size = stride * Math.max(value.length, 1);
+						const allocator = state.storageAllocator ??= new RingAllocator(ctx.device, "read-only-storage");
+						const offset = allocator.allocate(size);
+						debugCounters(ctx.device).frame.uniformBytes += size;
+						for (let i = 0; i < value.length; i++) packStruct(allocator.staging, element, value[i], offset + i * stride);
+						entries.push({
+							binding: binding.binding,
+							resource: {
+								buffer: allocator.buffer,
+								size
+							}
+						});
+						dynamicOffsets.push(offset);
+						keyParts.push(objectId(allocator.buffer), size);
+						break;
+					}
 					if (!isGpuBuffer(value)) throw missingUniform(binding, " — expected a storage GpuBuffer");
+					if (binding.arrayElementLayout) dynamicOffsets.push(0);
 					entries.push({
 						binding: binding.binding,
 						resource: { buffer: value.buffer }
@@ -1834,10 +2063,10 @@ function resolveVertexState(vertexInputs, attributes) {
 		if (!value) throw new Error(`pex-gpu: missing attribute "${input.name}" (@location(${input.location})); provided: ${Object.keys(attributes).join(", ") || "none"}`);
 		const attribute = isGpuBuffer(value) ? { buffer: value } : value;
 		const format = attribute.format ?? input.format;
-		const stride = attribute.stride ?? input.stride;
+		const arrayStride = attribute.arrayStride ?? input.arrayStride;
 		const stepMode = attribute.stepMode ?? "vertex";
 		layouts.push({
-			arrayStride: stride,
+			arrayStride,
 			stepMode,
 			attributes: [{
 				shaderLocation: input.location,
@@ -1849,8 +2078,8 @@ function resolveVertexState(vertexInputs, attributes) {
 			buffer: attribute.buffer,
 			offset: attribute.offset ?? 0
 		});
-		keyParts.push(`${input.location}:${format}:${stride}:${stepMode}`);
-		if (inferredCount === void 0 && stepMode === "vertex" && attribute.buffer.length !== void 0 && attribute.stride === void 0) inferredCount = attribute.buffer.length / componentCount(format);
+		keyParts.push(`${input.location}:${format}:${arrayStride}:${stepMode}`);
+		if (inferredCount === void 0 && stepMode === "vertex" && attribute.buffer.length !== void 0 && attribute.arrayStride === void 0) inferredCount = attribute.buffer.length / componentCount(format);
 	}
 	return {
 		layouts,
@@ -1860,4 +2089,4 @@ function resolveVertexState(vertexInputs, attributes) {
 	};
 }
 
-export { debugCounters as A, mergeReflections as C, bytesPerTexel as D, alignTo as E, resetFrameCounters as F, debugLog as M, debugStats as N, toTypedArray as O, recordCacheAccess as P, PipelineCache as S, parseWGSL as T, peekCommandsState as _, copyExternalImage as a, isGpuBuffer as b, generateMipmaps as c, textureByteSize as d, updateTexture as f, objectId as g, frameState as h, packStruct as i, debugGroupsEnabled as j, debug as k, isGpuTexture as l, commandsState as m, buildBindGroups as n, createTexture as o, UniformAllocator as p, pipelineLayout as r, fullMipLevelCount as s, resolveVertexState as t, paddedBytesPerRow as u, BUFFER_USAGE_PRESETS as v, normalizeType as w, updateBuffer as x, createBuffer as y };
+export { bytesPerTexel as A, recordCacheAccess as B, resolveShaders as C, alignTo as D, parseWGSL as E, debug as F, debugCounters as I, debugGroupsEnabled as L, physicalExtent as M, texelCopyLayout as N, assertBlockAlignedOrigin as O, toTypedArray as P, debugLog as R, PipelineCache as S, normalizeType as T, resetFrameCounters as V, peekCommandsState as _, copyExternalImage as a, isGpuBuffer as b, generateMipmaps as c, textureByteSize as d, updateTexture as f, objectId as g, frameState as h, packStruct as i, isCompressedFormat as j, blockInfo as k, isGpuTexture as l, commandsState as m, buildBindGroups as n, createTexture as o, RingAllocator as p, pipelineLayout as r, fullMipLevelCount as s, resolveVertexState as t, paddedBytesPerRow as u, BUFFER_USAGE_PRESETS as v, mergeReflections as w, updateBuffer as x, createBuffer as y, debugStats as z };

@@ -552,6 +552,7 @@ function prevPowerOfTwo(n) {
 var mat4_exports = /* @__PURE__ */ __exportAll({
 	copy: () => copy$4,
 	create: () => create$5,
+	determinant: () => determinant,
 	equals: () => equals$7,
 	fromDirection: () => fromDirection$1,
 	fromMat3: () => fromMat3$1,
@@ -826,6 +827,31 @@ function invert$1(a) {
 	a[14] *= det;
 	a[15] *= det;
 	return a;
+}
+/**
+* Returns the determinant of a matrix.
+*
+* @param {import("./types.js").Mat4} a
+* @returns {number}
+*/
+function determinant(a) {
+	const a00 = a[0];
+	const a10 = a[1];
+	const a20 = a[2];
+	const a30 = a[3];
+	const a01 = a[4];
+	const a11 = a[5];
+	const a21 = a[6];
+	const a31 = a[7];
+	const a02 = a[8];
+	const a12 = a[9];
+	const a22 = a[10];
+	const a32 = a[11];
+	const a03 = a[12];
+	const a13 = a[13];
+	const a23 = a[14];
+	const a33 = a[15];
+	return (a00 * a11 - a01 * a10) * (a22 * a33 - a23 * a32) - (a00 * a12 - a02 * a10) * (a21 * a33 - a23 * a31) + (a00 * a13 - a03 * a10) * (a21 * a32 - a22 * a31) + (a01 * a12 - a02 * a11) * (a20 * a33 - a23 * a30) - (a01 * a13 - a03 * a11) * (a20 * a32 - a22 * a30) + (a02 * a13 - a03 * a12) * (a20 * a31 - a21 * a30);
 }
 /**
 * Transposes a matrix.

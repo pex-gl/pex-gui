@@ -40,13 +40,13 @@
   "dependencies": {
     "pex-color": "^2.3.0",
     "pex-geom": "^3.1.1",
-    "pex-math": "^4.3.2"
+    "pex-math": "^4.4.0"
   },
   "devDependencies": {
     "es-module-shims": "^2.8.4",
     "pex-cam": "^3.0.1",
     "pex-context": "^4.1.0",
-    "pex-gpu": "^0.0.2",
+    "pex-gpu": "^0.0.3",
     "pex-io": "^3.2.0",
     "primitive-geometry": "^2.11.0"
   },
