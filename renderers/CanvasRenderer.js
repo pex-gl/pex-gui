@@ -27,9 +27,11 @@ function makePaletteImage(item, w, img) {
 }
 
 class CanvasRenderer {
-  constructor({ width, height, pixelRatio = devicePixelRatio, theme }) {
+  constructor({ ctx, width, height, pixelRatio = devicePixelRatio, theme }) {
     this.pixelRatio = pixelRatio;
     this.theme = theme;
+
+    this.targetContext = ctx;
 
     this.canvas = document.createElement("canvas");
     this.canvas.width = width * this.pixelRatio;
@@ -126,19 +128,18 @@ class CanvasRenderer {
       if (Number.isFinite(item.x)) dx = item.x;
       if (Number.isFinite(item.y)) dy = item.y;
 
-      let eh = itemHeight;
       if (item.type === "tab") continue;
+      let eh = itemHeight;
 
       if (tabs.length > 0) {
         const prevTabs = items.filter(
           ({ type }, index) => index < i && type === "tab",
         );
-        const parentTab = prevTabs[prevTabs.length - 1];
+        const parentTab = prevTabs.at(-1);
         if (parentTab && !parentTab.current) {
           continue;
         } else {
           if (needInitialDy && item.type !== "column") {
-            needInitialDy = false;
             dy += tabHeight + padding * 3;
           }
         }
@@ -147,7 +148,6 @@ class CanvasRenderer {
 
       const x = dx + padding;
       const width = w - padding * 2;
-      const textY = titleHeight / 2 + fontCapOffset;
 
       // Compute item height
       if (item.type === "column") {
@@ -215,6 +215,8 @@ class CanvasRenderer {
         ctx.fillRect(dx, dy, w, eh + (needsPadding ? padding : 0));
       }
 
+      const textY = titleHeight / 2 + fontCapOffset;
+
       // Draw item
       if (item.type === "slider") {
         const y = dy + titleHeight;
@@ -281,9 +283,9 @@ class CanvasRenderer {
               makePaletteImage(item, w, item.options.palette);
             } else {
               const img = new Image();
-              img.onload = () => {
+              img.addEventListener("load", () => {
                 makePaletteImage(item, w, img);
-              };
+              });
               img.src = item.options.palette;
             }
           }
@@ -511,7 +513,7 @@ class CanvasRenderer {
         ctx.stroke();
 
         ctx.fillText(
-          `${item.title}: ${item.options.format(item.values[item.values.length - 1])}`,
+          `${item.title}: ${item.options.format(item.values.at(-1))}`,
           x + textPadding,
           dy + textY,
         );
@@ -561,8 +563,8 @@ class CanvasRenderer {
     maxWidth = Math.max(maxWidth, tabs.length * (w + gap));
 
     if (maxWidth && maxHeight) {
-      maxWidth = (maxWidth * this.pixelRatio) | 0;
-      maxHeight = (maxHeight * this.pixelRatio) | 0;
+      maxWidth = Math.trunc(maxWidth * this.pixelRatio);
+      maxHeight = Math.trunc(maxHeight * this.pixelRatio);
       if (this.canvas.width !== maxWidth) {
         this.canvas.width = maxWidth;
         this.dirty = true;
@@ -581,6 +583,32 @@ class CanvasRenderer {
 
   getTexture() {
     return this.canvas;
+  }
+
+  isTexture(value) {
+    return (
+      value instanceof HTMLImageElement ||
+      value instanceof SVGImageElement ||
+      value instanceof HTMLVideoElement ||
+      value instanceof HTMLCanvasElement ||
+      value instanceof ImageBitmap ||
+      value instanceof OffscreenCanvas ||
+      (typeof VideoFrame !== "undefined" && value instanceof VideoFrame)
+    );
+  }
+
+  drawTexture2d(viewport, { texture, rect, flipY }) {
+    const ctx = this.targetContext;
+    const x = rect[0] + viewport[0] * this.pixelRatio;
+    const y = rect[1] + viewport[1] * this.pixelRatio;
+    const width = rect[2] - rect[0];
+    const height = rect[3] - rect[1];
+
+    ctx.save();
+    ctx.translate(x + width / 2, y + height / 2);
+    if (flipY) ctx.scale(1, -1);
+    ctx.drawImage(texture, -width / 2, -height / 2, width, height);
+    ctx.restore();
   }
 
   dispose() {

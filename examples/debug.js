@@ -8,6 +8,7 @@ document.querySelector("main").appendChild(canvas);
 
 const gui = createGUI(ctx, {
   renderer: new Renderers.DebugRenderer({
+    ctx,
     width: canvas.width / 3,
     height: canvas.height / 3,
     theme: DEFAULT_THEME,

@@ -110,7 +110,7 @@ class GUIControl {
 
   getStrValue() {
     if (this.type === "slider") {
-      const str = `${this.contextObject[this.attributeName]}`;
+      const str = String(this.contextObject[this.attributeName]);
       let dotPos = str.indexOf(".") + 1;
 
       if (dotPos === 0) return `${str}.0`;
@@ -118,7 +118,7 @@ class GUIControl {
       while (str.charAt(dotPos) === "0") {
         dotPos++;
       }
-      return str.substr(0, dotPos + 2);
+      return str.slice(0, Math.max(0, dotPos + 2));
     } else if (this.type === "color") {
       return this.options.alpha ? "HSLA" : "HSL";
     } else if (this.type === "toggle") {

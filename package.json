@@ -2,6 +2,7 @@
   "name": "pex-gui",
   "version": "3.3.0",
   "description": "GUI controls for PEX.",
+  "sideEffects": false,
   "keywords": [
     "pex",
     "gui",
@@ -29,8 +30,8 @@
       "default": "./index.js"
     }
   },
-  "main": "index.js",
-  "types": "types/index.d.ts",
+  "main": "./index.js",
+  "types": "./types/index.d.ts",
   "scripts": {
     "build": "snowdev build",
     "dev": "snowdev dev",
@@ -38,20 +39,21 @@
   },
   "dependencies": {
     "pex-color": "^2.3.0",
-    "pex-geom": "^3.1.0",
-    "pex-math": "^4.1.2"
+    "pex-geom": "^3.1.1",
+    "pex-math": "^4.4.0"
   },
   "devDependencies": {
-    "es-module-shims": "2.6.2",
+    "es-module-shims": "^2.8.4",
     "pex-cam": "^3.0.1",
-    "pex-context": "^4.0.0",
-    "pex-io": "^3.0.2",
+    "pex-context": "^4.1.0",
+    "pex-gpu": "^0.0.3",
+    "pex-io": "^3.2.0",
     "primitive-geometry": "^2.11.0"
   },
   "engines": {
     "node": ">=22.0.0",
     "npm": ">=10.5.1",
-    "snowdev": ">=2.5.x"
+    "snowdev": ">=3.0.0-alpha.1"
   },
   "snowdev": {
     "files": "{*.js,*(renderers|shaders)/**/*.js}"

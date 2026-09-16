@@ -1,30 +1,34 @@
 import { rect } from "pex-geom";
 import { utils } from "pex-math";
 
-import { CanvasRenderer, PexContextRenderer } from "./renderers/index.js";
+import {
+  CanvasRenderer,
+  PexContextRenderer,
+  PexGPURenderer,
+} from "./renderers/index.js";
 
 import GUIControl from "./GUIControl.js";
 import DEFAULT_THEME from "./theme.js";
-
-import VERT from "./shaders/main.vert.js";
-import TEXTURE_CUBE_FRAG from "./shaders/texture-cube.frag.js";
-import TEXTURE_2D_FRAG from "./shaders/texture-2d.frag.js";
 
 const isArrayLike = (value) =>
   Array.isArray(value) || ArrayBuffer.isView(value);
 
 /**
  * GUI controls for PEX.
- * @property {boolean} [enabled=true] Enable/disable pointer interaction and drawing.
+ *
+ * @property {boolean} [enabled=true] Enable/disable pointer interaction and
+ *   drawing.
  */
 class GUI {
   #pixelRatio;
   #scale;
 
   get size() {
-    return this.ctx.gl
-      ? [this.ctx.gl.drawingBufferWidth, this.ctx.gl.drawingBufferHeight]
-      : [this.ctx.canvas.width, this.ctx.canvas.height];
+    if (this.ctx.gl) {
+      return [this.ctx.gl.drawingBufferWidth, this.ctx.gl.drawingBufferHeight];
+    }
+    if (this.ctx.device) return [this.ctx.width, this.ctx.height];
+    return [this.ctx.canvas.width, this.ctx.canvas.height];
   }
 
   get canvas() {
@@ -38,6 +42,7 @@ class GUI {
 
   /**
    * Creates an instance of GUI.
+   *
    * @param {ctx | CanvasRenderingContext2D} ctx
    * @param {import("./types.js").GUIOptions} opts
    */
@@ -73,127 +78,23 @@ class GUI {
     this.items = [];
 
     // Create renderer
-    const isPexContext = this.ctx.gl;
+    const isPexContext = !!this.ctx.gl;
+    const isPexGPU = !!this.ctx.device;
     const [rendererWidth, rendererHeight] = [W / 3, H / 3];
 
     this.renderer =
       renderer ||
-      new (isPexContext ? PexContextRenderer : CanvasRenderer)({
+      new (isPexGPU
+        ? PexGPURenderer
+        : isPexContext
+          ? PexContextRenderer
+          : CanvasRenderer)({
         ctx: this.ctx,
         width: rendererWidth,
         height: rendererHeight,
         pixelRatio: this.#pixelRatio,
         theme: this.theme,
       });
-
-    if (isPexContext) {
-      const attributes = {
-        aPosition: {
-          buffer: ctx.vertexBuffer([
-            [-1, -1],
-            [1, -1],
-            [1, 1],
-            [-1, 1],
-          ]),
-        },
-        aTexCoord0: {
-          buffer: ctx.vertexBuffer([
-            [0, 0],
-            [1, 0],
-            [1, 1],
-            [0, 1],
-          ]),
-        },
-      };
-
-      const indices = {
-        buffer: ctx.indexBuffer([
-          [0, 1, 2],
-          [0, 2, 3],
-        ]),
-      };
-
-      const pipelineOptions = {
-        depthTest: false,
-        depthWrite: false,
-        blend: true,
-        blendSrcRGBFactor: ctx.BlendFactor.SrcAlpha,
-        blendSrcAlphaFactor: ctx.BlendFactor.One,
-        blendDstRGBFactor: ctx.BlendFactor.OneMinusSrcAlpha,
-        blendDstAlphaFactor: ctx.BlendFactor.One,
-      };
-
-      const drawTexture2dCmd = {
-        name: "gui_drawTexture2d",
-        pipeline: ctx.pipeline({
-          vert: VERT,
-          frag: TEXTURE_2D_FRAG,
-          ...pipelineOptions,
-        }),
-        attributes,
-        indices,
-      };
-
-      const drawTextureCubeCmd = {
-        name: "gui_drawTextureCube",
-        pipeline: ctx.pipeline({
-          vert: VERT,
-          frag: TEXTURE_CUBE_FRAG,
-          ...pipelineOptions,
-        }),
-        attributes,
-        indices,
-        uniforms: {
-          uFlipEnvMap: 1,
-        },
-      };
-
-      this.drawTexture2d = ({ texture, rect, flipY }) => {
-        if (flipY) [rect[1], rect[3]] = [rect[3], rect[1]];
-        ctx.submit(drawTexture2dCmd, {
-          viewport: this.viewport,
-          uniforms: {
-            uTexture: texture,
-            uCorrectGamma: [
-              ctx.PixelFormat.SRGB8,
-              ctx.PixelFormat.SRGB8_ALPHA8,
-            ].includes(texture.pixelFormat),
-            uViewport: this.viewport,
-            uRect: rect,
-          },
-        });
-      };
-
-      this.drawTextureCube = ({ texture, rect, level, flipEnvMap }) => {
-        ctx.submit(drawTextureCubeCmd, {
-          viewport: this.viewport,
-          uniforms: {
-            uTexture: texture,
-            uCorrectGamma: [
-              ctx.PixelFormat.SRGB8,
-              ctx.PixelFormat.SRGB8_ALPHA8,
-            ].includes(texture.pixelFormat),
-            uViewport: this.viewport,
-            uRect: rect,
-            uLevel: level,
-            uFlipEnvMap: flipEnvMap || 1,
-          },
-        });
-      };
-    } else {
-      this.drawTexture2d = ({ texture, rect, flipY }) => {
-        const x = rect[0] + this.x * pixelRatio;
-        const y = rect[1] + this.y * pixelRatio;
-        const width = rect[2] - rect[0];
-        const height = rect[3] - rect[1];
-
-        ctx.save();
-        ctx.translate(x + width / 2, y + height / 2);
-        if (flipY) ctx.scale(1, -1);
-        ctx.drawImage(texture, -width / 2, -height / 2, width, height);
-        ctx.restore();
-      };
-    }
 
     if (overlay) {
       this.overlay = {
@@ -214,7 +115,7 @@ class GUI {
       this.canvas.addEventListener("pointerup", this.onPointerUp.bind(this));
     }
 
-    window.addEventListener("keydown", this.onKeyDown.bind(this));
+    addEventListener("keydown", this.onKeyDown.bind(this));
   }
 
   // Helpers
@@ -284,10 +185,10 @@ class GUI {
     if (!this.enabled) return;
 
     this.items.forEach((item) => {
-      if (item.type === "text" && item.focus) {
-        item.focus = false;
-        item.dirty = true;
-      }
+      if (!(item.type === "text" && item.focus)) return;
+
+      item.focus = false;
+      item.dirty = true;
     });
 
     this.activeControl = null;
@@ -298,7 +199,7 @@ class GUI {
       const prevTabs = this.items.filter(
         ({ type }, index) => index < i && type === "tab",
       );
-      const parentTab = prevTabs[prevTabs.length - 1];
+      const parentTab = prevTabs.at(-1);
       if (parentTab && !parentTab.current && this.items[i].type !== "tab") {
         continue;
       }
@@ -384,7 +285,7 @@ class GUI {
     if (this.activeControl) {
       const aa = this.getScaledActiveArea(this.activeControl.activeArea);
 
-      let value = 0;
+      let value;
       let index = 0;
 
       const isSlider = this.activeControl.type === "slider";
@@ -432,10 +333,10 @@ class GUI {
           index = Math.floor(
             (numSliders * (this.pointerOffset[1] - aa[0][1])) / slidersHeight,
           );
-          if (!isNaN(this.activeControl.clickedSlider)) {
-            index = this.activeControl.clickedSlider;
-          } else {
+          if (isNaN(this.activeControl.clickedSlider)) {
             this.activeControl.clickedSlider = index;
+          } else {
+            index = this.activeControl.clickedSlider;
           }
         }
 
@@ -453,25 +354,25 @@ class GUI {
   }
 
   onPointerUp() {
-    if (this.activeControl) {
-      this.activeControl.active = false;
-      this.activeControl.dirty = true;
-      this.activeControl.clickedSlider = undefined;
-      this.activeControl.clickedPalette = undefined;
-      this.activeControl = null;
-    }
+    if (!this.activeControl) return;
+
+    this.activeControl.active = false;
+    this.activeControl.dirty = true;
+    this.activeControl.clickedSlider = undefined;
+    this.activeControl.clickedPalette = undefined;
+    this.activeControl = null;
   }
 
   onKeyDown(event) {
-    const focusedItem = this.items.filter(
+    const focusedItem = this.items.find(
       ({ type, focus }) => type === "text" && focus,
-    )[0];
+    );
     if (!focusedItem) return;
 
     switch (event.key) {
       case "Backspace": {
         const str = focusedItem.contextObject[focusedItem.attributeName];
-        focusedItem.contextObject[focusedItem.attributeName] = str.substr(
+        focusedItem.contextObject[focusedItem.attributeName] = str.slice(
           0,
           Math.max(0, str.length - 1),
         );
@@ -487,7 +388,7 @@ class GUI {
       }
     }
 
-    const c = event.key.charCodeAt(0);
+    const c = event.key.codePointAt(0);
     if (event.key.length === 1 && c >= 32 && c <= 126) {
       focusedItem.contextObject[focusedItem.attributeName] += event.key;
       focusedItem.dirty = true;
@@ -504,6 +405,7 @@ class GUI {
   // Public API
   /**
    * Add a tab control.
+   *
    * @param {string} title
    * @param {object} contextObject
    * @param {string} attributeName
@@ -544,6 +446,7 @@ class GUI {
 
   /**
    * Add a column control with a header.
+   *
    * @param {string} title
    * @param {number} [width=this.theme.columnWidth]
    * @returns {GUIControl}
@@ -580,6 +483,7 @@ class GUI {
 
   /**
    * Add a header control.
+   *
    * @param {string} title
    * @returns {GUIControl}
    */
@@ -603,6 +507,7 @@ class GUI {
 
   /**
    * Add some breathing space between controls.
+   *
    * @returns {GUIControl}
    */
   addSeparator() {
@@ -620,14 +525,16 @@ class GUI {
 
   /**
    * Add a text label. Can be multiple line.
-   * @param {string} title
-   * @param {import("./types.js").GUIControlOptions} [options={}]
-   * @returns {GUIControl}
    *
    * @example
+   *
    * ```js
    * gui.addLabel("Multiline\nLabel");
    * ```
+   *
+   * @param {string} title
+   * @param {import("./types.js").GUIControlOptions} [options={}]
+   * @returns {GUIControl}
    */
   addLabel(title, options) {
     const ctrl = new GUIControl({
@@ -650,14 +557,9 @@ class GUI {
 
   /**
    * Add a generic parameter control.
-   * @param {string} title
-   * @param {object} contextObject
-   * @param {string} attributeName
-   * @param {import("./types.js").GUIControlOptions} [options={}]
-   * @param {Function} onChange
-   * @returns {GUIControl}
    *
    * @example
+   *
    * ```js
    * gui.addParam("Checkbox", State, "rotate");
    *
@@ -680,54 +582,55 @@ class GUI {
    * gui.addParam("Texture", State, "texture");
    * gui.addParam("Texture Cube", State, "textureCube");
    * ```
+   *
+   * @param {string} title
+   * @param {object} contextObject
+   * @param {string} attributeName
+   * @param {import("./types.js").GUIControlOptions} [options={}]
+   * @param {Function} onChange
+   * @returns {GUIControl}
    */
   addParam(title, contextObject, attributeName, options = {}, onChange) {
     let ctrl = null;
     options ??= {};
     if (options.min === undefined) options.min = 0;
     if (options.max === undefined) options.max = 1;
-    // Check for class property
-    const isPexContextParam = hasOwnProperty.call(
-      contextObject[attributeName],
-      "class",
-    );
-    if (isPexContextParam && contextObject[attributeName].class === "texture") {
-      const texture = contextObject[attributeName];
-      if (texture.target === this.ctx.gl.TEXTURE_CUBE_MAP) {
-        ctrl = new GUIControl({
-          type: "textureCube",
-          title,
-          contextObject,
-          attributeName,
-          texture,
-          options: options || { flipEnvMap: 1 },
-          activeArea: [
-            [0, 0],
-            [0, 0],
-          ],
-          dirty: true,
-        });
-      } else {
-        ctrl = new GUIControl({
-          type: "texture2D",
-          title,
-          contextObject,
-          attributeName,
-          texture,
-          options,
-          activeArea: [
-            [0, 0],
-            [0, 0],
-          ],
-          dirty: true,
-        });
-      }
+
+    const value = contextObject?.[attributeName];
+
+    if (this.renderer.isTexture?.(value)) {
+      const texture = value;
+
+      ctrl = this.renderer.isTextureCube?.(texture)
+        ? new GUIControl({
+            type: "textureCube",
+            title,
+            contextObject,
+            attributeName,
+            texture,
+            options: options || { flipEnvMap: 1 },
+            activeArea: [
+              [0, 0],
+              [0, 0],
+            ],
+            dirty: true,
+          })
+        : new GUIControl({
+            type: "texture2D",
+            title,
+            contextObject,
+            attributeName,
+            texture,
+            options,
+            activeArea: [
+              [0, 0],
+              [0, 0],
+            ],
+            dirty: true,
+          });
       this.items.push(ctrl);
       return ctrl;
-    } else if (
-      contextObject[attributeName] === false ||
-      contextObject[attributeName] === true
-    ) {
+    } else if (value === false || value === true) {
       ctrl = new GUIControl({
         type: "toggle",
         title,
@@ -743,7 +646,7 @@ class GUI {
       });
       this.items.push(ctrl);
       return ctrl;
-    } else if (!isNaN(contextObject[attributeName])) {
+    } else if (!isNaN(value)) {
       ctrl = new GUIControl({
         type: "slider",
         title,
@@ -759,11 +662,7 @@ class GUI {
       });
       this.items.push(ctrl);
       return ctrl;
-    } else if (
-      isArrayLike(contextObject[attributeName]) &&
-      options &&
-      options.type === "color"
-    ) {
+    } else if (isArrayLike(value) && options && options.type === "color") {
       ctrl = new GUIControl({
         type: "color",
         title,
@@ -780,7 +679,7 @@ class GUI {
       });
       this.items.push(ctrl);
       return ctrl;
-    } else if (isArrayLike(contextObject[attributeName])) {
+    } else if (isArrayLike(value)) {
       ctrl = new GUIControl({
         type: "multislider",
         title,
@@ -796,7 +695,7 @@ class GUI {
       });
       this.items.push(ctrl);
       return ctrl;
-    } else if (typeof contextObject[attributeName] === "string") {
+    } else if (typeof value === "string") {
       ctrl = new GUIControl({
         type: "text",
         title,
@@ -813,20 +712,23 @@ class GUI {
       this.items.push(ctrl);
       return ctrl;
     }
+    return ctrl;
   }
 
   /**
    * Add a clickable button.
-   * @param {string} title
-   * @param {Function} onClick
-   * @returns {GUIControl}
    *
    * @example
+   *
    * ```js
    * gui.addButton("Button", () => {
    *   console.log("Called back");
    * });
    * ```
+   *
+   * @param {string} title
+   * @param {Function} onClick
+   * @returns {GUIControl}
    */
   addButton(title, onClick) {
     const ctrl = new GUIControl({
@@ -846,14 +748,9 @@ class GUI {
 
   /**
    * Add a radio list with options.
-   * @param {string} title
-   * @param {object} contextObject
-   * @param {string} attributeName
-   * @param {Array.<{ name: string, value: number }>} items
-   * @param {Function} onChange
-   * @returns {GUIControl}
    *
    * @example
+   *
    * ```js
    * gui.addRadioList(
    *   "Radio list",
@@ -862,9 +759,16 @@ class GUI {
    *   ["Choice 1", "Choice 2", "Choice 3"].map((name, value) => ({
    *     name,
    *     value,
-   *   }))
+   *   })),
    * );
    * ```
+   *
+   * @param {string} title
+   * @param {object} contextObject
+   * @param {string} attributeName
+   * @param {{ name: string; value: number }[]} items
+   * @param {Function} onChange
+   * @returns {GUIControl}
    */
   addRadioList(title, contextObject, attributeName, items, onChange) {
     const ctrl = new GUIControl({
@@ -885,19 +789,25 @@ class GUI {
   }
 
   /**
-   * Add a texture visualiser and selector for multiple textures (from pex-context) or images.
-   * @param {string} title
-   * @param {object} contextObject
-   * @param {string} attributeName
-   * @param {Array.<{ texture: import("pex-context").texture | CanvasImageSource, value: number}>} items
-   * @param {number} [itemsPerRow=4]
-   * @param {Function} onChange
-   * @returns {GUIControl}
+   * Add a texture visualiser and selector for multiple textures (from
+   * pex-context) or images.
    *
    * @example
+   *
    * ```js
    * gui.addTexture2DList("List", State, "currentTexture", textures.map((texture, value) = > ({ texture, value })));
    * ```
+   *
+   * @param {string} title
+   * @param {object} contextObject
+   * @param {string} attributeName
+   * @param {{
+   *   texture: import("pex-context").texture | CanvasImageSource;
+   *   value: number;
+   * }[]} items
+   * @param {number} [itemsPerRow=4]
+   * @param {Function} onChange
+   * @returns {GUIControl}
    */
   addTexture2DList(
     title,
@@ -926,17 +836,19 @@ class GUI {
   }
 
   /**
-   * Add a texture (from pex-context) or image visualiser.
-   * Notes: texture cannot be updated once created.
+   * Add a texture (from pex-context) or image visualiser. Notes: texture cannot
+   * be updated once created.
+   *
+   * @example
+   *
+   * ```js
+   * gui.addTexture2D("Single", image);
+   * ```
+   *
    * @param {string} title
    * @param {import("pex-context").texture | CanvasImageSource} texture
    * @param {import("./types.js").GUIControlOptions} options
    * @returns {GUIControl}
-   *
-   * @example
-   * ```js
-   * gui.addTexture2D("Single", image);
-   * ```
    */
   addTexture2D(title, texture, options) {
     const ctrl = new GUIControl({
@@ -955,17 +867,19 @@ class GUI {
   }
 
   /**
-   * Add a cube texture visualiser (from pex-context).
-   * Notes: texture cannot be updated once created.
-   * @param {string} title
-   * @param {import("pex-context").textureCube} texture
-   * @param {{ flipEnvMap: number, level: number }} options
-   * @returns {GUIControl}
+   * Add a cube texture visualiser (from pex-context). Notes: texture cannot be
+   * updated once created.
    *
    * @example
+   *
    * ```js
    * gui.addTextureCube("Cube", State.cubeTexture, { level: 2 });
    * ```
+   *
+   * @param {string} title
+   * @param {import("pex-context").textureCube} texture
+   * @param {import("./types.js").GUIControlOptions} options
+   * @returns {GUIControl}
    */
   addTextureCube(title, texture, options) {
     const ctrl = new GUIControl({
@@ -985,11 +899,9 @@ class GUI {
 
   /**
    * Add a XY graph visualiser from the control values.
-   * @param {string} title
-   * @param {import("./types.js").GUIControlOptions} options
-   * @returns {GUIControl}
    *
    * @example
+   *
    * ```js
    * gui.addGraph("Sin", {
    *   interval: 500,
@@ -1002,6 +914,10 @@ class GUI {
    *   },
    * });
    * ```
+   *
+   * @param {string} title
+   * @param {import("./types.js").GUIControlOptions} options
+   * @returns {GUIControl}
    */
   addGraph(title, options) {
     const ctrl = new GUIControl({
@@ -1025,6 +941,7 @@ class GUI {
 
   /**
    * Add a FPS counter. Need "gui.draw()" to be called on frame.
+   *
    * @returns {GUIControl}
    */
   addFPSMeeter() {
@@ -1067,8 +984,10 @@ class GUI {
 
   /**
    * Add an updatable object stats visualiser.
+   *
    * @param {string} title
-   * @param {object} [options] An object with an update() function to update control.stats.
+   * @param {object} [options] An object with an update() function to update
+   *   control.stats.
    * @returns {GUIControl}
    */
   addStats(title, options) {
@@ -1103,6 +1022,7 @@ class GUI {
 
   /**
    * Remove controls
+   *
    * @param {GUIControl | GUIControl[]} items
    */
   remove(items) {
@@ -1116,12 +1036,13 @@ class GUI {
 
   /**
    * Move a control after another
+   *
    * @param {GUIControl} item
    * @param {GUIControl} targetItem
    */
   moveAfter(item, targetItem) {
-    const fromIndex = this.items.findIndex((i) => i === item);
-    const toIndex = this.items.findIndex((i) => i === targetItem);
+    const fromIndex = this.items.indexOf(item);
+    const toIndex = this.items.indexOf(targetItem);
 
     if (fromIndex !== -1 && toIndex !== -1) {
       const [item] = this.items.splice(fromIndex, 1);
@@ -1133,10 +1054,10 @@ class GUI {
   isAnyItemDirty(items) {
     let dirty = false;
     items.forEach((item) => {
-      if (item.dirty) {
-        item.dirty = false;
-        dirty = true;
-      }
+      if (!item.dirty) return;
+
+      item.dirty = false;
+      dirty = true;
     });
     return dirty;
   }
@@ -1190,7 +1111,7 @@ class GUI {
       overlayItem.removeEventListener("pointerup", this.onPointerUp);
       overlayItem.remove();
     };
-    this.overlay.container.appendChild(overlayItem);
+    this.overlay.container.append(overlayItem);
 
     item.overlayItem = overlayItem;
   }
@@ -1206,9 +1127,7 @@ class GUI {
     });
   }
 
-  /**
-   * Renders the GUI. Should be called at the end of the frame.
-   */
+  /** Renders the GUI. Should be called at the end of the frame. */
   draw() {
     if (!this.enabled || this.items.length === 0) return;
 
@@ -1232,17 +1151,13 @@ class GUI {
     if (this.isAnyItemDirty(this.items) || resized || this.renderer.dirty) {
       this.renderer.draw(this.items);
 
-      if (this.responsive) {
-        this.#scale = Math.min(
-          Math.min(
+      this.#scale = this.responsive
+        ? Math.min(
             this.canvas.clientWidth / rendererWidth,
             this.canvas.clientHeight / rendererHeight,
-          ),
-          this.scale,
-        );
-      } else {
-        this.#scale = this.scale;
-      }
+            this.scale,
+          )
+        : this.scale;
 
       if (this.overlay) {
         const { left, top, width, height } =
@@ -1272,7 +1187,7 @@ class GUI {
       }
     }
 
-    this.drawTexture2d({
+    this.renderer.drawTexture2d(this.viewport, {
       texture,
       rect: [
         0,
@@ -1294,7 +1209,7 @@ class GUI {
         const prevTabs = items.filter(
           ({ type }, index) => index < i && type === "tab",
         );
-        const parentTab = prevTabs[prevTabs.length - 1];
+        const parentTab = prevTabs.at(-1);
         if (parentTab && !parentTab.current) {
           continue;
         }
@@ -1314,10 +1229,13 @@ class GUI {
         if (texture.flipY) {
           [bounds[1], bounds[3]] = [bounds[3], bounds[1]];
         }
-        this.drawTexture2d({
+        this.renderer.drawTexture2d(this.viewport, {
           texture,
           rect: bounds,
           flipY,
+          near: item.options?.near,
+          far: item.options?.far,
+          layer: item.options?.layer,
         });
       };
       if (item.type === "texture2D") {
@@ -1331,7 +1249,7 @@ class GUI {
           item.activeArea[1][0] * scale,
           item.activeArea[0][1] * scale,
         ];
-        this.drawTextureCube({
+        this.renderer.drawTextureCube(this.viewport, {
           texture: item.contextObject
             ? item.contextObject[item.attributeName]
             : item.texture,
@@ -1341,6 +1259,9 @@ class GUI {
               ? item.options.level
               : 0,
           flipEnvMap: item.options.flipEnvMap,
+          near: item.options.near,
+          far: item.options.far,
+          layer: item.options.layer,
         });
       }
     }
@@ -1348,6 +1269,7 @@ class GUI {
 
   /**
    * Retrieve a serialized value of the current GUI's state.
+   *
    * @returns {object}
    */
   serialize() {
@@ -1358,19 +1280,21 @@ class GUI {
 
   /**
    * Deserialize a previously serialized data state GUI's state.
+   *
    * @param {object} data
    */
   deserialize(data) {
     this.items.forEach((item) => {
-      if (data[item.title] !== undefined) {
-        item.setSerializedValue(data[item.title]);
-        item.dirty = true;
-      }
+      if (data[item.title] === undefined) return;
+
+      item.setSerializedValue(data[item.title]);
+      item.dirty = true;
     });
   }
 
   /**
-   * Remove events listeners, empty list of controls and dispose of the gui's resources.
+   * Remove events listeners, empty list of controls and dispose of the gui's
+   * resources.
    */
   dispose() {
     if (this.overlay) {
@@ -1380,7 +1304,7 @@ class GUI {
       this.canvas.removeEventListener("pointerdown", this.onPointerDown);
       this.canvas.removeEventListener("pointermove", this.onPointerMove);
       this.canvas.removeEventListener("pointerup", this.onPointerUp);
-      window.removeEventListener("keydown", this.onKeyDown);
+      removeEventListener("keydown", this.onKeyDown);
     }
 
     for (let i = 0; i < this.items.length; i++) {
@@ -1397,10 +1321,10 @@ export * as Renderers from "./renderers/index.js";
 export { DEFAULT_THEME };
 
 /**
- * @alias module:pex-gui.default
  * @param {import("./types.js").ctx | CanvasRenderingContext2D} ctx
  * @param {import("./types.js").GUIOptions} opts
  * @returns {GUI}
+ * @alias module:pex-gui.default
  */
 function createGUI(ctx, opts) {
   return new GUI(ctx, opts);

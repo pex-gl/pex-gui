@@ -1,4 +1,5 @@
 import { load } from "pex-io";
+import * as gpu from "pex-gpu";
 
 export default async function addAllControls(gui, ctx) {
   const res = await load({
@@ -16,7 +17,9 @@ export default async function addAllControls(gui, ctx) {
     negz: { image: `examples/assets/pisa/pisa_negz.jpg` },
   });
 
-  const isPexGl = ctx.gl;
+  const isPexContext = !!ctx.gl;
+  const isPexGPU = !!ctx.device;
+  const supportsTextureCube = isPexContext || isPexGPU;
 
   const images = [res.plask, res.pex, res.noise, res.normal];
 
@@ -36,33 +39,46 @@ export default async function addAllControls(gui, ctx) {
     rgba: [0.2, 0.92, 0.2, 1.0],
     palette: Float32Array.of(0.2, 0.2, 0.92, 1.0),
     paletteHsl: Float32Array.of(0.92, 0.2, 0.92, 1.0),
-    cubeTexture: isPexGl
-      ? ctx.textureCube({
-          data: [res.posx, res.negx, res.posy, res.negy, res.posz, res.negz],
-          width: 64,
-          height: 64,
-          pixelFormat: ctx.PixelFormat.SRGB8_ALPHA8,
-        })
+    cubeTexture: supportsTextureCube
+      ? isPexGPU
+        ? gpu.createTexture(ctx, {
+            data: [res.posx, res.negx, res.posy, res.negy, res.posz, res.negz],
+            viewDimension: "cube",
+          })
+        : ctx.textureCube({
+            data: [res.posx, res.negx, res.posy, res.negy, res.posz, res.negz],
+            width: 64,
+            height: 64,
+            pixelFormat: ctx.PixelFormat.SRGB8_ALPHA8,
+          })
       : null,
     currentTexture: 0,
-    textures: isPexGl
-      ? images.map((image) =>
-          ctx.texture2D({
-            data: image,
-            width: image.width,
-            height: image.height,
-            flipY: true,
-            wrap: ctx.Wrap.Repeat,
-            mipmap: true,
-            min: ctx.Filter.LinearMipmapLinear,
-            aniso: 16,
-            pixelFormat:
-              image === res.normal
-                ? ctx.PixelFormat.RGBA8
-                : ctx.PixelFormat.SRGB8_ALPHA8,
-          }),
-        )
-      : images,
+    textures:
+      isPexContext || isPexGPU
+        ? images.map((image) =>
+            isPexGPU
+              ? gpu.createTexture(ctx, {
+                  data: image,
+                  mipmap: true,
+                  format:
+                    image === res.normal ? "rgba8unorm" : "rgba8unorm-srgb",
+                })
+              : ctx.texture2D({
+                  data: image,
+                  width: image.width,
+                  height: image.height,
+                  flipY: true,
+                  wrap: ctx.Wrap.Repeat,
+                  mipmap: true,
+                  min: ctx.Filter.LinearMipmapLinear,
+                  aniso: 16,
+                  pixelFormat:
+                    image === res.normal
+                      ? ctx.PixelFormat.RGBA8
+                      : ctx.PixelFormat.SRGB8_ALPHA8,
+                }),
+          )
+        : images,
   };
 
   // Controls
@@ -124,7 +140,9 @@ export default async function addAllControls(gui, ctx) {
       value,
     })),
   );
-  if (isPexGl) gui.addTextureCube("Cube", State.cubeTexture, { level: 2 }); // gui.addParam("Cube", State, "cubeTexture", { level: 2 });
+  if (isPexContext || isPexGPU) {
+    gui.addTextureCube("Cube", State.cubeTexture, { level: 2 }); // gui.addParam("Cube", State, "cubeTexture", { level: 2 });
+  }
 
   gui.addColumn("Graphs");
   gui.addGraph("Sin", {

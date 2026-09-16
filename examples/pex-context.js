@@ -7,17 +7,7 @@ import createGUI from "../index.js";
 import GAMMA from "../shaders/chunks/gamma.glsl.js";
 
 import allControls from "./all-controls.js";
-
-const ExampleState = {
-  scale: 1,
-  rotate: false,
-  time: 0,
-  size: [1, 0.2],
-  rotation: [0, 0, 0],
-  bgColor: [0.2, 0.2, 0.2, 1.0],
-  currentGeometry: 0,
-  geometries: [],
-};
+import addExampleControls from "./example-controls.js";
 
 const vert = /* glsl */ `
 attribute vec2 aTexCoord;
@@ -63,51 +53,9 @@ const camera = createCamera({
 
 const orbiter = createOrbiter({ camera });
 
-const { State, res } = await allControls(gui, ctx);
+const { State } = await allControls(gui, ctx);
 
-// Example
-gui.addTab("Example");
-gui.addColumn("Settings");
-gui.addParam("Scale", ExampleState, "scale", { min: 0.1, max: 2 });
-gui.addParam("Rotate camera", ExampleState, "rotate");
-gui.addParam("Rotation", ExampleState, "rotation", {
-  min: -Math.PI / 2,
-  max: Math.PI / 2,
-});
-gui.addHeader("Color");
-gui.addParam("BG Color [RGBA]", ExampleState, "bgColor");
-gui.addParam("BG Color [HSB]", ExampleState, "bgColor", {
-  type: "color",
-  palette: res.paletteHsl,
-});
-
-gui.addColumn("Geometry");
-gui.addRadioList(
-  "Type",
-  ExampleState,
-  "currentGeometry",
-  ExampleState.geometries,
-);
-gui.addParam("Torus Size", ExampleState, "size", { min: 0.1, max: 2 }, () => {
-  const torus = createTorus({
-    minorRadius: ExampleState.size[1],
-    radius: ExampleState.size[0],
-  });
-  ctx.update(ExampleState.geometries[1].attributes.aPosition, {
-    data: torus.positions,
-  });
-});
-
-gui.addColumn("Texture");
-gui.addTexture2D("Default", State.textures[1]);
-gui.addTexture2DList(
-  "Default",
-  State,
-  "currentTexture",
-  State.textures.map((tex, index) => {
-    return { texture: tex, value: index };
-  }),
-);
+const { State: ExampleState } = await addExampleControls(gui, ctx, State);
 
 const clearCmd = {
   pass: ctx.pass({
