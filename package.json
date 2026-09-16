@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "pex-color": "^2.3.0",
-    "pex-geom": "^3.1.1",
+    "pex-geom": "^3.1.2",
     "pex-math": "^4.4.0"
   },
   "devDependencies": {
