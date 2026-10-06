@@ -427,7 +427,7 @@ gui.addRadioList(
 ### guI.addTexture2DList(title, contextObject, attributeName, items, [itemsPerRow], onChange) ⇒ <code>GUIControl</code>
 
 Add a texture visualiser and selector for multiple textures (from
-pex-context) or images.
+pex-context or pex-gpu) or images.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
@@ -450,16 +450,16 @@ gui.addTexture2DList("List", State, "currentTexture", textures.map((texture, val
 
 ### guI.addTexture2D(title, texture, options) ⇒ <code>GUIControl</code>
 
-Add a texture (from pex-context) or image visualiser. Notes: texture cannot
-be updated once created.
+Add a texture (from pex-context or pex-gpu) or image visualiser. Notes:
+texture cannot be updated once created.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param   | Type                                                                      |
-| ------- | ------------------------------------------------------------------------- |
-| title   | <code>string</code>                                                       |
-| texture | <code>module:pex-context~texture</code> \| <code>CanvasImageSource</code> |
-| options | [<code>GUIControlOptions</code>](#GUIControlOptions)                      |
+| Param   | Type                                                                                                                |
+| ------- | ------------------------------------------------------------------------------------------------------------------- |
+| title   | <code>string</code>                                                                                                 |
+| texture | <code>module:pex-context~texture</code> \| <code>module:pex-gpu~GpuTexture</code> \| <code>CanvasImageSource</code> |
+| options | [<code>GUIControlOptions</code>](#GUIControlOptions)                                                                |
 
 **Example**
 
@@ -471,16 +471,16 @@ gui.addTexture2D("Single", image);
 
 ### guI.addTextureCube(title, texture, options) ⇒ <code>GUIControl</code>
 
-Add a cube texture visualiser (from pex-context). Notes: texture cannot be
-updated once created.
+Add a cube texture visualiser (from pex-context or pex-gpu). Notes: texture
+cannot be updated once created.
 
 **Kind**: instance method of [<code>GUI</code>](#GUI)
 
-| Param   | Type                                                 |
-| ------- | ---------------------------------------------------- |
-| title   | <code>string</code>                                  |
-| texture | <code>module:pex-context~textureCube</code>          |
-| options | [<code>GUIControlOptions</code>](#GUIControlOptions) |
+| Param   | Type                                                                                  |
+| ------- | ------------------------------------------------------------------------------------- |
+| title   | <code>string</code>                                                                   |
+| texture | <code>module:pex-context~textureCube</code> \| <code>module:pex-gpu~GpuTexture</code> |
+| options | [<code>GUIControlOptions</code>](#GUIControlOptions)                                  |
 
 **Example**
 
@@ -654,10 +654,10 @@ resources.
 **Kind**: global typedef
 **Properties**
 
-| Name  | Type                                                                      |
-| ----- | ------------------------------------------------------------------------- |
-| name  | <code>module:pex-context~texture</code> \| <code>CanvasImageSource</code> |
-| value | <code>number</code>                                                       |
+| Name    | Type                                                                                                                |
+| ------- | ------------------------------------------------------------------------------------------------------------------- |
+| texture | <code>module:pex-context~texture</code> \| <code>module:pex-gpu~GpuTexture</code> \| <code>CanvasImageSource</code> |
+| value   | <code>number</code>                                                                                                 |
 
 <a name="ctx"></a>
 

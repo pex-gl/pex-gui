@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [4.0.1](https://github.com/pex-gl/pex-gui/compare/v4.0.0...v4.0.1) (2026-10-06)
+
+### Bug Fixes
+
+* correct tabsWidth ([e44d0c1](https://github.com/pex-gl/pex-gui/commit/e44d0c16361c0c03ff4e4dd84de95fd2c48270ac))
+* read the texture and size after the redraw ([28df252](https://github.com/pex-gl/pex-gui/commit/28df2520af209ea47802a5842f7135565b013e91))
+
 # [4.0.0](https://github.com/pex-gl/pex-gui/compare/v3.3.0...v4.0.0) (2026-09-16)
 
 
