@@ -8,6 +8,7 @@ import addAllControls from "./all-controls.js";
 import addExampleControls from "./example-controls.js";
 
 const ctx = await gpu.createContext({ pixelRatio: devicePixelRatio });
+document.querySelector("main").append(ctx.canvas);
 
 // GUI
 const gui = createGUI(ctx);

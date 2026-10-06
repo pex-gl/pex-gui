@@ -1,14 +1,17 @@
-import { C as resolveShaders, D as alignTo, E as parseWGSL, F as debug, I as debugCounters, L as debugGroupsEnabled, M as physicalExtent, N as texelCopyLayout, O as assertBlockAlignedOrigin, R as debugLog, S as PipelineCache, V as resetFrameCounters, _ as peekCommandsState, a as copyExternalImage, b as isGpuBuffer, c as generateMipmaps, f as updateTexture, h as frameState, l as isGpuTexture, m as commandsState, n as buildBindGroups, o as createTexture, r as pipelineLayout, t as resolveVertexState, v as BUFFER_USAGE_PRESETS, w as mergeReflections, x as updateBuffer, y as createBuffer, z as debugStats } from "./_chunks/vertex-layout-7Ek8fbYc.js";
+import { $ as assertBlockAlignedOrigin, A as disposeTiming, C as reflectWGSL, D as debugGroupsEnabled, E as debugCounters, G as updateBuffer, H as BUFFER_USAGE_PRESETS, I as trackCollectable, J as brand, L as trackPassTiming, M as resetFrameCounters, N as resetFrameTiming, O as debugLog, P as resolveFrameTiming, Q as alignTo, R as trackResource, S as reflectStages, T as debug, U as createBuffer, V as createTimestampQuery, W as isGpuBuffer, X as objectId, Y as nextId, Z as shared, _ as PipelineCache, a as copyExternalImage, c as generateMipmaps, f as updateTexture, g as peekCommandsState, h as frameState, it as texelCopyLayout, j as recordCacheAccess, k as debugStats, l as isGpuTexture, m as commandsState, n as buildBindGroups, o as createTexture, q as assertSchema, r as pipelineLayout, rt as physicalExtent, t as resolveVertexState, v as resolveShaders, w as completeFrameTiming, z as untrackResource } from "./_chunks/vertex-layout-ByhEderR.js";
 
 function resolveDepthStencilFormat(options) {
 	if (options.depthStencilFormat) return options.depthStencilFormat;
 	if (options.depth ?? true) return options.stencil ? "depth24plus-stencil8" : "depth24plus";
 	return options.stencil ? "stencil8" : void 0;
 }
-const contextState = /* @__PURE__ */ new WeakMap();
+const contextState = shared("contextState", () => /* @__PURE__ */ new WeakMap());
 const getState = (ctx) => {
 	const state = contextState.get(ctx);
-	if (!state) throw new Error("pex-gpu: unknown or disposed context");
+	if (!state) {
+		assertSchema(ctx);
+		throw new Error("pex-gpu: unknown or disposed context");
+	}
 	return state;
 };
 /**
@@ -92,6 +95,7 @@ async function createContext(options = {}) {
 			commands.bindGroupsByResource.clear();
 		}
 		ctx.pipelineCache.clear();
+		disposeTiming(ctx);
 		canvasContext.unconfigure();
 		device.destroy();
 	};
@@ -114,10 +118,12 @@ async function createContext(options = {}) {
 		dispose,
 		[Symbol.dispose]: dispose
 	};
+	brand(ctx);
 	contextState.set(ctx, {
 		resized: false,
 		running: false,
 		preserveDrawingBuffer: options.preserveDrawingBuffer ?? false,
+		requestedPixelRatio: 1,
 		backbuffer: null
 	});
 	resize(ctx, options.width ?? (options.canvas ? canvas.clientWidth : window.innerWidth), options.height ?? (options.canvas ? canvas.clientHeight : window.innerHeight), options.pixelRatio ?? 1);
@@ -128,25 +134,31 @@ async function createContext(options = {}) {
 * Set the canvas CSS size and physical drawing buffer size. Size-dependent
 * resources (depth textures, render targets) are the caller's to recreate — the
 * next frame reports `resized: true`.
+*
+* `ctx.pixelRatio` reports the ratio applied: the requested one, unless the
+* drawing buffer would exceed maxTextureDimension2D.
 */
 function resize(ctx, width, height, pixelRatio) {
-	if (pixelRatio) ctx.pixelRatio = Math.min(pixelRatio, window.devicePixelRatio);
+	const state = getState(ctx);
+	if (pixelRatio) state.requestedPixelRatio = pixelRatio;
+	const maxDimension = ctx.device.limits.maxTextureDimension2D;
+	const ratio = Math.min(state.requestedPixelRatio, maxDimension / Math.max(width, height));
+	if (ratio < state.requestedPixelRatio) console.warn(`pex-gpu: ${width}x${height} at pixelRatio ${state.requestedPixelRatio} exceeds maxTextureDimension2D (${maxDimension}), using pixelRatio ${ratio}`);
+	ctx.pixelRatio = ratio;
 	ctx.canvas.style.width = `${width}px`;
 	ctx.canvas.style.height = `${height}px`;
-	ctx.canvas.width = Math.max(1, Math.floor(width * ctx.pixelRatio));
-	ctx.canvas.height = Math.max(1, Math.floor(height * ctx.pixelRatio));
-	const state = getState(ctx);
+	ctx.canvas.width = Math.max(1, Math.floor(width * ratio));
+	ctx.canvas.height = Math.max(1, Math.floor(height * ratio));
 	state.resized = true;
-	if (state.preserveDrawingBuffer) {
-		state.backbuffer?.dispose();
-		state.backbuffer = createTexture(ctx, {
-			width: ctx.width,
-			height: ctx.height,
-			format: ctx.format,
-			usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
-			label: "pex-gpu canvas backbuffer"
-		});
-	}
+	if (!state.preserveDrawingBuffer) return;
+	state.backbuffer?.dispose();
+	state.backbuffer = createTexture(ctx, {
+		width: ctx.width,
+		height: ctx.height,
+		format: ctx.format,
+		usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+		label: "pex-gpu canvas backbuffer"
+	});
 }
 /**
 * Open a recording segment: creates a command encoder, acquires the canvas
@@ -174,6 +186,7 @@ function beginFrame(ctx, label = "pex-gpu frame") {
 	const commands = commandsState(ctx);
 	if (commands.frame) throw new Error("pex-gpu: a frame segment is already open — call endFrame() before beginFrame() again");
 	resetFrameCounters(ctx.device);
+	resetFrameTiming(ctx);
 	const encoder = ctx.device.createCommandEncoder({ label });
 	const swapchainTexture = ctx.canvasContext.getCurrentTexture();
 	const canvasTexture = state.backbuffer?.texture ?? swapchainTexture;
@@ -217,8 +230,10 @@ function endFrame(ctx) {
 		width: ctx.width,
 		height: ctx.height
 	});
+	resolveFrameTiming(ctx, frame.encoder);
 	if (debugGroupsEnabled(ctx.device)) frame.encoder.popDebugGroup();
 	ctx.device.queue.submit([frame.encoder.finish()]);
+	completeFrameTiming(ctx);
 }
 /**
 * Render loop. Each frame is a {@link beginFrame}/{@link endFrame} segment synced
@@ -372,14 +387,16 @@ function beginPass(ctx, frame, pass = {}) {
 		};
 	}
 	const key = `${colorFormats.join(",")}|${depthStencilFormat ?? ""}|${sampleCount}${depthReadOnly ? "|r" : ""}`;
+	const label = pass.label ?? "pex-gpu pass";
 	debugCounters(ctx.device).frame.renderPasses++;
-	debugLog(ctx.device, "commands", () => `beginRenderPass "${pass.label ?? "pex-gpu pass"}" [${key}]`);
+	debugLog(ctx.device, "commands", () => `beginRenderPass "${label}" [${key}]`);
+	const timestampWrites = trackPassTiming(ctx, label, "render", pass.timestampWrites) ?? pass.timestampWrites;
 	return {
 		encoder: frame.encoder.beginRenderPass({
-			label: pass.label ?? "pex-gpu pass",
+			label,
 			colorAttachments,
 			...depthStencilAttachment && { depthStencilAttachment },
-			...pass.timestampWrites && { timestampWrites: pass.timestampWrites }
+			...timestampWrites && { timestampWrites }
 		}),
 		colorFormats,
 		depthStencilFormat,
@@ -391,9 +408,12 @@ function beginPass(ctx, frame, pass = {}) {
 function draw(ctx, active, cmd) {
 	const { pipeline: def } = cmd;
 	if (!def) throw new Error(`pex-gpu: render command${cmd.label ? ` "${cmd.label}"` : ""} has no pipeline`);
-	const cached = commandsState(ctx).renderPipelines.getOrInsertComputed(def, () => {
+	const state = commandsState(ctx);
+	let reflectionCreated = false;
+	const cached = state.renderPipelines.getOrInsertComputed(def, () => {
+		reflectionCreated = true;
 		const { vertex: vertexSource, fragment: fragmentSource } = resolveShaders(def);
-		const reflection = fragmentSource && fragmentSource !== vertexSource ? mergeReflections(parseWGSL(vertexSource), parseWGSL(fragmentSource)) : parseWGSL(vertexSource);
+		const reflection = reflectStages(ctx.device, vertexSource, fragmentSource);
 		const { layout, key } = pipelineLayout(ctx, reflection);
 		return {
 			vertexSource,
@@ -404,6 +424,7 @@ function draw(ctx, active, cmd) {
 			variants: /* @__PURE__ */ new Map()
 		};
 	});
+	if (!reflectionCreated) recordCacheAccess(ctx.device, "shaderReflections", null);
 	const { reflection, vertexSource, fragmentSource } = cached;
 	const vertexState = resolveVertexState(reflection.vertexInputs, cmd.attributes ?? {});
 	const stripIndexFormat = cmd.indices && def.topology?.endsWith("strip") ? cmd.indices.indexFormat : void 0;
@@ -418,7 +439,9 @@ function draw(ctx, active, cmd) {
 		def.depthBiasSlopeScale,
 		def.depthBiasClamp
 	])}` : "");
+	let pipelineCreated = false;
 	const pipeline = cached.variants.getOrInsertComputed(variantKey, () => {
+		pipelineCreated = true;
 		const hasDepth = active.depthStencilFormat?.startsWith("depth");
 		const blend = def.blend;
 		const writeMask = def.writeMask;
@@ -467,6 +490,7 @@ function draw(ctx, active, cmd) {
 			...def.label && { label: def.label }
 		});
 	});
+	if (!pipelineCreated) recordCacheAccess(ctx.device, "renderPipelines", null);
 	const pass = active.encoder;
 	debugCounters(ctx.device).frame.draws++;
 	const group = debugGroupsEnabled(ctx.device) ? cmd.label ?? def.label : void 0;
@@ -508,17 +532,22 @@ function draw(ctx, active, cmd) {
 * the descriptor doesn't.
 */
 function beginComputePass(ctx, frame, pass = {}, label) {
+	const passLabel = pass.label ?? label ?? "pex-gpu compute pass";
 	debugCounters(ctx.device).frame.computePasses++;
-	debugLog(ctx.device, "commands", () => `beginComputePass "${pass.label ?? label ?? "pex-gpu compute pass"}"`);
+	debugLog(ctx.device, "commands", () => `beginComputePass "${passLabel}"`);
+	const timestampWrites = trackPassTiming(ctx, passLabel, "compute", pass.timestampWrites) ?? pass.timestampWrites;
 	return { encoder: frame.encoder.beginComputePass({
-		label: pass.label ?? label ?? "pex-gpu compute pass",
-		...pass.timestampWrites && { timestampWrites: pass.timestampWrites }
+		label: passLabel,
+		...timestampWrites && { timestampWrites }
 	}) };
 }
 function dispatchCompute(ctx, active, cmd) {
 	const { pipeline: def } = cmd;
-	const cached = commandsState(ctx).computePipelines.getOrInsertComputed(def, () => {
-		const reflection = parseWGSL(def.compute);
+	const state = commandsState(ctx);
+	let reflectionCreated = false;
+	const cached = state.computePipelines.getOrInsertComputed(def, () => {
+		reflectionCreated = true;
+		const reflection = reflectWGSL(ctx.device, def.compute);
 		const { layout, key } = pipelineLayout(ctx, reflection);
 		return {
 			reflection,
@@ -527,16 +556,22 @@ function dispatchCompute(ctx, active, cmd) {
 			variants: /* @__PURE__ */ new Map()
 		};
 	});
+	if (!reflectionCreated) recordCacheAccess(ctx.device, "shaderReflections", null);
 	const { reflection } = cached;
 	const variantKey = `${def.entryPoint ?? ""}${def.constants ? `|${JSON.stringify(def.constants)}` : ""}`;
-	const pipeline = cached.variants.getOrInsertComputed(variantKey, () => ctx.pipelineCache.getComputePipeline({
-		compute: def.compute,
-		...def.entryPoint && { entryPoint: def.entryPoint },
-		...def.constants && { constants: def.constants },
-		layout: cached.layout,
-		layoutKey: cached.layoutKey,
-		...def.label && { label: def.label }
-	}));
+	let pipelineCreated = false;
+	const pipeline = cached.variants.getOrInsertComputed(variantKey, () => {
+		pipelineCreated = true;
+		return ctx.pipelineCache.getComputePipeline({
+			compute: def.compute,
+			...def.entryPoint && { entryPoint: def.entryPoint },
+			...def.constants && { constants: def.constants },
+			layout: cached.layout,
+			layoutKey: cached.layoutKey,
+			...def.label && { label: def.label }
+		});
+	});
+	if (!pipelineCreated) recordCacheAccess(ctx.device, "computePipelines", null);
 	const pass = active.encoder;
 	debugCounters(ctx.device).frame.dispatches++;
 	debugLog(ctx.device, "commands", () => `dispatch${cmd.label ? ` "${cmd.label}"` : ""} ${typeof cmd.dispatch === "object" && !Array.isArray(cmd.dispatch) ? "indirect" : JSON.stringify(cmd.dispatch)}`);
@@ -634,7 +669,7 @@ function definePipeline(pipeline) {
 */
 function createSampler(ctx, options = {}) {
 	const { filter, addressMode, ...descriptor } = options;
-	return ctx.device.createSampler({
+	const sampler = ctx.device.createSampler({
 		...filter && {
 			magFilter: filter,
 			minFilter: filter,
@@ -647,6 +682,12 @@ function createSampler(ctx, options = {}) {
 		},
 		...descriptor
 	});
+	trackCollectable(ctx.device, "samplers", sampler, {
+		id: objectId(sampler),
+		...options.label && { label: options.label },
+		bytes: 0
+	});
+	return sampler;
 }
 
 /**
@@ -679,6 +720,13 @@ async function readTexture(ctx, source, options = {}) {
 		size: bytesPerRow * rowsPerImage,
 		usage: BUFFER_USAGE_PRESETS.readback
 	});
+	const readbackId = nextId();
+	trackResource(ctx.device, "buffers", {
+		id: readbackId,
+		label: readback.label,
+		usage: readback.usage,
+		bytes: readback.size
+	});
 	const encoder = ctx.device.createCommandEncoder({ label: "pex-gpu readTexture" });
 	encoder.copyTextureToBuffer({
 		texture: source.texture,
@@ -695,6 +743,7 @@ async function readTexture(ctx, source, options = {}) {
 	const data = new Uint8Array(rowBytes * rowsPerImage);
 	for (let row = 0; row < rowsPerImage; row++) data.set(mapped.subarray(row * bytesPerRow, row * bytesPerRow + rowBytes), row * rowBytes);
 	readback.unmap();
+	untrackResource(ctx.device, "buffers", readbackId);
 	readback.destroy();
 	return data;
 }
@@ -712,79 +761,22 @@ async function readBuffer(ctx, source, byteOffset = 0, byteLength = source.size 
 		size: copyLength,
 		usage: BUFFER_USAGE_PRESETS.readback
 	});
+	const readbackId = nextId();
+	trackResource(ctx.device, "buffers", {
+		id: readbackId,
+		label: readback.label,
+		usage: readback.usage,
+		bytes: readback.size
+	});
 	const encoder = ctx.device.createCommandEncoder({ label: "pex-gpu readBuffer" });
 	encoder.copyBufferToBuffer(source.buffer, byteOffset, readback, 0, copyLength);
 	ctx.device.queue.submit([encoder.finish()]);
 	await readback.mapAsync(GPUMapMode.READ);
 	const data = readback.getMappedRange().slice(0, byteLength);
 	readback.unmap();
+	untrackResource(ctx.device, "buffers", readbackId);
 	readback.destroy();
 	return data;
-}
-
-/**
-* GPU timestamp measurement. Requires creating the context with
-* `requiredFeatures: ["timestamp-query"]`.
-*
-* ```js
-* const query = gpu.createTimestampQuery(ctx);
-* // pass descriptor: { ..., timestampWrites: query.timestampWrites }
-* query.resolve(encoder);
-* const timestamps = await query.read();
-* if (timestamps)
-*   console.log(`${Number(timestamps[1] - timestamps[0]) / 1e6} ms`);
-* ```
-*/
-function createTimestampQuery(ctx, count = 2) {
-	if (!ctx.device.features.has("timestamp-query")) throw new Error("pex-gpu: createTimestampQuery requires the \"timestamp-query\" feature; pass requiredFeatures: [\"timestamp-query\"] to createContext");
-	const querySet = ctx.device.createQuerySet({
-		type: "timestamp",
-		count
-	});
-	const resolveBuffer = ctx.device.createBuffer({
-		label: "pex-gpu timestamps resolve",
-		size: count * 8,
-		usage: BUFFER_USAGE_PRESETS["query-resolve"]
-	});
-	const readBuffer = ctx.device.createBuffer({
-		label: "pex-gpu timestamps read",
-		size: count * 8,
-		usage: BUFFER_USAGE_PRESETS.readback
-	});
-	let mapPending = false;
-	function dispose() {
-		querySet.destroy();
-		resolveBuffer.destroy();
-		readBuffer.destroy();
-	}
-	return {
-		querySet,
-		count,
-		timestampWrites: {
-			querySet,
-			beginningOfPassWriteIndex: 0,
-			endOfPassWriteIndex: 1
-		},
-		resolve(encoder) {
-			encoder.resolveQuerySet(querySet, 0, count, resolveBuffer, 0);
-			if (!mapPending) encoder.copyBufferToBuffer(resolveBuffer, 0, readBuffer, 0, count * 8);
-		},
-		async read() {
-			if (mapPending) return null;
-			mapPending = true;
-			try {
-				await new Promise((resolve) => setTimeout(resolve, 0));
-				await readBuffer.mapAsync(GPUMapMode.READ);
-				const timestamps = new BigInt64Array(readBuffer.getMappedRange().slice(0));
-				readBuffer.unmap();
-				return timestamps;
-			} finally {
-				mapPending = false;
-			}
-		},
-		dispose,
-		[Symbol.dispose]: dispose
-	};
 }
 
 /**
@@ -819,7 +811,13 @@ function createRenderBundle(ctx, formats, record) {
 		label
 	});
 	record(encoder);
-	return encoder.finish({ label });
+	const bundle = encoder.finish({ label });
+	trackCollectable(ctx.device, "renderBundles", bundle, {
+		id: objectId(bundle),
+		label,
+		bytes: 0
+	});
+	return bundle;
 }
 
 export { BUFFER_USAGE_PRESETS, beginFrame, copyExternalImage, createBuffer, createContext, createRenderBundle, createSampler, createTexture, createTimestampQuery, debug, debugStats, defineCommand, definePass, definePipeline, endFrame, frame, generateMipmaps, isGpuBuffer, isGpuTexture, readBuffer, readTexture, resize, submit, updateBuffer, updateTexture };

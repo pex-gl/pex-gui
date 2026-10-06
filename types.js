@@ -47,7 +47,7 @@
 
 /**
  * @typedef {object} GUIControlTexture2DItem
- * @property {import("pex-context").texture | CanvasImageSource} name
+ * @property {import("pex-context").texture | import("pex-gpu").GpuTexture | CanvasImageSource} texture
  * @property {number} value
  */
 

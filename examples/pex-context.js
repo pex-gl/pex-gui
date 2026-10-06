@@ -39,6 +39,7 @@ void main() {
 }`;
 
 const ctx = createContext({ pixelRatio: devicePixelRatio });
+document.querySelector("main").append(ctx.gl.canvas);
 
 const gui = createGUI(ctx);
 

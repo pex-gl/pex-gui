@@ -136,23 +136,24 @@ class PexGPURenderer extends CanvasRenderer {
   }
 
   /**
-   * What to bind for `uTexture`, which the preview shaders declare as a plain
-   * `2d`/`cube` texture. A view is built only when the default one cannot be
-   * bound: a stencil-carrying format needs the depth aspect, and a layered
-   * texture needs a single slice picked out of it.
+   * Get the resource to bind as `uTexture` in the preview shaders.
    *
-   * Cached per texture and layer. pex-gpu keys its bind group cache by view
-   * identity, so a view built per frame would leak a bind group per frame.
+   * @param {import("pex-gpu").GpuTexture} texture
+   * @param {number} [layer=0] Array layer, or cube index for a cube array.
+   * @returns {import("pex-gpu").GpuTexture | GPUTextureView}
    */
   #binding(texture, layer = 0) {
     const cubeArray = texture.viewDimension === "cube-array";
     const layered = cubeArray || texture.viewDimension === "2d-array";
-    // Not every source is a GpuTexture — drawTexture2d also takes images.
     const aspect = texture.format?.includes("stencil")
       ? "depth-only"
       : undefined;
+    // Shaders declare a plain 2d/cube texture: stencil formats need the depth
+    // aspect, layered textures a single slice.
     if (!layered && !aspect) return texture;
 
+    // pex-gpu caches bind groups by view identity: a view per frame would leak
+    // a bind group per frame.
     let views = this.#views.get(texture);
     if (!views) {
       views = new Map();

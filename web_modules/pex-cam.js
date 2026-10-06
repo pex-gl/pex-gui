@@ -1,6 +1,6 @@
-import { r as __toESM, t as __commonJSMin } from "./_chunks/rolldown-runtime-DUFJ1jAm.js";
-import { C as distance$1, D as frustum, E as create, F as lerp, I as toDegrees, L as toRadians, M as perspective$1, N as set, O as invert, P as clamp, _ as normalize, b as sub, g as multMat4, h as length, j as ortho, k as lookAt, l as add, p as distance, u as copy, v as scale, y as set$1 } from "./_chunks/pex-math-BRIbqr2X.js";
-import { n as hitTestPlane } from "./_chunks/pex-geom-BfnNFPLa.js";
+import { r as __toESM, t as __commonJSMin } from "./_chunks/rolldown-runtime-og5q1MHW.js";
+import { C as distance$1, D as frustum, E as create, F as lerp, I as toDegrees, L as toRadians, M as perspective$1, N as set, O as invert, P as clamp, _ as normalize, b as sub, g as multMat4, h as length, j as ortho, k as lookAt, l as add, p as distance, u as copy, v as scale, y as set$1 } from "./_chunks/pex-math-wxV34v_K.js";
+import { n as hitTestPlane } from "./_chunks/pex-geom-DhCL8xdf.js";
 
 /**
 * An interface for cameras to extend
@@ -72,22 +72,24 @@ var PerspectiveCamera = class PerspectiveCamera extends Camera {
 	*/
 	set(opts) {
 		super.set(opts);
-		if (opts.fov || opts.aspect || opts.near || opts.far || opts.view) if (this.view) {
-			const aspectRatio = this.view.totalSize[0] / this.view.totalSize[1];
-			const top = Math.tan(this.fov * .5) * this.near;
-			const bottom = -top;
-			const left = aspectRatio * bottom;
-			const right = aspectRatio * top;
-			const width = Math.abs(right - left);
-			const height = Math.abs(top - bottom);
-			const widthNormalized = width / this.view.totalSize[0];
-			const heightNormalized = height / this.view.totalSize[1];
-			const l = left + this.view.offset[0] * widthNormalized;
-			const r = left + (this.view.offset[0] + this.view.size[0]) * widthNormalized;
-			const b = top - (this.view.offset[1] + this.view.size[1]) * heightNormalized;
-			const t = top - this.view.offset[1] * heightNormalized;
-			frustum(this.projectionMatrix, l, r, b, t, this.near, this.far);
-		} else perspective$1(this.projectionMatrix, this.fov, this.aspect, this.near, this.far);
+		if (opts.fov || opts.aspect || opts.near || opts.far || opts.view) {
+			if (this.view) {
+				const aspectRatio = this.view.totalSize[0] / this.view.totalSize[1];
+				const top = Math.tan(this.fov * .5) * this.near;
+				const bottom = -top;
+				const left = aspectRatio * bottom;
+				const right = aspectRatio * top;
+				const width = Math.abs(right - left);
+				const height = Math.abs(top - bottom);
+				const widthNormalized = width / this.view.totalSize[0];
+				const heightNormalized = height / this.view.totalSize[1];
+				const l = left + this.view.offset[0] * widthNormalized;
+				const r = left + (this.view.offset[0] + this.view.size[0]) * widthNormalized;
+				const b = top - (this.view.offset[1] + this.view.size[1]) * heightNormalized;
+				const t = top - this.view.offset[1] * heightNormalized;
+				frustum(this.projectionMatrix, l, r, b, t, this.near, this.far);
+			} else perspective$1(this.projectionMatrix, this.fov, this.aspect, this.near, this.far);
+		}
 	}
 	/**
 	* Create a picking ray in view (camera) coordinates

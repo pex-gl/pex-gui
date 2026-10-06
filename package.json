@@ -46,14 +46,14 @@
     "es-module-shims": "^2.8.4",
     "pex-cam": "^3.0.1",
     "pex-context": "^4.1.0",
-    "pex-gpu": "^0.0.3",
-    "pex-io": "^3.2.0",
-    "primitive-geometry": "^2.11.0"
+    "pex-gpu": "^0.0.4",
+    "pex-io": "^3.3.0",
+    "primitive-geometry": "^3.2.0"
   },
   "engines": {
-    "node": ">=22.0.0",
+    "node": ">=24.0.0",
     "npm": ">=10.5.1",
-    "snowdev": ">=3.0.0-alpha.1"
+    "snowdev": ">=3.0.0-alpha.3"
   },
   "snowdev": {
     "files": "{*.js,*(renderers|shaders)/**/*.js}"

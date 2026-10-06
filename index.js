@@ -27,8 +27,9 @@ class GUI {
     if (this.ctx.gl) {
       return [this.ctx.gl.drawingBufferWidth, this.ctx.gl.drawingBufferHeight];
     }
-    if (this.ctx.device) return [this.ctx.width, this.ctx.height];
-    return [this.ctx.canvas.width, this.ctx.canvas.height];
+    return this.ctx.device
+      ? [this.ctx.width, this.ctx.height]
+      : [this.ctx.canvas.width, this.ctx.canvas.height];
   }
 
   get canvas() {
@@ -389,17 +390,17 @@ class GUI {
     }
 
     const c = event.key.codePointAt(0);
-    if (event.key.length === 1 && c >= 32 && c <= 126) {
-      focusedItem.contextObject[focusedItem.attributeName] += event.key;
-      focusedItem.dirty = true;
-      if (focusedItem.onChange) {
-        focusedItem.onChange(
-          focusedItem.contextObject[focusedItem.attributeName],
-        );
-      }
-      event.stopImmediatePropagation();
-      event.preventDefault();
+    if (!(event.key.length === 1 && c >= 32 && c <= 126)) return;
+
+    focusedItem.contextObject[focusedItem.attributeName] += event.key;
+    focusedItem.dirty = true;
+    if (focusedItem.onChange) {
+      focusedItem.onChange(
+        focusedItem.contextObject[focusedItem.attributeName],
+      );
     }
+    event.stopImmediatePropagation();
+    event.preventDefault();
   }
 
   // Public API
@@ -601,33 +602,21 @@ class GUI {
     if (this.renderer.isTexture?.(value)) {
       const texture = value;
 
-      ctrl = this.renderer.isTextureCube?.(texture)
-        ? new GUIControl({
-            type: "textureCube",
-            title,
-            contextObject,
-            attributeName,
-            texture,
-            options: options || { flipEnvMap: 1 },
-            activeArea: [
-              [0, 0],
-              [0, 0],
-            ],
-            dirty: true,
-          })
-        : new GUIControl({
-            type: "texture2D",
-            title,
-            contextObject,
-            attributeName,
-            texture,
-            options,
-            activeArea: [
-              [0, 0],
-              [0, 0],
-            ],
-            dirty: true,
-          });
+      ctrl = new GUIControl({
+        type: this.renderer.isTextureCube?.(texture)
+          ? "textureCube"
+          : "texture2D",
+        title,
+        contextObject,
+        attributeName,
+        texture,
+        options,
+        activeArea: [
+          [0, 0],
+          [0, 0],
+        ],
+        dirty: true,
+      });
       this.items.push(ctrl);
       return ctrl;
     } else if (value === false || value === true) {
@@ -790,7 +779,7 @@ class GUI {
 
   /**
    * Add a texture visualiser and selector for multiple textures (from
-   * pex-context) or images.
+   * pex-context or pex-gpu) or images.
    *
    * @example
    *
@@ -833,8 +822,8 @@ class GUI {
   }
 
   /**
-   * Add a texture (from pex-context) or image visualiser. Notes: texture cannot
-   * be updated once created.
+   * Add a texture (from pex-context or pex-gpu) or image visualiser. Notes:
+   * texture cannot be updated once created.
    *
    * @example
    *
@@ -843,7 +832,9 @@ class GUI {
    * ```
    *
    * @param {string} title
-   * @param {import("pex-context").texture | CanvasImageSource} texture
+   * @param {import("pex-context").texture
+   *   | import("pex-gpu").GpuTexture
+   *   | CanvasImageSource} texture
    * @param {import("./types.js").GUIControlOptions} options
    * @returns {GUIControl}
    */
@@ -864,8 +855,8 @@ class GUI {
   }
 
   /**
-   * Add a cube texture visualiser (from pex-context). Notes: texture cannot be
-   * updated once created.
+   * Add a cube texture visualiser (from pex-context or pex-gpu). Notes: texture
+   * cannot be updated once created.
    *
    * @example
    *
@@ -874,7 +865,7 @@ class GUI {
    * ```
    *
    * @param {string} title
-   * @param {import("pex-context").textureCube} texture
+   * @param {import("pex-context").textureCube | import("pex-gpu").GpuTexture} texture
    * @param {import("./types.js").GUIControlOptions} options
    * @returns {GUIControl}
    */
@@ -1041,10 +1032,10 @@ class GUI {
     const fromIndex = this.items.indexOf(item);
     const toIndex = this.items.indexOf(targetItem);
 
-    if (fromIndex !== -1 && toIndex !== -1) {
-      const [item] = this.items.splice(fromIndex, 1);
-      this.items.splice(toIndex + 1, 0, item);
-    }
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    this.items.splice(fromIndex, 1);
+    this.items.splice(toIndex + 1, 0, item);
   }
 
   // Update
