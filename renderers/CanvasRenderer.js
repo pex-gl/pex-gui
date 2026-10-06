@@ -117,6 +117,7 @@ class CanvasRenderer {
       dx += w + gap;
     });
 
+    const tabsWidth = tabs.length ? dx - gap + leftOffset : 0;
     dx = leftOffset;
 
     let maxWidth = 0;
@@ -560,7 +561,7 @@ class CanvasRenderer {
     this.afterDraw();
     ctx.restore();
 
-    maxWidth = Math.max(maxWidth, tabs.length * (w + gap));
+    maxWidth = Math.max(maxWidth, tabsWidth);
 
     if (maxWidth && maxHeight) {
       maxWidth = Math.trunc(maxWidth * this.pixelRatio);
