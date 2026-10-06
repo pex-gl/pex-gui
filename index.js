@@ -1140,14 +1140,17 @@ class GUI {
       resized = true;
     }
 
+    const needsDraw =
+      this.isAnyItemDirty(this.items) || resized || this.renderer.dirty;
+
+    if (needsDraw) this.renderer.draw(this.items);
+
     const texture = this.renderer.getTexture();
     const canvasScale = this.getScale();
     const rendererWidth = texture.width / this.renderer.pixelRatio;
     const rendererHeight = texture.height / this.renderer.pixelRatio;
 
-    if (this.isAnyItemDirty(this.items) || resized || this.renderer.dirty) {
-      this.renderer.draw(this.items);
-
+    if (needsDraw) {
       this.#scale = this.responsive
         ? Math.min(
             this.canvas.clientWidth / rendererWidth,

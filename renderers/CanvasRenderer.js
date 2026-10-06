@@ -558,26 +558,24 @@ class CanvasRenderer {
       maxHeight = Math.max(maxHeight, dy + topOffset);
     }
 
+    maxWidth = Math.trunc(Math.max(maxWidth, tabsWidth) * this.pixelRatio);
+    maxHeight = Math.trunc(maxHeight * this.pixelRatio);
+
+    // Resizing clears the canvas: redraw at the new size before uploading.
+    if (
+      maxWidth &&
+      maxHeight &&
+      (this.canvas.width !== maxWidth || this.canvas.height !== maxHeight)
+    ) {
+      ctx.restore();
+      this.canvas.width = maxWidth;
+      this.canvas.height = maxHeight;
+      this.draw(items);
+      return;
+    }
+
     this.afterDraw();
     ctx.restore();
-
-    maxWidth = Math.max(maxWidth, tabsWidth);
-
-    if (maxWidth && maxHeight) {
-      maxWidth = Math.trunc(maxWidth * this.pixelRatio);
-      maxHeight = Math.trunc(maxHeight * this.pixelRatio);
-      if (this.canvas.width !== maxWidth) {
-        this.canvas.width = maxWidth;
-        this.dirty = true;
-      }
-      if (this.canvas.height !== maxHeight) {
-        this.canvas.height = maxHeight;
-        this.dirty = true;
-      }
-      if (this.dirty) {
-        this.draw(items);
-      }
-    }
   }
 
   afterDraw() {}
