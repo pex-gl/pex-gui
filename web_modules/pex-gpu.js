@@ -1,4 +1,4 @@
-import { $ as assertBlockAlignedOrigin, A as disposeTiming, C as reflectWGSL, D as debugGroupsEnabled, E as debugCounters, G as updateBuffer, H as BUFFER_USAGE_PRESETS, I as trackCollectable, J as brand, L as trackPassTiming, M as resetFrameCounters, N as resetFrameTiming, O as debugLog, P as resolveFrameTiming, Q as alignTo, R as trackResource, S as reflectStages, T as debug, U as createBuffer, V as createTimestampQuery, W as isGpuBuffer, X as objectId, Y as nextId, Z as shared, _ as PipelineCache, a as copyExternalImage, c as generateMipmaps, f as updateTexture, g as peekCommandsState, h as frameState, it as texelCopyLayout, j as recordCacheAccess, k as debugStats, l as isGpuTexture, m as commandsState, n as buildBindGroups, o as createTexture, q as assertSchema, r as pipelineLayout, rt as physicalExtent, t as resolveVertexState, v as resolveShaders, w as completeFrameTiming, z as untrackResource } from "./_chunks/vertex-layout-ByhEderR.js";
+import { $ as assertBlockAlignedOrigin, A as disposeTiming, C as reflectWGSL, D as debugGroupsEnabled, E as debugCounters, G as updateBuffer, H as BUFFER_USAGE_PRESETS, I as trackCollectable, J as brand, L as trackPassTiming, M as resetFrameCounters, N as resetFrameTiming, O as debugLog, P as resolveFrameTiming, Q as alignTo, R as trackResource, S as reflectStages, T as debug, U as createBuffer, V as createTimestampQuery, W as isGpuBuffer, X as objectId, Y as nextId, Z as shared, _ as PipelineCache, a as copyExternalImage, c as generateMipmaps, f as updateTexture, g as peekCommandsState, h as frameState, it as texelCopyLayout, j as recordCacheAccess, k as debugStats, l as isGpuTexture, m as commandsState, n as buildBindGroups, o as createTexture, q as assertSchema, r as pipelineLayout, rt as physicalExtent, t as resolveVertexState, v as resolveShaders, w as completeFrameTiming, z as untrackResource } from "./_chunks/vertex-layout-CGidDqgr.js";
 
 function resolveDepthStencilFormat(options) {
 	if (options.depthStencilFormat) return options.depthStencilFormat;
@@ -210,6 +210,32 @@ function beginFrame(ctx, label = "pex-gpu frame") {
 		height: ctx.height
 	};
 }
+const uploadUniforms = (commands) => {
+	commands.allocator?.flush();
+	commands.storageAllocator?.flush();
+};
+/**
+* Submit the open segment's commands so far and continue it in a new command
+* buffer. A validation error fails only the command buffer it is in, so work
+* flushed this way survives anything invalid recorded after it.
+*
+* Not valid inside a pass scope. Returns the new encoder: one obtained before
+* the flush, eg. `FrameSegment.encoder`, is finished.
+*/
+function flush(ctx) {
+	const commands = commandsState(ctx);
+	const frame = commands.frame;
+	if (!frame) throw new Error("pex-gpu: flush() called without an open frame segment");
+	if (frame.activePass || frame.activeComputePass) throw new Error("pex-gpu: flush() cannot be called inside a pass scope");
+	uploadUniforms(commands);
+	const { label } = frame.encoder;
+	const debugGroups = debugGroupsEnabled(ctx.device);
+	if (debugGroups) frame.encoder.popDebugGroup();
+	ctx.device.queue.submit([frame.encoder.finish()]);
+	frame.encoder = ctx.device.createCommandEncoder({ label });
+	if (debugGroups) frame.encoder.pushDebugGroup(label);
+	return frame.encoder;
+}
 /**
 * Close the segment opened by {@link beginFrame}: ends any pass left open,
 * flushes the uniform ring allocator, blits the preserveDrawingBuffer
@@ -224,8 +250,7 @@ function endFrame(ctx) {
 	commands.frame = null;
 	if (frame.activePass) frame.activePass.encoder.end();
 	if (frame.activeComputePass) frame.activeComputePass.encoder.end();
-	commands.allocator?.flush();
-	commands.storageAllocator?.flush();
+	uploadUniforms(commands);
 	if (state.backbuffer) frame.encoder.copyTextureToTexture({ texture: state.backbuffer.texture }, { texture: frame.swapchainTexture }, {
 		width: ctx.width,
 		height: ctx.height
@@ -335,7 +360,7 @@ function canvasDepthStencilTexture(ctx) {
 	});
 	return state.canvasDepthStencil;
 }
-function beginPass(ctx, frame, pass = {}) {
+function beginPass(ctx, frame, pass = {}, label) {
 	const colorFormats = [];
 	let sampleCount = 1;
 	const colors = pass.colorAttachments ?? [{}];
@@ -387,13 +412,13 @@ function beginPass(ctx, frame, pass = {}) {
 		};
 	}
 	const key = `${colorFormats.join(",")}|${depthStencilFormat ?? ""}|${sampleCount}${depthReadOnly ? "|r" : ""}`;
-	const label = pass.label ?? "pex-gpu pass";
+	const passLabel = pass.label ?? label ?? "pex-gpu pass";
 	debugCounters(ctx.device).frame.renderPasses++;
-	debugLog(ctx.device, "commands", () => `beginRenderPass "${label}" [${key}]`);
-	const timestampWrites = trackPassTiming(ctx, label, "render", pass.timestampWrites) ?? pass.timestampWrites;
+	debugLog(ctx.device, "commands", () => `beginRenderPass "${passLabel}" [${key}]`);
+	const timestampWrites = trackPassTiming(ctx, passLabel, "render", pass.timestampWrites) ?? pass.timestampWrites;
 	return {
 		encoder: frame.encoder.beginRenderPass({
-			label,
+			label: passLabel,
 			colorAttachments,
 			...depthStencilAttachment && { depthStencilAttachment },
 			...timestampWrites && { timestampWrites }
@@ -405,24 +430,39 @@ function beginPass(ctx, frame, pass = {}) {
 		key
 	};
 }
+/**
+* Marks `def` failed when `create` throws, so a source reflection can't parse
+* throws once rather than at every submit.
+*/
+function failOnThrow(state, def, create) {
+	try {
+		return create();
+	} catch (error) {
+		state.failedPipelines.add(def);
+		throw error;
+	}
+}
 function draw(ctx, active, cmd) {
 	const { pipeline: def } = cmd;
 	if (!def) throw new Error(`pex-gpu: render command${cmd.label ? ` "${cmd.label}"` : ""} has no pipeline`);
 	const state = commandsState(ctx);
+	if (state.failedPipelines.has(def)) return;
 	let reflectionCreated = false;
 	const cached = state.renderPipelines.getOrInsertComputed(def, () => {
 		reflectionCreated = true;
-		const { vertex: vertexSource, fragment: fragmentSource } = resolveShaders(def);
-		const reflection = reflectStages(ctx.device, vertexSource, fragmentSource);
-		const { layout, key } = pipelineLayout(ctx, reflection);
-		return {
-			vertexSource,
-			fragmentSource,
-			reflection,
-			layout,
-			layoutKey: key,
-			variants: /* @__PURE__ */ new Map()
-		};
+		return failOnThrow(state, def, () => {
+			const { vertex: vertexSource, fragment: fragmentSource } = resolveShaders(def);
+			const reflection = reflectStages(ctx.device, vertexSource, fragmentSource);
+			const { layout, key } = pipelineLayout(ctx, reflection);
+			return {
+				vertexSource,
+				fragmentSource,
+				reflection,
+				layout,
+				layoutKey: key,
+				variants: /* @__PURE__ */ new Map()
+			};
+		});
 	});
 	if (!reflectionCreated) recordCacheAccess(ctx.device, "shaderReflections", null);
 	const { reflection, vertexSource, fragmentSource } = cached;
@@ -491,6 +531,10 @@ function draw(ctx, active, cmd) {
 		});
 	});
 	if (!pipelineCreated) recordCacheAccess(ctx.device, "renderPipelines", null);
+	if (ctx.pipelineCache.hasFailed(pipeline)) {
+		state.failedPipelines.add(def);
+		return;
+	}
 	const pass = active.encoder;
 	debugCounters(ctx.device).frame.draws++;
 	const group = debugGroupsEnabled(ctx.device) ? cmd.label ?? def.label : void 0;
@@ -544,17 +588,20 @@ function beginComputePass(ctx, frame, pass = {}, label) {
 function dispatchCompute(ctx, active, cmd) {
 	const { pipeline: def } = cmd;
 	const state = commandsState(ctx);
+	if (state.failedPipelines.has(def)) return;
 	let reflectionCreated = false;
 	const cached = state.computePipelines.getOrInsertComputed(def, () => {
 		reflectionCreated = true;
-		const reflection = reflectWGSL(ctx.device, def.compute);
-		const { layout, key } = pipelineLayout(ctx, reflection);
-		return {
-			reflection,
-			layout,
-			layoutKey: key,
-			variants: /* @__PURE__ */ new Map()
-		};
+		return failOnThrow(state, def, () => {
+			const reflection = reflectWGSL(ctx.device, def.compute);
+			const { layout, key } = pipelineLayout(ctx, reflection);
+			return {
+				reflection,
+				layout,
+				layoutKey: key,
+				variants: /* @__PURE__ */ new Map()
+			};
+		});
 	});
 	if (!reflectionCreated) recordCacheAccess(ctx.device, "shaderReflections", null);
 	const { reflection } = cached;
@@ -572,6 +619,10 @@ function dispatchCompute(ctx, active, cmd) {
 		});
 	});
 	if (!pipelineCreated) recordCacheAccess(ctx.device, "computePipelines", null);
+	if (ctx.pipelineCache.hasFailed(pipeline)) {
+		state.failedPipelines.add(def);
+		return;
+	}
 	const pass = active.encoder;
 	debugCounters(ctx.device).frame.dispatches++;
 	debugLog(ctx.device, "commands", () => `dispatch${cmd.label ? ` "${cmd.label}"` : ""} ${typeof cmd.dispatch === "object" && !Array.isArray(cmd.dispatch) ? "indirect" : JSON.stringify(cmd.dispatch)}`);
@@ -586,6 +637,15 @@ function dispatchCompute(ctx, active, cmd) {
 	} finally {
 		if (group) pass.popDebugGroup();
 	}
+}
+/**
+* Whether a pipeline object failed: its shader couldn't be reflected, or one of
+* its GPU pipelines failed validation. Submits using it are skipped, so a
+* fallback needs a new pipeline object. Validation failures are known
+* asynchronously, after the first submits.
+*/
+function pipelineFailed(ctx, pipeline) {
+	return commandsState(ctx).failedPipelines.has(pipeline);
 }
 const mergeCommand = (base, override) => ({
 	...base,
@@ -626,7 +686,7 @@ function submit(ctx, cmd, passScopeOrBatch) {
 			if (frame.activeComputePass) throw new Error("pex-gpu: cannot begin a render pass inside a compute pass scope");
 			if (cmd.pass && frame.activePass) throw new Error("pex-gpu: cannot begin a render pass inside another render pass scope");
 			const ownsPass = !frame.activePass;
-			const active = frame.activePass ?? beginPass(ctx, frame, cmd.pass);
+			const active = frame.activePass ?? beginPass(ctx, frame, cmd.pass, cmd.label);
 			try {
 				if ("bundles" in cmd) {
 					if (Array.isArray(passScopeOrBatch)) throw new TypeError("pex-gpu: bundle commands do not support batch variants");
@@ -820,4 +880,4 @@ function createRenderBundle(ctx, formats, record) {
 	return bundle;
 }
 
-export { BUFFER_USAGE_PRESETS, beginFrame, copyExternalImage, createBuffer, createContext, createRenderBundle, createSampler, createTexture, createTimestampQuery, debug, debugStats, defineCommand, definePass, definePipeline, endFrame, frame, generateMipmaps, isGpuBuffer, isGpuTexture, readBuffer, readTexture, resize, submit, updateBuffer, updateTexture };
+export { BUFFER_USAGE_PRESETS, beginFrame, copyExternalImage, createBuffer, createContext, createRenderBundle, createSampler, createTexture, createTimestampQuery, debug, debugStats, defineCommand, definePass, definePipeline, endFrame, flush, frame, generateMipmaps, isGpuBuffer, isGpuTexture, pipelineFailed, readBuffer, readTexture, resize, submit, updateBuffer, updateTexture };

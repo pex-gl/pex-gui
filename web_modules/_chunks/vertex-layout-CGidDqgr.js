@@ -1583,14 +1583,15 @@ async function reportShaderDiagnostics(code, module, scopeError, label) {
 	const details = errors.length ? errors.map((message) => formatCompilationMessage(code, message)).join("\n") : error.message;
 	console.error(`pex-gpu: WGSL compilation failed${name}\n${details}`);
 }
+/** Resolves to whether the pipeline failed validation. */
 async function reportPipelineError(scopeError, label, stages) {
 	let error = null;
 	try {
 		error = await scopeError;
 	} catch {
-		return;
+		return false;
 	}
-	if (!error) return;
+	if (!error) return false;
 	const details = [];
 	for (const { stage, code, module } of stages) {
 		let messages = [];
@@ -1602,6 +1603,7 @@ async function reportPipelineError(scopeError, label, stages) {
 		for (const message of messages) details.push(`[${stage}] ${formatCompilationMessage(code, message)}`);
 	}
 	console.error(`pex-gpu: pipeline creation failed in "${label}"\n${error.message}${details.length ? `\n\n${details.join("\n")}` : ""}`);
+	return true;
 }
 /**
 * Caches shader modules by source and pipelines by their full descriptor, so
@@ -1619,6 +1621,7 @@ var PipelineCache = class {
 	#renderPipelines = /* @__PURE__ */ new Map();
 	/** Compute source → serialized state */
 	#computePipelines = /* @__PURE__ */ new Map();
+	#failed = /* @__PURE__ */ new WeakSet();
 	constructor(device) {
 		this.#device = device;
 	}
@@ -1671,9 +1674,19 @@ var PipelineCache = class {
 	*/
 	#captureValidation(label, create, stages) {
 		this.#device.pushErrorScope("validation");
-		const result = create();
-		reportPipelineError(this.#device.popErrorScope(), label, stages);
-		return result;
+		const pipeline = create();
+		reportPipelineError(this.#device.popErrorScope(), label, stages).then((failed) => {
+			if (failed) this.#failed.add(pipeline);
+		});
+		return pipeline;
+	}
+	/**
+	* Whether a pipeline from this cache failed validation. Known asynchronously:
+	* false until its error scope resolves, so the first submits using it are
+	* already encoded.
+	*/
+	hasFailed(pipeline) {
+		return this.#failed.has(pipeline);
 	}
 	getRenderPipeline(source) {
 		const { vertex, fragment } = resolveShaders(source);
@@ -1890,6 +1903,7 @@ function commandsState(ctx) {
 			bindGroupFinalizer,
 			renderPipelines: /* @__PURE__ */ new WeakMap(),
 			computePipelines: /* @__PURE__ */ new WeakMap(),
+			failedPipelines: /* @__PURE__ */ new WeakSet(),
 			canvasDepthStencil: null,
 			frame: null
 		};

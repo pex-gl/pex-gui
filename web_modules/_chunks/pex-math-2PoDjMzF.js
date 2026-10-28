@@ -1,4 +1,4 @@
-import { n as __exportAll } from "./rolldown-runtime-og5q1MHW.js";
+import { n as __exportAll } from "./rolldown-runtime-D9rAgs8b.js";
 
 var mat2x3_exports = /* @__PURE__ */ __exportAll({
 	copy: () => copy$6,
@@ -283,7 +283,7 @@ function set$8(a, b) {
 * @returns {boolean}
 */
 function equals$8(a, b) {
-	return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3] && a[4] === b[4] && a[5] === b[5] && a[6] === b[6] && a[7] === b[7] && a[8] === b[8] && a[9] === b[9];
+	return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3] && a[4] === b[4] && a[5] === b[5] && a[6] === b[6] && a[7] === b[7] && a[8] === b[8];
 }
 /**
 * Multiplies two matrices.
@@ -418,6 +418,7 @@ var utils_exports = /* @__PURE__ */ __exportAll({
 	EPSILON: () => EPSILON,
 	HALF_PI: () => HALF_PI,
 	Y_UP: () => Y_UP,
+	_truncate: () => _truncate,
 	clamp: () => clamp,
 	isPowerOfTwo: () => isPowerOfTwo,
 	lerp: () => lerp$6,
@@ -494,6 +495,11 @@ function remap(n, inStart, inEnd, outStart, outEnd) {
 function map$3(...args) {
 	return remap(...args);
 }
+/** @private */
+function _truncate(n, precision) {
+	const scale = 10 ** precision;
+	return Math.trunc(Number((n * scale).toPrecision(15))) / scale;
+}
 /**
 * Transforms degrees into radians.
 *
@@ -513,13 +519,13 @@ function toDegrees(radians) {
 	return radians * 180 / Math.PI;
 }
 /**
-* Check if a number is a power of two
+* Check if a number is a power of two. Limited to 32-bit integers.
 *
 * @param {number} a
 * @returns {boolean}
 */
 function isPowerOfTwo(a) {
-	return (a & a - 1) === 0;
+	return (a | 0) === a && a > 0 && (a & a - 1) === 0;
 }
 /**
 * Returns the next highest power of two.
@@ -575,6 +581,23 @@ var mat4_exports = /* @__PURE__ */ __exportAll({
 	translate: () => translate,
 	transpose: () => transpose
 });
+const TEMP_VEC3$1 = [
+	0,
+	0,
+	0
+];
+function parallelUpXAxis(z0, z1, z2, upx, upy, upz) {
+	const s = upx * z0 + upy * z1 + upz * z2 < 0 ? -1 : 1;
+	if (z0 || z1) {
+		TEMP_VEC3$1[0] = s * z1;
+		TEMP_VEC3$1[1] = -s * z0;
+	} else {
+		TEMP_VEC3$1[0] = 0;
+		TEMP_VEC3$1[1] = s * z2;
+	}
+	TEMP_VEC3$1[2] = 0;
+	return TEMP_VEC3$1;
+}
 /**
 * Returns a 4x4 identity matrix.
 *
@@ -738,94 +761,60 @@ function mult$1(a, b) {
 	return a;
 }
 /**
-* Inverts a matrix.
+* Inverts a matrix. Returns null and leaves the matrix unchanged if it is not
+* invertible.
 *
 * @param {import("./types.js").Mat4} a
-* @returns {import("./types.js").Mat4}
+* @returns {import("./types.js").Mat4 | null}
 */
 function invert$1(a) {
 	const a00 = a[0];
-	const a10 = a[1];
-	const a20 = a[2];
-	const a30 = a[3];
-	const a01 = a[4];
+	const a01 = a[1];
+	const a02 = a[2];
+	const a03 = a[3];
+	const a10 = a[4];
 	const a11 = a[5];
-	const a21 = a[6];
-	const a31 = a[7];
-	const a02 = a[8];
-	const a12 = a[9];
+	const a12 = a[6];
+	const a13 = a[7];
+	const a20 = a[8];
+	const a21 = a[9];
 	const a22 = a[10];
-	const a32 = a[11];
-	const a03 = a[12];
-	const a13 = a[13];
-	const a23 = a[14];
+	const a23 = a[11];
+	const a30 = a[12];
+	const a31 = a[13];
+	const a32 = a[14];
 	const a33 = a[15];
-	const a22a33 = a22 * a33;
-	const a32a23 = a32 * a23;
-	const a21a33 = a21 * a33;
-	const a31a23 = a31 * a23;
-	const a21a32 = a21 * a32;
-	const a31a22 = a31 * a22;
-	const a20a33 = a20 * a33;
-	const a30a23 = a30 * a23;
-	const a20a32 = a20 * a32;
-	const a30a22 = a30 * a22;
-	const a20a31 = a20 * a31;
-	const a30a21 = a30 * a21;
-	const a00a11 = a00 * a11;
-	const a01a10 = a01 * a10;
-	const a02a10 = a02 * a10;
-	const a03a10 = a03 * a10;
-	const a12a33 = a12 * a33;
-	const a32a13 = a32 * a13;
-	const a00a31 = a00 * a31;
-	const a03a11 = a03 * a11;
-	const a12a23 = a12 * a23;
-	const a22a13 = a22 * a13;
-	const a02a11 = a02 * a11;
-	const a21a13 = a21 * a13;
-	const a21a12 = a21 * a12;
-	const a02a30 = a02 * a30;
-	const a03a30 = a03 * a30;
-	const a02a20 = a02 * a20;
-	const a03a20 = a03 * a20;
-	const a01a30 = a01 * a30;
-	const a01a20 = a01 * a20;
-	a[0] = a11 * a22a33 - a11 * a32a23 - a12 * a21a33 + a12 * a31a23 + a13 * a21a32 - a13 * a31a22;
-	a[4] = -a01 * a22a33 + a01 * a32a23 + a02 * a21a33 - a02 * a31a23 - a03 * a21a32 + a03 * a31a22;
-	a[8] = a01 * a12a33 - a01 * a32a13 - a02a11 * a33 + a02 * a31 * a13 + a03a11 * a32 - a03 * a31 * a12;
-	a[12] = -a01 * a12a23 + a01 * a22a13 + a02a11 * a23 - a02 * a21a13 - a03a11 * a22 + a03 * a21a12;
-	a[1] = -a10 * a22a33 + a10 * a32a23 + a12 * a20a33 - a12 * a30a23 - a13 * a20a32 + a13 * a30a22;
-	a[5] = a00 * a22a33 - a00 * a32a23 - a02 * a20a33 + a02 * a30a23 + a03 * a20a32 - a03 * a30a22;
-	a[9] = -a00 * a12a33 + a00 * a32a13 + a02a10 * a33 - a02a30 * a13 - a03a10 * a32 + a03a30 * a12;
-	a[13] = a00 * a12a23 - a00 * a22a13 - a02a10 * a23 + a02a20 * a13 + a03a10 * a22 - a03a20 * a12;
-	a[2] = a10 * a21a33 - a10 * a31a23 - a11 * a20a33 + a11 * a30a23 + a13 * a20a31 - a13 * a30a21;
-	a[6] = -a00 * a21a33 + a00 * a31a23 + a01 * a20a33 - a01 * a30a23 - a03 * a20a31 + a03 * a30a21;
-	a[10] = a00a11 * a33 - a00a31 * a13 - a01a10 * a33 + a01a30 * a13 + a03a10 * a31 - a03a30 * a11;
-	a[14] = -a00a11 * a23 + a00 * a21a13 + a01a10 * a23 - a01a20 * a13 - a03a10 * a21 + a03a20 * a11;
-	a[3] = -a10 * a21a32 + a10 * a31a22 + a11 * a20a32 - a11 * a30a22 - a12 * a20a31 + a12 * a30a21;
-	a[7] = a00 * a21a32 - a00 * a31a22 - a01 * a20a32 + a01 * a30a22 + a02 * a20a31 - a02 * a30a21;
-	a[11] = -a00a11 * a32 + a00a31 * a12 + a01a10 * a32 - a01a30 * a12 - a02a10 * a31 + a02a30 * a11;
-	a[15] = a00a11 * a22 - a00 * a21a12 - a01a10 * a22 + a01a20 * a12 + a02a10 * a21 - a02a20 * a11;
-	let det = a00 * a[0] + a10 * a[4] + a20 * a[8] + a30 * a[12];
+	const b00 = a00 * a11 - a01 * a10;
+	const b01 = a00 * a12 - a02 * a10;
+	const b02 = a00 * a13 - a03 * a10;
+	const b03 = a01 * a12 - a02 * a11;
+	const b04 = a01 * a13 - a03 * a11;
+	const b05 = a02 * a13 - a03 * a12;
+	const b06 = a20 * a31 - a21 * a30;
+	const b07 = a20 * a32 - a22 * a30;
+	const b08 = a20 * a33 - a23 * a30;
+	const b09 = a21 * a32 - a22 * a31;
+	const b10 = a21 * a33 - a23 * a31;
+	const b11 = a22 * a33 - a23 * a32;
+	let det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 	if (!det) return null;
 	det = 1 / det;
-	a[0] *= det;
-	a[1] *= det;
-	a[2] *= det;
-	a[3] *= det;
-	a[4] *= det;
-	a[5] *= det;
-	a[6] *= det;
-	a[7] *= det;
-	a[8] *= det;
-	a[9] *= det;
-	a[10] *= det;
-	a[11] *= det;
-	a[12] *= det;
-	a[13] *= det;
-	a[14] *= det;
-	a[15] *= det;
+	a[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+	a[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+	a[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+	a[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+	a[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+	a[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+	a[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+	a[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+	a[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+	a[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+	a[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+	a[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+	a[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+	a[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+	a[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+	a[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
 	return a;
 }
 /**
@@ -892,7 +881,10 @@ function transpose(a) {
 * @param {import("./types.js").Vec3} v
 * @returns {import("./types.js").Mat4}
 */
-function translate(a, [x, y, z]) {
+function translate(a, v) {
+	const x = v[0];
+	const y = v[1];
+	const z = v[2];
 	a[12] += a[0] * x + a[4] * y + a[8] * z;
 	a[13] += a[1] * x + a[5] * y + a[9] * z;
 	a[14] += a[2] * x + a[6] * y + a[10] * z;
@@ -900,14 +892,18 @@ function translate(a, [x, y, z]) {
 	return a;
 }
 /**
-* Rotates a matrix by an angle at an axis.
+* Rotates a matrix by an angle at an axis. Returns null and leaves the matrix
+* unchanged if the axis length is near zero.
 *
 * @param {import("./types.js").Mat4} a
 * @param {import("./types.js").Radians} r
 * @param {import("./types.js").Vec3} v
-* @returns {import("./types.js").Mat4}
+* @returns {import("./types.js").Mat4 | null}
 */
-function rotate(a, r, [x, y, z]) {
+function rotate(a, r, v) {
+	let x = v[0];
+	let y = v[1];
+	let z = v[2];
 	let len = Math.sqrt(x * x + y * y + z * z);
 	if (len < 1e-6) return null;
 	len = 1 / len;
@@ -959,7 +955,10 @@ function rotate(a, r, [x, y, z]) {
 * @param {import("./types.js").Vec3} v
 * @returns {import("./types.js").Mat4}
 */
-function scale$6(a, [x, y, z]) {
+function scale$6(a, v) {
+	const x = v[0];
+	const y = v[1];
+	const z = v[2];
 	a[0] *= x;
 	a[1] *= x;
 	a[2] *= x;
@@ -1240,7 +1239,8 @@ function orthoZO(a, left, right, bottom, top, near, far) {
 	return a;
 }
 /**
-* Calculates a lookAt matrix from position, target and up vectors.
+* Calculates a view matrix (world to camera) from position, target and up
+* vectors. To orient an object toward a target, use fromPointToPoint.
 *
 * @param {import("./types.js").Mat4} a
 * @param {import("./types.js").Vec3} from
@@ -1248,7 +1248,16 @@ function orthoZO(a, left, right, bottom, top, near, far) {
 * @param {import("./types.js").Vec3} [up=Y_UP]
 * @returns {import("./types.js").Mat4}
 */
-function lookAt(a, [eyex, eyey, eyez], [targetx, targety, targetz], [upx, upy, upz] = Y_UP) {
+function lookAt(a, from, to, up = Y_UP) {
+	const eyex = from[0];
+	const eyey = from[1];
+	const eyez = from[2];
+	const targetx = to[0];
+	const targety = to[1];
+	const targetz = to[2];
+	const upx = up[0];
+	const upy = up[1];
+	const upz = up[2];
 	if (Math.abs(eyex - targetx) < 1e-6 && Math.abs(eyey - targety) < 1e-6 && Math.abs(eyez - targetz) < 1e-6) return identity$1(a);
 	let z0 = eyex - targetx;
 	let z1 = eyey - targety;
@@ -1261,22 +1270,22 @@ function lookAt(a, [eyex, eyey, eyez], [targetx, targety, targetz], [upx, upy, u
 	let x1 = upz * z0 - upx * z2;
 	let x2 = upx * z1 - upy * z0;
 	len = Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
+	if (!len) {
+		const x = parallelUpXAxis(z0, z1, z2, upx, upy, upz);
+		x0 = x[0];
+		x1 = x[1];
+		x2 = x[2];
+		len = Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
+	}
 	if (len) {
 		len = 1 / len;
 		x0 *= len;
 		x1 *= len;
 		x2 *= len;
 	}
-	let y0 = z1 * x2 - z2 * x1;
-	let y1 = z2 * x0 - z0 * x2;
-	let y2 = z0 * x1 - z1 * x0;
-	len = Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2);
-	if (len) {
-		len = 1 / len;
-		x0 *= len;
-		x1 *= len;
-		x2 *= len;
-	}
+	const y0 = z1 * x2 - z2 * x1;
+	const y1 = z2 * x0 - z0 * x2;
+	const y2 = z0 * x1 - z1 * x0;
 	a[0] = x0;
 	a[1] = y0;
 	a[2] = z0;
@@ -1303,7 +1312,13 @@ function lookAt(a, [eyex, eyey, eyez], [targetx, targety, targetz], [upx, upy, u
 * @param {import("./types.js").Vec3} [up=Y_UP]
 * @returns {import("./types.js").Mat4}
 */
-function fromDirection$1(a, [dir0, dir1, dir2], [upx, upy, upz] = Y_UP) {
+function fromDirection$1(a, direction, up = Y_UP) {
+	let dir0 = direction[0];
+	let dir1 = direction[1];
+	let dir2 = direction[2];
+	let upx = up[0];
+	let upy = up[1];
+	let upz = up[2];
 	let len = dir0 * dir0 + dir1 * dir1 + dir2 * dir2;
 	if (len > 0) {
 		len = 1 / Math.sqrt(len);
@@ -1315,6 +1330,13 @@ function fromDirection$1(a, [dir0, dir1, dir2], [upx, upy, upz] = Y_UP) {
 	let x1 = upz * dir0 - upx * dir2;
 	let x2 = upx * dir1 - upy * dir0;
 	len = x0 * x0 + x1 * x1 + x2 * x2;
+	if (!len) {
+		const x = parallelUpXAxis(dir0, dir1, dir2, upx, upy, upz);
+		x0 = x[0];
+		x1 = x[1];
+		x2 = x[2];
+		len = x0 * x0 + x1 * x1 + x2 * x2;
+	}
 	if (len > 0) {
 		len = 1 / Math.sqrt(len);
 		x0 *= len;
@@ -1324,13 +1346,6 @@ function fromDirection$1(a, [dir0, dir1, dir2], [upx, upy, upz] = Y_UP) {
 	upx = dir1 * x2 - dir2 * x1;
 	upy = dir2 * x0 - dir0 * x2;
 	upz = dir0 * x1 - dir1 * x0;
-	len = upx * upx + upy * upy + upz * upz;
-	if (len > 0) {
-		len = 1 / Math.sqrt(len);
-		upx *= len;
-		upy *= len;
-		upz *= len;
-	}
 	a[0] = x0;
 	a[1] = x1;
 	a[2] = x2;
@@ -1358,14 +1373,14 @@ function fromDirection$1(a, [dir0, dir1, dir2], [upx, upy, upz] = Y_UP) {
 * @param {import("./types.js").Vec3} [up=Y_UP]
 * @returns {import("./types.js").Mat4}
 */
-function fromPointToPoint$1(a, [fromX, fromY, fromZ], [toX, toY, toZ], up) {
-	return fromDirection$1(a, [
-		toX - fromX,
-		toY - fromY,
-		toZ - fromZ
-	], up);
+function fromPointToPoint$1(a, from, to, up) {
+	TEMP_VEC3$1[0] = to[0] - from[0];
+	TEMP_VEC3$1[1] = to[1] - from[1];
+	TEMP_VEC3$1[2] = to[2] - from[2];
+	return fromDirection$1(a, TEMP_VEC3$1, up);
 }
 
+/** @module vec2 */
 var vec2_exports = /* @__PURE__ */ __exportAll({
 	add: () => add$5,
 	addScaled: () => addScaled$5,
@@ -1385,7 +1400,6 @@ var vec2_exports = /* @__PURE__ */ __exportAll({
 	sub: () => sub$5,
 	toString: () => toString$6
 });
-/** @module vec2 */
 /**
 * Returns a new vec2 at 0, 0.
 *
@@ -1587,10 +1601,10 @@ function lerp$5(a, b, t) {
 * @returns {string}
 */
 function toString$6(a, precision = 4) {
-	const scale = 10 ** precision;
-	return `[${Math.floor(a[0] * scale) / scale}, ${Math.floor(a[1] * scale) / scale}]`;
+	return `[${_truncate(a[0], precision)}, ${_truncate(a[1], precision)}]`;
 }
 
+/** @module vec3 */
 var vec3_exports = /* @__PURE__ */ __exportAll({
 	add: () => add$4,
 	addScaled: () => addScaled$4,
@@ -1613,7 +1627,6 @@ var vec3_exports = /* @__PURE__ */ __exportAll({
 	sub: () => sub$4,
 	toString: () => toString$5
 });
-/** @module vec3 */
 /**
 * Returns a new vec3 at 0, 0, 0.
 *
@@ -1893,10 +1906,10 @@ function lerp$4(a, b, t) {
 * @returns {string}
 */
 function toString$5(a, precision = 4) {
-	const scale = 10 ** precision;
-	return `[${Math.floor(a[0] * scale) / scale}, ${Math.floor(a[1] * scale) / scale}, ${Math.floor(a[2] * scale) / scale}]`;
+	return `[${_truncate(a[0], precision)}, ${_truncate(a[1], precision)}, ${_truncate(a[2], precision)}]`;
 }
 
+/** @module vec4 */
 var vec4_exports = /* @__PURE__ */ __exportAll({
 	add: () => add$3,
 	addScaled: () => addScaled$3,
@@ -1911,7 +1924,6 @@ var vec4_exports = /* @__PURE__ */ __exportAll({
 	sub: () => sub$3,
 	toString: () => toString$4
 });
-/** @module vec4 */
 /**
 * Returns a new vec4 at 0, 0, 0, 1.
 *
@@ -2074,8 +2086,7 @@ function lerp$3(a, b, t) {
 * @returns {string}
 */
 function toString$4(a, precision = 4) {
-	const scale = 10 ** precision;
-	return `[${Math.floor(a[0] * scale) / scale}, ${Math.floor(a[1] * scale) / scale}, ${Math.floor(a[2] * scale) / scale}, ${Math.floor(a[3] * scale) / scale}]`;
+	return `[${_truncate(a[0], precision)}, ${_truncate(a[1], precision)}, ${_truncate(a[2], precision)}, ${_truncate(a[3], precision)}]`;
 }
 
 /** @module avec2 */
@@ -2339,8 +2350,7 @@ function map$2(a, callbackFn) {
 * @returns {string}
 */
 function toString$3(a, i, precision = 4) {
-	const scale = 10 ** precision;
-	return `[${Math.floor(a[i * 2] * scale) / scale}, ${Math.floor(a[i * 2 + 1] * scale) / scale}]`;
+	return `[${_truncate(a[i * 2], precision)}, ${_truncate(a[i * 2 + 1], precision)}]`;
 }
 
 /** @module avec3 */
@@ -2686,8 +2696,7 @@ function map$1(a, callbackFn) {
 * @returns {string}
 */
 function toString$2(a, i, precision = 4) {
-	const scale = 10 ** precision;
-	return `[${Math.floor(a[i * 3] * scale) / scale}, ${Math.floor(a[i * 3 + 1] * scale) / scale}, ${Math.floor(a[i * 3 + 2] * scale) / scale}]`;
+	return `[${_truncate(a[i * 3], precision)}, ${_truncate(a[i * 3 + 1], precision)}, ${_truncate(a[i * 3 + 2], precision)}]`;
 }
 
 /** @module avec4 */
@@ -2893,8 +2902,7 @@ function map(a, callbackFn) {
 * @returns {string}
 */
 function toString$1(a, i, precision = 4) {
-	const scale = 10 ** precision;
-	return `[${Math.floor(a[i * 4] * scale) / scale}, ${Math.floor(a[i * 4 + 1] * scale) / scale}, ${Math.floor(a[i * 4 + 2] * scale) / scale}, ${Math.floor(a[i * 4 + 3] * scale) / scale}]`;
+	return `[${_truncate(a[i * 4], precision)}, ${_truncate(a[i * 4 + 1], precision)}, ${_truncate(a[i * 4 + 2], precision)}, ${_truncate(a[i * 4 + 3], precision)}]`;
 }
 
 /** @module quat */
@@ -3024,7 +3032,7 @@ function conjugate(a) {
 * Calculates the length of a quaternion.
 *
 * @param {import("./types.js").Quat} a
-* @returns {import("./types.js").Quat}
+* @returns {number}
 */
 function length(a) {
 	const x = a[0];
@@ -3056,7 +3064,7 @@ function normalize(a) {
 *
 * @param {import("./types.js").Quat} a
 * @param {import("./types.js").Quat} b
-* @returns {import("./types.js").Quat}
+* @returns {number}
 */
 function dot(a, b) {
 	return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
@@ -3088,7 +3096,7 @@ function fromEuler(a, e) {
 * Set the angle at an axis of a quaternion.
 *
 * @param {import("./types.js").Quat} a
-* @param {import("./types.js").Vec3} v
+* @param {import("./types.js").Vec3} v Normalized axis
 * @param {import("./types.js").Radians} r
 * @returns {import("./types.js").Quat}
 */
@@ -3099,7 +3107,7 @@ function fromAxisAngle(a, v, r) {
 	a[1] = v[1] * sin2;
 	a[2] = v[2] * sin2;
 	a[3] = Math.cos(angle2);
-	return normalize(a);
+	return a;
 }
 /** @private */
 function _fromMat39(a, m0, m1, m2, m3, m4, m5, m6, m7, m8) {
@@ -3245,19 +3253,19 @@ function slerp(a, b, t) {
 * Prints a quaternion to a string.
 *
 * @param {import("./types.js").Quat} a
-* @param {number} precision
-* @returns {import("./types.js").Quat}
+* @param {number} [precision=4]
+* @returns {string}
 */
 const toString = toString$4;
 
-/** @module euler */
 var euler_exports = /* @__PURE__ */ __exportAll({
 	create: () => create,
 	fromQuat: () => fromQuat
 });
+/** @module euler */
 /**
-* Create a new euler angles [0, 0, 0]: vec3 array of [x, y, z] rotation [yaw,
-* pitch, roll] in radians.
+* Returns new euler angles at 0, 0, 0: rotations in radians around the x, y and
+* z axes (pitch, yaw and roll with Y up).
 *
 * @returns {import("./types.js").Euler}
 */
@@ -3276,13 +3284,30 @@ function create() {
 * @returns {import("./types.js").Euler}
 */
 function fromQuat(a, q) {
-	const sqx = q[0] * q[0];
-	const sqy = q[1] * q[1];
-	const sqz = q[2] * q[2];
-	const sqw = q[3] * q[3];
-	a[0] = Math.atan2(2 * (q[0] * q[3] - q[1] * q[2]), sqw - sqx - sqy + sqz);
-	a[1] = Math.asin(clamp(2 * (q[0] * q[2] + q[1] * q[3]), -1, 1));
-	a[2] = Math.atan2(2 * (q[2] * q[3] - q[0] * q[1]), sqw + sqx - sqy - sqz);
+	const x = q[0];
+	const y = q[1];
+	const z = q[2];
+	const w = q[3];
+	const xx = x * x;
+	const yy = y * y;
+	const zz = z * z;
+	const ww = w * w;
+	const m02 = 2 * (x * z + y * w);
+	const m10 = 2 * (x * y + z * w);
+	const m11 = ww - xx + yy - zz;
+	const m20 = 2 * (x * z - y * w);
+	const m21 = 2 * (y * z + x * w);
+	const m22 = ww - xx - yy + zz;
+	const sxcy = 2 * (x * w - y * z);
+	const cy = Math.sqrt(sxcy * sxcy + m22 * m22);
+	a[1] = Math.atan2(m02, cy);
+	if (cy) {
+		a[0] = Math.atan2(sxcy, m22);
+		a[2] = Math.atan2(m22 * m10 + sxcy * m20, m22 * m11 + sxcy * m21);
+	} else {
+		a[0] = 0;
+		a[2] = Math.atan2(m10, m11);
+	}
 	return a;
 }
 
@@ -3382,12 +3407,12 @@ const bounceOut = (t) => {
 const bounceIn = (t) => 1 - bounceOut(1 - t);
 const bounceInOut = (t) => t < .5 ? .5 * (1 - bounceOut(1 - 2 * t)) : .5 + .5 * bounceOut(2 * t - 1);
 const stepEdges = (t) => {
-	if (t <= 0) return 0;
+	if (t < 0) return 0;
 	if (t >= 1) return 1;
 };
-const stepStart = (t, n = 1) => stepEdges(t) ?? Math.ceil(t * n) / n;
+const stepStart = (t, n = 1) => stepEdges(t) ?? (Math.floor(t * n) + 1) / n;
 const stepEnd = (t, n = 1) => stepEdges(t) ?? Math.floor(t * n) / n;
-const stepNone = (t, n = 1) => stepEdges(t) ?? Math.floor(t * n) / (n - 1);
-const stepBoth = (t, n = 1) => stepEdges(t) ?? (Math.floor(t * n) + .5) / n;
+const stepNone = (t, n = 2) => stepEdges(t) ?? Math.floor(t * n) / (n - 1);
+const stepBoth = (t, n = 1) => stepEdges(t) ?? (Math.floor(t * n) + 1) / (n + 1);
 
 export { mat4_exports as A, mat2x3_exports as B, distance$3 as C, frustum as D, create$5 as E, lerp$6 as F, toDegrees as I, toRadians as L, perspective as M, set$7 as N, invert$1 as O, clamp as P, utils_exports as R, vec3_exports as S, vec2_exports as T, normalize$3 as _, avec3_exports as a, sub$4 as b, vec4_exports as c, create$3 as d, cross$1 as f, multMat4$3 as g, length$3 as h, avec4_exports as i, ortho as j, lookAt as k, add$4 as l, dot$3 as m, euler_exports as n, set3 as o, distance$2 as p, quat_exports as r, avec2_exports as s, eases_exports as t, copy$2 as u, scale$4 as v, toString$6 as w, toString$5 as x, set$5 as y, mat3_exports as z };
