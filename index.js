@@ -1204,13 +1204,15 @@ class GUI {
       }
     }
 
+    const x = this.x * canvasScale;
+    const y = this.y * canvasScale;
     this.renderer.drawTexture2d(this.viewport, {
       texture,
       rect: [
-        0,
-        0,
-        canvasScale * this.#scale * rendererWidth || 2,
-        canvasScale * this.#scale * rendererHeight || 2,
+        x,
+        y,
+        x + (canvasScale * this.#scale * rendererWidth || 2),
+        y + (canvasScale * this.#scale * rendererHeight || 2),
       ],
     });
 
@@ -1218,6 +1220,8 @@ class GUI {
   }
 
   drawTextures() {
+    const x = this.x * this.getScale();
+    const y = this.y * this.getScale();
     const items = this.items;
     const tabs = items.filter(({ type }) => type === "tab");
     for (let i = 0; i < this.items.length; i++) {
@@ -1237,10 +1241,10 @@ class GUI {
       const drawTexture = ({ activeArea, texture }) => {
         // we are trying to match flipped gui texture which 0,0 starts at the top with window coords that have 0,0 at the bottom
         bounds = [
-          activeArea[0][0] * scale,
-          activeArea[1][1] * scale,
-          activeArea[1][0] * scale,
-          activeArea[0][1] * scale,
+          x + activeArea[0][0] * scale,
+          y + activeArea[1][1] * scale,
+          x + activeArea[1][0] * scale,
+          y + activeArea[0][1] * scale,
         ];
         const flipY = item.options?.flipY;
         if (texture.flipY) {
@@ -1261,10 +1265,10 @@ class GUI {
         item.items.forEach(drawTexture);
       } else if (item.type === "textureCube") {
         bounds = [
-          item.activeArea[0][0] * scale,
-          item.activeArea[1][1] * scale,
-          item.activeArea[1][0] * scale,
-          item.activeArea[0][1] * scale,
+          x + item.activeArea[0][0] * scale,
+          y + item.activeArea[1][1] * scale,
+          x + item.activeArea[1][0] * scale,
+          y + item.activeArea[0][1] * scale,
         ];
         this.renderer.drawTextureCube(this.viewport, {
           texture: item.contextObject
