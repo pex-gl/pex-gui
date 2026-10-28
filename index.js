@@ -1129,8 +1129,8 @@ class GUI {
     const scaledActiveArea = this.getScaledActiveArea(activeArea);
 
     Object.assign(overlayItem.style, {
-      left: `${this.x + scaledActiveArea[0][0]}px`,
-      top: `${this.y + scaledActiveArea[0][1]}px`,
+      left: `${scaledActiveArea[0][0]}px`,
+      top: `${scaledActiveArea[0][1]}px`,
       width: `${rect.width(scaledActiveArea)}px`,
       height: `${rect.height(scaledActiveArea)}px`,
     });
