@@ -1172,18 +1172,6 @@ class GUI {
         : this.scale;
 
       if (this.overlay) {
-        const { left, top, width, height } =
-          this.canvas.getBoundingClientRect();
-
-        Object.assign(this.overlay.container.style, {
-          position: "fixed",
-          pointerEvents: "none",
-          left: `${this.x + left + window.scrollX}px`,
-          top: `${this.y + top + window.scrollY}px`,
-          width: `${width}px`,
-          height: `${height}px`,
-        });
-
         for (let i = 0; i < this.items.length; i++) {
           const item = this.items[i];
 
@@ -1197,6 +1185,20 @@ class GUI {
           }
         }
       }
+    }
+
+    // Every frame: the canvas can move (e.g. page scroll) without a redraw.
+    if (this.overlay) {
+      const { left, top, width, height } = this.canvas.getBoundingClientRect();
+
+      Object.assign(this.overlay.container.style, {
+        position: "fixed",
+        pointerEvents: "none",
+        left: `${this.x + left}px`,
+        top: `${this.y + top}px`,
+        width: `${width}px`,
+        height: `${height}px`,
+      });
     }
 
     const x = this.x * canvasScale;
