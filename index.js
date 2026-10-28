@@ -258,13 +258,11 @@ class GUI {
             (this.activeControl.items.length * hitY) / aaHeight,
           );
           if (
-            hitItemIndex < 0 ||
-            hitItemIndex >= this.activeControl.items.length
+            hitItemIndex >= 0 &&
+            hitItemIndex < this.activeControl.items.length
           ) {
-            continue;
+            this.setControlValue(this.activeControl.items[hitItemIndex].value);
           }
-
-          this.setControlValue(this.activeControl.items[hitItemIndex].value);
         } else if (this.activeControl.type === "texturelist") {
           let clickedItem = null;
           this.activeControl.items.forEach((item) => {
@@ -278,9 +276,7 @@ class GUI {
             }
           });
 
-          if (!clickedItem) continue;
-
-          this.setControlValue(clickedItem.value);
+          if (clickedItem) this.setControlValue(clickedItem.value);
         } else if (this.activeControl.type === "color") {
           if (this.activeControl.options.palette) {
             const paletteResult = this.checkPalette(
@@ -293,7 +289,6 @@ class GUI {
             );
             if (paletteResult.clicked) {
               this.activeControl.clickedPalette = true;
-              continue;
             }
           }
         } else if (this.activeControl.type === "text") {
