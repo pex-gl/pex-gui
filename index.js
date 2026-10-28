@@ -22,6 +22,9 @@ const isArrayLike = (value) =>
 class GUI {
   #pixelRatio;
   #scale;
+  #listeners = new AbortController();
+  #swallowClick = false;
+  #pointerId;
 
   get size() {
     if (this.ctx.gl) {
@@ -105,18 +108,42 @@ class GUI {
       this.canvas.style.pointerEvents = "none";
       this.canvas.after(this.overlay.container);
     } else {
-      this.canvas.addEventListener(
-        "pointerdown",
-        this.onPointerDown.bind(this),
-      );
-      this.canvas.addEventListener(
-        "pointermove",
-        this.onPointerMove.bind(this),
-      );
-      this.canvas.addEventListener("pointerup", this.onPointerUp.bind(this));
+      this.#listenPointer(this.canvas);
     }
 
-    addEventListener("keydown", this.onKeyDown.bind(this));
+    addEventListener("keydown", this.onKeyDown.bind(this), {
+      signal: this.#listeners.signal,
+    });
+  }
+
+  // Capture phase: stopping also cuts off listeners on the same element.
+  #listenPointer(target) {
+    const options = { capture: true, signal: this.#listeners.signal };
+    target.addEventListener(
+      "pointerdown",
+      this.onPointerDown.bind(this),
+      options,
+    );
+    target.addEventListener(
+      "pointermove",
+      this.onPointerMove.bind(this),
+      options,
+    );
+    target.addEventListener("pointerup", this.onPointerUp.bind(this), options);
+    target.addEventListener(
+      "pointercancel",
+      this.onPointerUp.bind(this),
+      options,
+    );
+    target.addEventListener(
+      "click",
+      (event) => {
+        if (!this.#swallowClick) return;
+        this.#swallowClick = false;
+        event.stopImmediatePropagation();
+      },
+      options,
+    );
   }
 
   // Helpers
@@ -193,6 +220,7 @@ class GUI {
     });
 
     this.activeControl = null;
+    this.#swallowClick = false;
 
     this.setPointerOffset(event, this.canvas, this.pointerOffset);
 
@@ -271,7 +299,9 @@ class GUI {
         } else if (this.activeControl.type === "text") {
           this.activeControl.focus = true;
         }
-        event.stopPropagation();
+        event.stopImmediatePropagation();
+        this.#pointerId = event.pointerId;
+        event.currentTarget.setPointerCapture(event.pointerId);
         this.onPointerMove(event);
         break;
       }
@@ -283,7 +313,7 @@ class GUI {
 
     this.setPointerOffset(event, this.canvas, this.pointerOffset);
 
-    if (this.activeControl) {
+    if (this.activeControl && event.pointerId === this.#pointerId) {
       const aa = this.getScaledActiveArea(this.activeControl.activeArea);
 
       let value;
@@ -319,13 +349,13 @@ class GUI {
             slidersHeight = paletteResult.imageStartY;
             if (paletteResult.clicked) {
               this.activeControl.dirty = true;
-              event.stopPropagation();
+              event.stopImmediatePropagation();
               return;
             }
           }
 
           if (this.activeControl.clickedPalette) {
-            event.stopPropagation();
+            event.stopImmediatePropagation();
             return;
           }
         }
@@ -350,12 +380,15 @@ class GUI {
         this.activeControl.dirty = true;
       }
 
-      event.stopPropagation();
+      event.stopImmediatePropagation();
     }
   }
 
-  onPointerUp() {
-    if (!this.activeControl) return;
+  onPointerUp(event) {
+    if (!this.activeControl || event.pointerId !== this.#pointerId) return;
+
+    this.#swallowClick = event.type === "pointerup";
+    event.stopImmediatePropagation();
 
     this.activeControl.active = false;
     this.activeControl.dirty = true;
@@ -1089,16 +1122,9 @@ class GUI {
       pointerEvents: "all",
     });
 
-    overlayItem.addEventListener("pointerdown", this.onPointerDown.bind(this));
-    overlayItem.addEventListener("pointermove", this.onPointerMove.bind(this));
-    overlayItem.addEventListener("pointerup", this.onPointerUp.bind(this));
+    this.#listenPointer(overlayItem);
 
-    item.dispose = () => {
-      overlayItem.removeEventListener("pointerdown", this.onPointerDown);
-      overlayItem.removeEventListener("pointermove", this.onPointerMove);
-      overlayItem.removeEventListener("pointerup", this.onPointerUp);
-      overlayItem.remove();
-    };
+    item.dispose = () => overlayItem.remove();
     this.overlay.container.append(overlayItem);
 
     item.overlayItem = overlayItem;
@@ -1288,14 +1314,11 @@ class GUI {
    * resources.
    */
   dispose() {
+    this.#listeners.abort();
+
     if (this.overlay) {
       this.canvas.style.pointerEvents = this.overlay.initialPointerEvents;
       this.overlay.container.remove();
-    } else {
-      this.canvas.removeEventListener("pointerdown", this.onPointerDown);
-      this.canvas.removeEventListener("pointermove", this.onPointerMove);
-      this.canvas.removeEventListener("pointerup", this.onPointerUp);
-      removeEventListener("keydown", this.onKeyDown);
     }
 
     for (let i = 0; i < this.items.length; i++) {
