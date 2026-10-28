@@ -123,26 +123,23 @@ class CanvasRenderer {
     let maxWidth = 0;
     let maxHeight = 0;
     let needInitialDy = true;
+    let tab;
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
 
       if (Number.isFinite(item.x)) dx = item.x;
       if (Number.isFinite(item.y)) dy = item.y;
 
-      if (item.type === "tab") continue;
+      if (item.type === "tab") {
+        tab = item;
+        continue;
+      }
       let eh = itemHeight;
 
       if (tabs.length > 0) {
-        const prevTabs = items.filter(
-          ({ type }, index) => index < i && type === "tab",
-        );
-        const parentTab = prevTabs.at(-1);
-        if (parentTab && !parentTab.current) {
-          continue;
-        } else {
-          if (needInitialDy && item.type !== "column") {
-            dy += tabHeight + padding * 3;
-          }
+        if (tab && !tab.current) continue;
+        if (needInitialDy && item.type !== "column") {
+          dy += tabHeight + padding * 3;
         }
         needInitialDy = false;
       }

@@ -222,16 +222,12 @@ class GUI {
     this.activeControl = null;
     this.#swallowClick = false;
 
-    this.setPointerOffset(event, this.canvas, this.pointerOffset);
+    this.setPointerOffset(event, this.canvas);
 
+    let tab;
     for (let i = 0; i < this.items.length; i++) {
-      const prevTabs = this.items.filter(
-        ({ type }, index) => index < i && type === "tab",
-      );
-      const parentTab = prevTabs.at(-1);
-      if (parentTab && !parentTab.current && this.items[i].type !== "tab") {
-        continue;
-      }
+      if (this.items[i].type === "tab") tab = this.items[i];
+      else if (tab && !tab.current) continue;
 
       const aa = this.getScaledActiveArea(this.items[i].activeArea);
 
@@ -306,7 +302,7 @@ class GUI {
   onPointerMove(event) {
     if (!this.enabled) return;
 
-    this.setPointerOffset(event, this.canvas, this.pointerOffset);
+    this.setPointerOffset(event, this.canvas);
 
     if (this.activeControl && event.pointerId === this.#pointerId) {
       const aa = this.getScaledActiveArea(this.activeControl.activeArea);
@@ -1223,19 +1219,11 @@ class GUI {
   drawTextures() {
     const x = this.x * this.getScale();
     const y = this.y * this.getScale();
-    const items = this.items;
-    const tabs = items.filter(({ type }) => type === "tab");
+    let tab;
     for (let i = 0; i < this.items.length; i++) {
       const item = this.items[i];
-      if (tabs.length > 0) {
-        const prevTabs = items.filter(
-          ({ type }, index) => index < i && type === "tab",
-        );
-        const parentTab = prevTabs.at(-1);
-        if (parentTab && !parentTab.current) {
-          continue;
-        }
-      }
+      if (item.type === "tab") tab = item;
+      else if (tab && !tab.current) continue;
       const scale = this.#scale * this.getScale();
       let bounds = [];
 
