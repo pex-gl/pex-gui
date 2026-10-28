@@ -1172,8 +1172,10 @@ class GUI {
         : this.scale;
 
       if (this.overlay) {
+        let tab;
         for (let i = 0; i < this.items.length; i++) {
           const item = this.items[i];
+          if (item.type === "tab") tab = item;
 
           if (
             item.activeArea &&
@@ -1182,6 +1184,8 @@ class GUI {
           ) {
             if (!item.overlayItem) this.initOverlayItem(item);
             this.updateOverlayItem(item);
+            item.overlayItem.style.display =
+              item !== tab && tab && !tab.current ? "none" : "";
           }
         }
       }
