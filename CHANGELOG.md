@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [4.0.2](https://github.com/pex-gl/pex-gui/compare/v4.0.1...v4.0.2) (2026-10-29)
+
+### Bug Fixes
+
+* claim every pointerdown that hits a control ([098389f](https://github.com/pex-gl/pex-gui/commit/098389f393f76e1fc4fa93becf68a4067cebab34))
+* hide overlay items of inactive tabs ([328ea61](https://github.com/pex-gl/pex-gui/commit/328ea61fd160f4681e90d8c0f7fc5b31eaa577be))
+* keep the overlay container on the canvas ([8f24d58](https://github.com/pex-gl/pex-gui/commit/8f24d58d479ef3787ef9e9ac93b5f05996ad72b8))
+* offset drawing by gui x and y ([0eec84a](https://github.com/pex-gl/pex-gui/commit/0eec84a534d4187ed214d52d9b8a76debc4521cc))
+* offset overlay items once ([ecde94c](https://github.com/pex-gl/pex-gui/commit/ecde94c08caf25878d90177878de5426ec9fcff5))
+* stop pointer events only for interactive controls, whatever the listener ([8eb3718](https://github.com/pex-gl/pex-gui/commit/8eb37185b09dd5a40b6a735aba244ab13226b2ef))
+
 ## [4.0.1](https://github.com/pex-gl/pex-gui/compare/v4.0.0...v4.0.1) (2026-10-06)
 
 ### Bug Fixes
