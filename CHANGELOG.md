@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+# [4.1.0](https://github.com/pex-gl/pex-gui/compare/v4.0.2...v4.1.0) (2026-11-03)
+
+### Features
+
+* add an exposure option to texture controls ([4368ad8](https://github.com/pex-gl/pex-gui/commit/4368ad8762a316e702155bbc4faaa36fc0a166fd))
+
 ## [4.0.2](https://github.com/pex-gl/pex-gui/compare/v4.0.1...v4.0.2) (2026-10-29)
 
 ### Bug Fixes
