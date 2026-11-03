@@ -1243,6 +1243,7 @@ class GUI {
           texture,
           rect: bounds,
           flipY,
+          exposure: item.options?.exposure,
           near: item.options?.near,
           far: item.options?.far,
           layer: item.options?.layer,
@@ -1269,6 +1270,7 @@ class GUI {
               ? item.options.level
               : 0,
           flipEnvMap: item.options.flipEnvMap,
+          exposure: item.options.exposure,
           near: item.options.near,
           far: item.options.far,
           layer: item.options.layer,

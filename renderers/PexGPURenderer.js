@@ -176,7 +176,10 @@ class PexGPURenderer extends CanvasRenderer {
     return view;
   }
 
-  drawTexture2d(viewport, { texture, rect, flipY, near, far, layer }) {
+  drawTexture2d(
+    viewport,
+    { texture, rect, flipY, exposure, near, far, layer },
+  ) {
     if (flipY) {
       const y0 = rect[1];
       rect[1] = rect[3];
@@ -191,6 +194,7 @@ class PexGPURenderer extends CanvasRenderer {
         viewport,
         rect,
         correctGamma: correctGamma(texture),
+        exposure: 2 ** (exposure ?? 0),
         near: near ?? LINEAR_DEPTH.near,
         far: far ?? LINEAR_DEPTH.far,
       },
@@ -202,7 +206,7 @@ class PexGPURenderer extends CanvasRenderer {
 
   drawTextureCube(
     viewport,
-    { texture, rect, level, flipEnvMap, near, far, layer },
+    { texture, rect, level, flipEnvMap, exposure, near, far, layer },
   ) {
     const depth = isDepth(texture);
     const cmd = depth
@@ -216,6 +220,7 @@ class PexGPURenderer extends CanvasRenderer {
         correctGamma: correctGamma(texture),
         level: level ?? 0,
         flipEnvMap: flipEnvMap ?? 1,
+        exposure: 2 ** (exposure ?? 0),
         near: near ?? LINEAR_DEPTH.near,
         far: far ?? LINEAR_DEPTH.far,
       },

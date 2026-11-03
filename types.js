@@ -11,6 +11,9 @@
  *   cubemaps from file with X axis flipped.
  * @property {boolean} [flipY] Flip texture 2D vertically.
  * @property {number} [level] Level of detail for cube textures.
+ * @property {number} [exposure=0] Exposure in stops applied to a texture's
+ *   colour before display, to bring HDR values into range. Ignored for depth
+ *   textures and by the canvas renderer.
  * @property {number} [layer] Which slice of a layered texture to display: an
  *   array index for a `2d-array`, a cube index for a `cube-array`. Ignored
  *   otherwise. WebGPU only.

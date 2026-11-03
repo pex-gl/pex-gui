@@ -9,6 +9,7 @@ uniform samplerCube uTexture;
 uniform bool uCorrectGamma;
 uniform float uLevel;
 uniform float uFlipEnvMap;
+uniform float uExposure;
 
 varying vec2 vTexCoord0;
 
@@ -24,6 +25,7 @@ void main() {
 
   vec3 N = normalize(vec3(uFlipEnvMap * x, y, z));
   vec4 color = textureCube(uTexture, N, uLevel);
+  color.rgb *= uExposure;
   if (uCorrectGamma) color = toGamma(color);
   gl_FragColor = color;
 }`;

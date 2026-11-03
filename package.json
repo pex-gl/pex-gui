@@ -50,9 +50,9 @@
     "pex-io": "^3.3.0",
     "primitive-geometry": "^3.3.1"
   },
-  "packageManager": "npm@10.5.1",
+  "packageManager": "npm@11.12.1",
   "engines": {
-    "node": ">=24.0.0",
+    "node": ">=26.0.0",
     "snowdev": ">=3.0.0-alpha.3"
   },
   "snowdev": {

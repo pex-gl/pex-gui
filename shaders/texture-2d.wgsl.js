@@ -7,6 +7,7 @@ struct Params {
   viewport: vec4f,
   rect: vec4f,
   correctGamma: u32,
+  exposure: f32,
   near: f32,
   far: f32,
 };
@@ -25,7 +26,8 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4f {
     depth
       ? `let d = textureSampleLevel(uTexture, uSampler, input.texCoord, 0);
   var color = depthToColor(d, params.near, params.far);`
-      : `var color = textureSample(uTexture, uSampler, input.texCoord);`
+      : `var color = textureSample(uTexture, uSampler, input.texCoord);
+  color = vec4f(color.rgb * params.exposure, color.a);`
   }
   if (params.correctGamma != 0u) { color = toGamma(color); }
   return color;

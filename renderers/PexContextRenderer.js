@@ -115,7 +115,7 @@ class PexContextRenderer extends CanvasRenderer {
     return texture.target === this.#ctx.gl.TEXTURE_CUBE_MAP;
   }
 
-  drawTexture2d(viewport, { texture, rect, flipY }) {
+  drawTexture2d(viewport, { texture, rect, flipY, exposure }) {
     if (flipY) {
       const y0 = rect[1];
       rect[1] = rect[3];
@@ -127,13 +127,14 @@ class PexContextRenderer extends CanvasRenderer {
       uniforms: {
         uTexture: texture,
         uCorrectGamma: this.#correctGamma(texture),
+        uExposure: 2 ** (exposure ?? 0),
         uViewport: viewport,
         uRect: rect,
       },
     });
   }
 
-  drawTextureCube(viewport, { texture, rect, level, flipEnvMap }) {
+  drawTextureCube(viewport, { texture, rect, level, flipEnvMap, exposure }) {
     this.#ctx.submit(this.#drawTextureCubeCmd, {
       viewport,
       uniforms: {
@@ -143,6 +144,7 @@ class PexContextRenderer extends CanvasRenderer {
         uRect: rect,
         uLevel: level,
         uFlipEnvMap: flipEnvMap || 1,
+        uExposure: 2 ** (exposure ?? 0),
       },
     });
   }

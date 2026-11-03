@@ -11,6 +11,7 @@ struct Params {
   correctGamma: u32,
   level: f32,
   flipEnvMap: f32,
+  exposure: f32,
   near: f32,
   far: f32,
 };
@@ -37,7 +38,8 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4f {
     depth
       ? `let d = textureSampleLevel(uTexture, uSampler, N, i32(params.level));
   var color = depthToColor(d, params.near, params.far);`
-      : `var color = textureSampleLevel(uTexture, uSampler, N, params.level);`
+      : `var color = textureSampleLevel(uTexture, uSampler, N, params.level);
+  color = vec4f(color.rgb * params.exposure, color.a);`
   }
   if (params.correctGamma != 0u) { color = toGamma(color); }
   return color;
